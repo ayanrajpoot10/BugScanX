@@ -8,6 +8,7 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.validation import Validator, ValidationError
 from InquirerPy import prompt
+from prompt_toolkit.patch_stdout import patch_stdout
 
 console = Console()
 
@@ -92,15 +93,16 @@ def get_input(prompt: str, default: str = None, validator=None, completer=None, 
     session = PromptSession()
     full_prompt = [('class:prompt', prompt), ('class:prompt', ': ')]
     try:
-        response = session.prompt(
-            full_prompt,
-            default=default,
-            completer=completer,
-            validator=validator,
-            validate_while_typing=True,
-            multiline=multiline,
-            style=style,
-        )
+        with patch_stdout():
+            response = session.prompt(
+                full_prompt,
+                default=default,
+                completer=completer,
+                validator=validator,
+                validate_while_typing=True,
+                multiline=multiline,
+                style=style,
+            )
         return response.strip() if response.strip() else default
     except ValidationError as e:
         print(f"\n{style['error']}{e.message}{style['error']}")
@@ -115,51 +117,45 @@ def get_txt_files_completer():
 
 completer = get_txt_files_completer()
 
-def create_validator(error_messages, validators):
-    return UniversalValidator(error_messages=error_messages, validators=validators)
-
-not_empty_validator = create_validator(
+not_empty_validator = UniversalValidator(
     error_messages={"not_empty": "Input cannot be empty."},
     validators={"not_empty": True}
 )
 
-digit_validator = create_validator(
+digit_validator = UniversalValidator(
     error_messages={"not_empty": "Input cannot be empty.", "is_digit": "Input must be a number."},
     validators={"not_empty": True, "is_digit": True}
 )
 
-file_path_validator = create_validator(
+file_path_validator = UniversalValidator(
     error_messages={"not_empty": "Input cannot be empty.", "file_path": "File path is invalid or file does not exist."},
     validators={"not_empty": True, "file_path": True}
 )
 
-cidr_validator = create_validator(
+cidr_validator = UniversalValidator(
     error_messages={"not_empty": "Input cannot be empty.", "cidr": "Invalid CIDR block."},
     validators={"not_empty": True, "cidr": True}
 )
 
-choice_validator = create_validator(
+choice_validator = UniversalValidator(
     error_messages={"not_empty": "Input cannot be empty.", "choice": "Invalid choice."},
     validators={"not_empty": True, "choice": ["1", "2"]}
 )
 
-def create_digit_range_validator(min_value, max_value):
-    return create_validator(
-        error_messages={
-            "not_empty": "Input cannot be empty.",
-            "is_digit": "Input must be a number.",
-            "min_value": f"Input must be at least {min_value}.",
-            "max_value": f"Input must be at most {max_value}."
-        },
-        validators={
-            "not_empty": True,
-            "is_digit": True,
-            "min_value": min_value,
-            "max_value": max_value
-        }
-    )
-
-digit_range_validator = create_digit_range_validator(min_value=1, max_value=12)
+digit_range_validator = UniversalValidator(
+    error_messages={
+        "not_empty": "Input cannot be empty.",
+        "is_digit": "Input must be a number.",
+        "min_value": "Input must be at least 1.",
+        "max_value": "Input must be at most 12."
+    },
+    validators={
+        "not_empty": True,
+        "is_digit": True,
+        "min_value": 1,
+        "max_value": 12
+    }
+)
 
 def create_prompt(prompt_type, message, name, **kwargs):
     question = {

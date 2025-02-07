@@ -57,7 +57,7 @@ def install_requirements():
 
 install_requirements()
 
-from bugscanx.modules import *
+from bugscanx.utils import *
 from rich.console import Console
 from rich.traceback import install
 

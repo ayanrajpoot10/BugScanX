@@ -11,4 +11,3 @@ def banner():
       Tᴇʟᴇɢʀᴀᴍ: @BᴜɢSᴄᴀɴX[/bold magenta]
     """
     console.print(banner_text)
-

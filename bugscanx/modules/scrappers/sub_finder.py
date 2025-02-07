@@ -1,11 +1,11 @@
 import re
 import random
 import requests
-from bugscanx.modules import *
 from bs4 import BeautifulSoup
 from rich.console import Console
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from bugscanx.utils import *
 session = requests.Session()
 console = Console()
 

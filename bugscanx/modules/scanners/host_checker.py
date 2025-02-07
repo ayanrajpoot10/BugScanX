@@ -3,7 +3,7 @@ import ssl
 import sys
 import socket
 import multithreading
-from bugscanx.modules import *
+from bugscanx.utils import *
 
 class BugScanner(multithreading.MultiThreadRequest):
 	threads: int

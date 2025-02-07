@@ -4,7 +4,7 @@ import socket
 import threading
 from rich.console import Console
 from collections import defaultdict
-from bugscanx.modules import get_input
+from bugscanx.utils import get_input
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 file_write_lock = threading.Lock()

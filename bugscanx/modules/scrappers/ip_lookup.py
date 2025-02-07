@@ -6,9 +6,9 @@ import threading
 from queue import Queue
 from bs4 import BeautifulSoup
 from colorama import Fore, init
-from bugscanx.modules import *
+from bugscanx.utils import *
 from concurrent.futures import ThreadPoolExecutor
-from bugscanx.modules.utils.http_utils import USER_AGENTS, EXTRA_HEADERS
+from bugscanx.utils.http_utils import USER_AGENTS, EXTRA_HEADERS
 
 init(autoreset=True)
 

@@ -68,7 +68,6 @@ class AnimationThread:
         self.stop_event.set()
         self.thread.join()
 
-
 def update_package(package_name):
     animation = AnimationThread("Updating")
     animation.start()

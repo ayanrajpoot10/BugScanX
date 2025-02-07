@@ -4,11 +4,11 @@ from tqdm import tqdm
 from pathlib import Path
 from colorama import Fore
 from threading import Lock
-from bugscanx.modules import *
+from bugscanx.utils import *
 from rich.console import Console
 from bugscanx.modules.scanners import file_manager
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from bugscanx.modules.utils.utils import SUBSCAN_TIMEOUT, EXCLUDE_LOCATIONS
+from bugscanx.utils.utils import SUBSCAN_TIMEOUT, EXCLUDE_LOCATIONS
 
 file_write_lock = Lock()
 console = Console()
@@ -38,7 +38,7 @@ def get_cidrs_from_input():
         ip_list.extend([str(ip) for ip in network.hosts()])
     return ip_list
 
-def get_scan_inputs():
+def get_ip_scan_inputs():
     while True:
         input_choice = get_input(prompt="\n input 1 for manual CIDR input or 2 for file input", validator=choice_validator).lower()
         
@@ -79,7 +79,7 @@ def check_http_response(host, port, method):
     except requests.exceptions.RequestException:
         return None
 
-def perform_scan(hosts, ports, output_file, threads, method):
+def perform_ip_scan(hosts, ports, output_file, threads, method):
     clear_screen()
     print(Fore.GREEN + f" Scanning using HTTP method: {method}...")
 

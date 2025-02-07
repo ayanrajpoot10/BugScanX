@@ -1,6 +1,6 @@
 import dns.resolver
 import dns.reversename
-from bugscanx.modules import *
+from bugscanx.utils import *
 from colorama import Fore, init
 init(autoreset=True)
 

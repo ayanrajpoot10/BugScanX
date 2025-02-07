@@ -2,7 +2,7 @@ import socket
 import threading
 from colorama import init
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from bugscanx.modules import get_input
+from bugscanx.utils import get_input
 from rich.console import Console
 from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
 

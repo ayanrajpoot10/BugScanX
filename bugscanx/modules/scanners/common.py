@@ -1,7 +1,6 @@
 from pathlib import Path
 from colorama import Fore
-from bugscanx.modules import get_input, not_empty_validator
-
+from bugscanx.utils import get_input, not_empty_validator
 
 def file_manager(start_dir, max_up_levels=None):
     current_dir = Path(start_dir).resolve()

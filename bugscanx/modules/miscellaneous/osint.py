@@ -1,9 +1,7 @@
-import ssl
-import socket
 import requests
 import concurrent
 from rich.table import Table
-from bugscanx.modules import get_input
+from bugscanx.utils import get_input
 from rich.console import Console
 from colorama import Style as colorama_Style, init
 from requests.exceptions import RequestException

@@ -6,7 +6,7 @@ from colorama import Fore
 from threading import Lock
 from bugscanx.modules.scanners import file_manager
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from bugscanx.modules import clear_screen, get_input, not_empty_validator, digit_validator, SUBSCAN_TIMEOUT, EXCLUDE_LOCATIONS
+from bugscanx.utils import clear_screen, get_input, not_empty_validator, digit_validator, SUBSCAN_TIMEOUT, EXCLUDE_LOCATIONS
 
 FILE_WRITE_LOCK = Lock()
 def read_file(file_path):
