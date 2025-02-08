@@ -129,10 +129,9 @@ def process_domain(domain, output_file, sources):
         for future in as_completed(futures):
             subdomains.update(future.result())
 
-    console.print(f"\n Completed {domain} - {len(subdomains)} subdomains found", style="bold green")
+    console.print(f"\n Completed {domain} - {len(subdomains)} found", style="bold green")
     
     with open(output_file, "a", encoding="utf-8") as file:
-        file.write(f"\n# Subdomains for {domain}\n")
         for subdomain in sorted(subdomains):
             if is_valid_domain(subdomain):
                 file.write(f"{subdomain}\n")
