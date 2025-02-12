@@ -2,6 +2,7 @@ import os
 import ssl
 import sys
 import socket
+import json
 import multithreading
 from bugscanx.utils import *
 
@@ -117,26 +118,100 @@ class DirectScanner(BugScanner):
             self.task_success(data)
             self.log_info(**data)
 
-class ProxyScanner(DirectScanner):
-	proxy = []
+class ProxyScanner(BugScanner):
+    proxy_list = []
+    port_list = []
+    target = ''
+    method = 'GET'
+    path = '/'
+    protocol = 'HTTP/1.1'
+    payload = ''
+    bug = ''
 
-	def log_replace(self, *args):
-		super().log_replace(':'.join(self.proxy), *args)
+    def log_info(self, proxy_host_port, response_lines, color):
+        CC = self.logger.special_chars['CC']
+        color_code = self.logger.special_chars.get(color, '')
+        status_code = response_lines[0].split(' ')[1] if response_lines and len(response_lines[0].split(' ')) > 1 else 'N/A'
+        if status_code == 'N/A':
+             return
+        message = f"{color_code}{proxy_host_port.ljust(32)} {status_code} {' -- '.join(response_lines)}{CC}"
+        super().log(message)
 
-	def request(self, *args, **kwargs):
-		proxy = self.get_url(self.proxy[0], self.proxy[1])
+    def get_task_list(self):
+        for proxy_host in self.filter_list(self.proxy_list):
+            for port in self.filter_list(self.port_list):
+                yield {
+                    'proxy_host': proxy_host,
+                    'port': port,
+                }
 
-		return super().request(*args, proxies={'http': proxy, 'https': proxy}, **kwargs)
+    def init(self):
+        super().init()
+        self.log_info('Proxy:Port', ['Code'], 'G1')
+        self.log_info('----------', ['----'], 'G1')
+        self.log_replace("Initializing scan...")
 
-	def task(self, payload):
-		method = payload['method']
-		host = payload['host']
-		port = payload['port']
+    def task(self, payload):
+        proxy_host = payload['proxy_host']
+        port = payload['port']
+        proxy_host_port = f"{proxy_host}:{port}"
+        response_lines = []
+        success = False
 
-		if not host:
-			return
+        formatted_payload = (
+            self.payload
+            .replace('[method]', self.method)
+            .replace('[path]', self.path)
+            .replace('[protocol]', self.protocol)
+            .replace('[host]', self.target)
+            .replace('[bug]', self.bug if self.bug else '')
+            .replace('[crlf]', '\r\n')
+            .replace('[cr]', '\r')
+            .replace('[lf]', '\n')
+        )
 
-		super().task(payload)
+        try:
+            with socket.create_connection((proxy_host, int(port)), timeout=3) as conn:
+                conn.sendall(formatted_payload.encode())
+                conn.settimeout(3)
+                data = b''
+                while True:
+                    chunk = conn.recv(1024)
+                    if not chunk:
+                        break
+                    data += chunk
+                    if b'\r\n\r\n' in data:
+                        break
+                
+                response = data.decode(errors='ignore').split('\r\n\r\n')[0]
+                response_lines = [line.strip() for line in response.split('\r\n') if line.strip()]
+                
+                if response_lines and ' 101 ' in response_lines[0]:
+                    success = True
+
+        # except socket.timeout:
+        #     response_lines = ['Timeout']
+        # except ConnectionRefusedError:
+        #     response_lines = ['Connection Refused']
+        except Exception:
+             pass
+            # response_lines = [f'Error: {str(e)}']
+        finally:
+            if 'conn' in locals():
+                conn.close()
+
+        color = 'G1' if success else 'W2'
+        self.log_info(proxy_host_port, response_lines, color)
+        self.log_replace(f"Scanned: {self._task_list_scanned_total}/{self._task_list_total}")
+        
+        if success:
+            self.task_success({
+                'proxy_host': proxy_host,
+                'proxy_port': port,
+                'response_lines': response_lines,
+                'target': self.target
+            })
+
 
 class SSLScanner(BugScanner):
 	host_list = []
@@ -261,67 +336,125 @@ def read_hosts(filename):
             yield line.strip()
 
 def get_user_input():
-	filename = get_input(prompt="\n Enter the filename",validator=file_path_validator,completer=completer)
-	mode = create_prompt("list", " Enter the mode", "selection", choices=["direct", "proxy", "ssl", "udp"])
-	#mode = get_input(prompt=" Enter the mode (direct, proxy, ssl)",default="direct",validator=not_empty_validator)
-	method_list = ""
-	port_list = get_input(prompt=" Enter the port list",default="80",validator=digit_validator)
-	proxy = ""
-	output = get_input(prompt=" Enter the output file name",default=f"result_{os.path.basename(filename)}",validator=not_empty_validator)
-	threads = get_input(prompt=" Enter the number of threads",default= "50",validator=digit_validator)
+    mode = create_prompt("list", " Select the mode", "selection", choices=["direct", "proxy", "ssl", "udp"])
+    if mode == 'direct':
+        filename = get_input("\n Enter the filename", validator=file_path_validator, completer=completer)
+        port_list = get_input(" Enter the port list", default="80", validator=digit_validator)
+        output = get_input(" Enter the output file name",default=f"result_{os.path.basename(filename)}", validator=not_empty_validator)
+        threads = get_input(" Enter the number of threads", default= "50", validator=digit_validator)
+        method_list = create_prompt("list", " select the http method", "selection", choices=["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"])
+        return{
+            'filename': filename,
+            'method_list': method_list,
+            'port_list': port_list,
+            'output': output,
+            'threads': threads,
+            'mode': mode
+        }
+    elif mode == 'proxy':
+        proxy_file = get_input(" Enter the file name of proxy file", validator=file_path_validator, completer=completer)
+        target_url = get_input(" Enter target url", default="in1.wstunnel.site")
+        method = get_input(" Enter HTTP method", default="GET")
+        path = get_input(" Enter path", default="/")
+        protocol = get_input(" Enter protocol", default="HTTP/1.1")
+        # Default payload includes WebSocket handshake headers
+        default_payload = (
+            "[method] [path] [protocol][crlf]"
+            "Host: [host][crlf]"
+            "Connection: Upgrade[crlf]"
+            "Upgrade: websocket[crlf][crlf]"
+        )
+        payload = get_input(" Enter payload", default=default_payload)
+        port_list = get_input(" Enter the port list", default="80", validator=digit_validator)
+        output = get_input(" Enter the output file name", default=f"result_{os.path.basename(proxy_file)}", validator=not_empty_validator)
+        threads = get_input(" Enter the number of threads", default="50", validator=digit_validator)
+        bug = get_input(" Enter bug (optional)", default="")
+        return {
+            'proxy_file': proxy_file,
+            'output': output,
+            'threads': threads,
+            'target_url': target_url,
+            'method': method,
+            'path': path,
+            'protocol': protocol,
+            'bug': bug,
+            'payload': payload,
+            'port_list': port_list,
+            'mode': mode
+        }
 
-	if mode == 'direct':
-		method_list = create_prompt("list", " Enter the method list", "selection", choices=["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"])
-		#method_list = get_input(prompt=" Enter the method list (comma-separated)",default="HEAD",validator=not_empty_validator)
-	elif mode == 'proxy':
-		proxy = get_input(prompt=" Enter the proxy (host:port)",validator=not_empty_validator)
-
-	return {
-		'filename': filename,
-		'mode': mode,
-		'method_list': method_list,
-		'port_list': port_list,
-		'proxy': proxy,
-		'output': output,
-		'threads': threads,
-	}
+    elif mode == 'ssl':
+        filename = get_input("\n Enter the filename", validator=file_path_validator, completer=completer)
+        output = get_input(" Enter the output file name",default=f"result_{os.path.basename(filename)}", validator=not_empty_validator)
+        threads = get_input(" Enter the number of threads", default= "50", validator=digit_validator)
+        return{
+            'filename': filename,
+            'output': output,
+            'threads': threads,
+            'mode': mode
+        }
+    
+    elif mode == 'udp':
+        filename = get_input("\n Enter the filename", validator=file_path_validator, completer=completer)
+        output = get_input(" Enter the output file name",default=f"result_{os.path.basename(filename)}", validator=not_empty_validator)
+        threads = get_input(" Enter the number of threads", default= "50", validator=digit_validator)
+        return{
+            'filename': filename,
+            'output': output,
+            'threads': threads,
+            'mode': mode
+        }
 
 def main():
-	user_input = get_user_input()
+    user_input = get_user_input()
 
-	method_list = user_input['method_list'].split(',')
-	host_list = read_hosts(user_input['filename'])
-	port_list = user_input['port_list'].split(',')
-	proxy = user_input['proxy'].split(':')
+    if user_input['mode'] == 'direct':
+        method_list = user_input['method_list'].split(',')
+        host_list = read_hosts(user_input['filename'])
+        port_list = user_input['port_list'].split(',')
 
-	if user_input['mode'] == 'direct':
-		scanner = DirectScanner()
+        scanner = DirectScanner()
+        scanner.method_list = method_list
+        scanner.host_list = host_list
+        scanner.port_list = port_list
 
-	elif user_input['mode'] == 'ssl':
-		scanner = SSLScanner()
+    elif user_input['mode'] == 'proxy':
+        proxy_list = list(read_hosts(user_input['proxy_file']))
+        port_list = user_input['port_list'].split(',')
 
-	elif user_input['mode'] == 'proxy':
-		if not proxy or len(proxy) != 2:
-			sys.exit('--proxy host:port')
+        scanner = ProxyScanner()
+        scanner.proxy_list = proxy_list
+        scanner.target = user_input['target_url']
+        scanner.method = user_input['method']
+        scanner.path = user_input['path']
+        scanner.protocol = user_input['protocol']
+        scanner.bug = user_input['bug']
+        scanner.payload = user_input['payload']
+        scanner.port_list = port_list
 
-		scanner = ProxyScanner()
-		scanner.proxy = proxy
+    elif user_input['mode'] == 'ssl':
+        host_list = read_hosts(user_input['filename'])
 
-	elif user_input['mode'] == 'udp':
-		scanner = UdpScanner()
-		scanner.udp_server_host = 'bugscanner.tppreborn.my.id'
-		scanner.udp_server_port = '8853'
+        scanner = SSLScanner()
+        scanner.host_list = host_list
 
-	else:
-		sys.exit('Not Available!')
 
-	scanner.method_list = method_list
-	scanner.host_list = host_list
-	scanner.port_list = port_list
-	scanner.threads = int(user_input['threads'])
-	scanner.start()
+    elif user_input['mode'] == 'udp':
+        host_list = read_hosts(user_input['filename'])
+        scanner = UdpScanner()
+        scanner.host_list = host_list
+        scanner.udp_server_host = 'bugscanner.tppreborn.my.id'
+        scanner.udp_server_port = '8853'
 
-	if user_input['output']:
-		with open(user_input['output'], 'w+') as file:
-			file.write('\n'.join([str(x) for x in scanner.success_list()]) + '\n')
+    else:
+        sys.exit('Not Available!')
 
+    scanner.threads = int(user_input['threads'])
+    scanner.start()
+
+    if user_input['output']:
+        with open(user_input['output'], 'w+') as file:
+            if user_input['mode'] == 'proxy':
+                json.dump(scanner.success_list(), file, indent=2)
+            else:
+                file.write('\n'.join([str(x) for x in scanner.success_list()]) + '\n')

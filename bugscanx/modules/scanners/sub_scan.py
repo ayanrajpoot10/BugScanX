@@ -18,7 +18,7 @@ def read_file(file_path):
         return []
 
 def get_scan_inputs():
-    selected_file = file_manager(Path('.'), max_up_levels=3)
+    selected_file = file_manager(Path('.'))
     hosts = read_file(selected_file)
     default_output = f"results_{selected_file.stem}.txt"
     output_file = get_input(" Enter output file name", default=default_output, validator=not_empty_validator)
@@ -33,13 +33,18 @@ def check_http_response(host, port, timeout=SUBSCAN_TIMEOUT, exclude_locations=E
     exclude_set = set(exclude_locations) if exclude_locations else set()
     
     try:
-        response = requests.head(url, timeout=timeout, allow_redirects=True)
-        location = response.headers.get('Location', '')
-        if exclude_set and any(exclude in location for exclude in exclude_set):
-            return None
+        response = requests.head(url, timeout=timeout, allow_redirects=False)
+        status_code = response.status_code
+        server_header = response.headers.get('Server', 'N/A')
+
+        if status_code == 302:
+            location = response.headers.get('Location', '').strip()
+            if exclude_set and any(exclude.lower() in location.lower() for exclude in exclude_set):
+                return None
 
         ip_address = socket.gethostbyname(host)
-        return response.status_code, response.headers.get('Server', 'N/A'), port, ip_address, host
+        return status_code, server_header, port, ip_address, host
+
     except (requests.RequestException, socket.gaierror, socket.timeout):
         return None
 

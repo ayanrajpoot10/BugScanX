@@ -43,7 +43,7 @@ def get_ip_scan_inputs():
         input_choice = get_input(prompt="\n input 1 for manual CIDR input or 2 for file input", validator=choice_validator).lower()
         
         if input_choice == '2':
-            selected_file = file_manager(Path.cwd(), max_up_levels=3)
+            selected_file = file_manager(Path('.'))
             if selected_file:
                 hosts = get_cidrs_from_file(selected_file)
                 if hosts:
@@ -83,12 +83,12 @@ def perform_ip_scan(hosts, ports, output_file, threads, method):
     clear_screen()
     print(Fore.GREEN + f" Scanning using HTTP method: {method}...")
 
-    headers = f"{Fore.GREEN}{'Code':<4}{Fore.RESET} {Fore.CYAN}{'Server':<15}{Fore.RESET} {Fore.YELLOW}{'Port':<5}{Fore.RESET} {Fore.MAGENTA}{'IP Address':<15}{Fore.RESET} {Fore.LIGHTBLUE_EX}{'Host'}{Fore.RESET}"
-    separator = f"{Fore.GREEN}{'----':<4}{Fore.RESET} {Fore.CYAN}{'------':<15}{Fore.RESET} {Fore.YELLOW}{'----':<5}{Fore.RESET} {Fore.MAGENTA}{'---------':<15}{Fore.RESET} {Fore.LIGHTBLUE_EX}{'----'}{Fore.RESET}"
+    headers = f"{Fore.GREEN}{'Code':<4}{Fore.RESET} {Fore.CYAN}{'Server':<15}{Fore.RESET} {Fore.YELLOW}{'Port':<5}{Fore.RESET} {Fore.MAGENTA}{'IP Address'}{Fore.RESET}"
+    separator = f"{Fore.GREEN}{'----':<4}{Fore.RESET} {Fore.CYAN}{'------':<15}{Fore.RESET} {Fore.YELLOW}{'----':<5}{Fore.RESET} {Fore.MAGENTA}{'---------'}{Fore.RESET}"
     
     with open(output_file, 'w') as file:
-        file.write(f"{'Code':<4} {'Server':<15} {'Port':<5} {'IP Address':<15} {'Host'}\n")
-        file.write(f"{'----':<4} {'------':<15} {'----':<5} {'---------':<15} {'----'}\n")
+        file.write(f"{'Code':<4} {'Server':<15} {'Port':<5} {'IP Address'}\n")
+        file.write(f"{'----':<4} {'------':<15} {'----':<5} {'---------'}\n")
 
     print(headers)
     print(separator)
@@ -106,12 +106,12 @@ def perform_ip_scan(hosts, ports, output_file, threads, method):
             result = future.result()
             if result:
                 responded += 1
-                code, server, port, ip_address, host = result
-                row = f"{Fore.GREEN}{code:<4}{Fore.RESET} {Fore.CYAN}{server:<15}{Fore.RESET} {Fore.YELLOW}{port:<5}{Fore.RESET} {Fore.MAGENTA}{ip_address:<15}{Fore.RESET} {Fore.LIGHTBLUE_EX}{host}{Fore.RESET}"
+                code, server, port, ip_address = result
+                row = f"{Fore.GREEN}{code:<4}{Fore.RESET} {Fore.CYAN}{server:<15}{Fore.RESET} {Fore.YELLOW}{port:<5}{Fore.RESET} {Fore.MAGENTA}{ip_address}{Fore.RESET}"
                 pbar.write(row)
                 with file_write_lock:
                     with open(output_file, 'a') as file:
-                        file.write(f"{code:<4} {server:<15} {port:<5} {ip_address:<15} {host}\n")
+                        file.write(f"{code:<4} {server:<15} {port:<5} {ip_address}\n")
             pbar.update(1)
 
     print(f"\n\n{Fore.GREEN} Scan completed! {responded}/{scanned} hosts responded.")

@@ -10,22 +10,23 @@ def show_help():
 
 ## Features Overview
 
-1. **HOST SCANNER (Option 1)**
+1. **HOST SCANNER PRO (Option 1)**
    - Perform host scans using a TXT file as input.
    - Customize scans with options like specific ports and methods (direct, SSL, proxy, and UDP).
    - In direct mode, support for various HTTP methods (e.g., GET, HEAD, PATCH).
    - Efficient multithreading for scanning multiple hosts simultaneously.
 
 2. **SUB SCANNER (Option 2)**
-   - Simplified host scanning for beginners.
+   - Simplified host scanning for beginners, you can consider it as lite version of option 1.
    - Use an interactive file manager to select a TXT file and initiate scans effortlessly.
 
 3. **CIDR SCANNER (Option 3)**
-   - Scan IP ranges using CIDR notation.
+   - Scan IP ranges using CIDR blocks as input.
    - Provides similar functionality to Option 2, tailored for CIDR-based input.
 
 4. **SUBFINDER (Option 4)**
-   - Enumerate subdomains of a target domain with advanced techniques.
+   - Enumerate subdomains of a target domain from various sources.
+   - Also support txt file input for mass enumration.
    - Ideal for expanding reconnaissance efforts.
 
 5. **IP LOOKUP (Option 5)**
@@ -45,7 +46,7 @@ def show_help():
    - Useful for analyzing domain configurations and detecting misconfigurations.
 
 9. **OSINT (Option 9)**
-   - Gather publicly available information on a target using Open Source Intelligence techniques.
+   - Gather useful information on a target host.
    - Expand your reconnaissance capabilities.
 
 10. **HELP MENU (Option 10)**
@@ -69,7 +70,6 @@ def show_help():
     console.print(
         Panel(
             Markdown(help_text),
-            title="🐛 BugScanX Help Menu",
             border_style="bold green",
             expand=True,
         )

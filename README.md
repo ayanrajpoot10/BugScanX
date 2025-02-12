@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="./assets/logo.png" width="128" height="128"/>
+    <img src="https://raw.githubusercontent.com/Ayanrajpoot10/bugscan-x/refs/heads/main/assets/logo.png" width="128" height="128"/>
     <h1>BugScanX</h1>
     <p>A multifunctional tool for detecting SNI/HTTP bug hosts in free internet configurations.</p>
 </div>
