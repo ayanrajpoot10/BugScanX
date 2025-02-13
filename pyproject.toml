@@ -23,8 +23,8 @@ bugscanx = "bugscanx.main:main_menu"
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-packages = ["bugscanx"]
+[tool.setuptools.packages]
+find = {}
 
 [tool.setuptools.dynamic]
 version = { attr = "bugscanx.__version__.__version__" }
