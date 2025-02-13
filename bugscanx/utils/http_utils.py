@@ -58,3 +58,11 @@ EXTRA_HEADERS = {
     "X-Host": "127.0.0.1",
     "X-Forwarded-Host": "127.0.0.1"
 }
+
+# Some commonly used values
+
+SUBSCAN_TIMEOUT = 5
+
+SUBFINDER_TIMEOUT = 10
+
+EXCLUDE_LOCATIONS = ["https://jio.com/BalanceExhaust", "http://filter.ncell.com.np/nc"]

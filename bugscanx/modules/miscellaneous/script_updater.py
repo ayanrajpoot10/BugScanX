@@ -6,16 +6,13 @@ import threading
 import subprocess
 from rich.prompt import Confirm
 from rich.console import Console
-from importlib.metadata import version, PackageNotFoundError
+from importlib.metadata import version
 PACKAGE_NAME = 'bugscan-x'
 console = Console()
 
 def get_current_version(package_name):
     try:
         return version(package_name)
-    except PackageNotFoundError:
-        console.print(f"[bold red]Package '{package_name}' not found.[/bold red]")
-        return None
     except Exception as e:
         console.print(f"[bold red]Error retrieving version: {e}[/bold red]")
         return None
@@ -41,11 +38,11 @@ def get_latest_version(package_name):
 def is_update_available(package_name):
     current_version = get_current_version(package_name)
     if not current_version:
-        return False
+        return False, None, None
     latest_version = get_latest_version(package_name)
     if not latest_version:
-        return False
-    return latest_version > current_version
+        return False, current_version, None
+    return latest_version > current_version, current_version, latest_version
 
 class AnimationThread:
     def __init__(self, message):
@@ -97,14 +94,13 @@ def restart_program():
 def check_and_update():
     animation = AnimationThread("Checking for updates")
     animation.start()
-    update_available = is_update_available(PACKAGE_NAME)
+    update_available, current_version, latest_version = is_update_available(PACKAGE_NAME)
     animation.stop()
 
     if update_available:
-        console.print("[bold yellow]An update is available.[/bold yellow]")
+        console.print(f"[bold yellow]An update is available! Current version: {current_version}, Latest version: {latest_version}[/bold yellow]")
         if Confirm.ask("Do you want to update now?"):
             update_package(PACKAGE_NAME)
             restart_program()
     else:
-        console.print("[bold green]No updates available.[/bold green]")
-
+        console.print(f"[bold green]No updates available. You are on the latest version: {current_version}[/bold green]")

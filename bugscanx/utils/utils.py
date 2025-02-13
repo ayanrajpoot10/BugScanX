@@ -12,13 +12,18 @@ from prompt_toolkit.patch_stdout import patch_stdout
 
 console = Console()
 
-SUBSCAN_TIMEOUT = 5
-SUBFINDER_TIMEOUT = 10
-
-EXCLUDE_LOCATIONS = ["https://jio.com/BalanceExhaust", "http://filter.ncell.com.np/nc"]
-
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
+
+def banner():
+    banner_text = """
+    [bold red]╔╗[/bold red] [turquoise2]╦ ╦╔═╗╔═╗╔═╗╔═╗╔╗╔═╗ ╦[/turquoise2]
+    [bold red]╠╩╗[/bold red][turquoise2]║ ║║ ╦╚═╗║  ╠═╣║║║╔╩╦╝[/turquoise2]
+    [bold red]╚═╝[/bold red][turquoise2]╚═╝╚═╝╚═╝╚═╝╩ ╩╝╚╝╩ ╚═[/turquoise2]
+     [bold magenta]Dᴇᴠᴇʟᴏᴘᴇʀ: Aʏᴀɴ Rᴀᴊᴘᴏᴏᴛ
+      Tᴇʟᴇɢʀᴀᴍ: @BᴜɢSᴄᴀɴX[/bold magenta]
+    """
+    console.print(banner_text)
 
 def text_ascii(text, font="doom", color="white", shift=2):
     try:

@@ -1,33 +1,15 @@
 import requests
 import ipaddress
 from tqdm import tqdm
-from pathlib import Path
 from colorama import Fore
 from threading import Lock
 from bugscanx.utils import *
 from rich.console import Console
-from bugscanx.modules.scanners import file_manager
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from bugscanx.utils.utils import SUBSCAN_TIMEOUT, EXCLUDE_LOCATIONS
+from bugscanx.utils import SUBSCAN_TIMEOUT, EXCLUDE_LOCATIONS
 
 file_write_lock = Lock()
 console = Console()
-
-def get_cidrs_from_file(file_path):
-    try:
-        with open(file_path, 'r') as file:
-            cidr_list = [line.strip() for line in file if line.strip()]
-            ip_list = []
-            for cidr in cidr_list:
-                try:
-                    network = ipaddress.ip_network(cidr, strict=False)
-                    ip_list.extend([str(ip) for ip in network.hosts()])
-                except ValueError as e:
-                    console.print(f"[red] Invalid CIDR '{cidr}': {e}[/red]")
-            return ip_list
-    except Exception as e:
-        console.print(f"[red] Error reading file: {e}[/red]")
-        return []
 
 def get_cidrs_from_input():
     cidr_input = get_input(prompt=" Enter CIDR blocks (comma-separated)", validator=cidr_validator)
@@ -40,20 +22,9 @@ def get_cidrs_from_input():
 
 def get_ip_scan_inputs():
     while True:
-        input_choice = get_input(prompt="\n input 1 for manual CIDR input or 2 for file input", validator=choice_validator).lower()
-        
-        if input_choice == '2':
-            selected_file = file_manager(Path('.'))
-            if selected_file:
-                hosts = get_cidrs_from_file(selected_file)
-                if hosts:
-                    break
-                else:
-                    console.print("[red] No valid IPs found in the CIDR file. Please try again.[/red]")
-        elif input_choice == '1':
-            hosts = get_cidrs_from_input()
-            if hosts:
-                break
+        hosts = get_cidrs_from_input()
+        if hosts:
+            break
 
     ports_input = get_input(prompt=" Enter port list", default="80", validator=digit_validator)
     ports = ports_input.split(',') if ports_input else ["80"]

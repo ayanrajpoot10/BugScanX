@@ -5,6 +5,7 @@ import itertools
 import threading
 import subprocess
 import contextlib
+import importlib.util
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -41,19 +42,27 @@ def install_requirements():
         'prompt_toolkit': 'prompt_toolkit',
         'InquirerPy': 'InquirerPy'
     }
+    
+    missing_packages = [pkg for pkg, mod in required_packages.items() if importlib.util.find_spec(mod) is None]
+    if not missing_packages:
+        return
 
-    for package, import_name in required_packages.items():
-        try:
-            __import__(import_name)
-        except ImportError:
-            package_info = {'name': package, 'done': False}
-            t = threading.Thread(target=animate_installation, args=(package_info,))
-            t.start()
-            with hide_cursor():
-                subprocess.check_call([sys.executable, '-m', 'pip', 'install', package], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            package_info['done'] = True
-            t.join()
-            print(f"\033[32m {package} installed successfully.\033[0m")
+    threads = []
+    for package in missing_packages:
+        package_info = {'name': package, 'done': False}
+        t = threading.Thread(target=animate_installation, args=(package_info,))
+        threads.append((t, package_info))
+        t.start()
+        
+        with hide_cursor():
+            subprocess.check_call([sys.executable, '-m', 'pip', 'install', package], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        
+        package_info['done'] = True
+    
+    for t, _ in threads:
+        t.join()
+    
+    print("\033[32m All missing packages installed successfully.\033[0m")
 
 install_requirements()
 

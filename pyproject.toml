@@ -1,0 +1,32 @@
+[project]
+name = "bugscan-x"
+dynamic = ["version"]
+description = "Multifunctional tool for bug host hunting"
+readme = "README.md"
+authors = [{ name = "Ayan Rajpoot", email = "ayanrajpoot2004@gmail.com" }]
+license = { text = "MIT" }
+requires-python = ">=3.6"
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/Ayanrajpoot10/bugscan-x"
+
+[project.scripts]
+bugscanx = "bugscanx.main:main_menu"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["bugscanx"]
+
+[tool.setuptools.dynamic]
+version = { attr = "bugscanx.__version__.__version__" }
+
+[project.classifiers]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
