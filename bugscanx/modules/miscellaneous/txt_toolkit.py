@@ -1,7 +1,9 @@
 import os
-import re 
-from rich.console import Console
+import re
 from collections import defaultdict
+
+from rich.console import Console
+
 from bugscanx.utils import get_input
 
 console = Console()

@@ -1,74 +1,11 @@
 import os
 import sys
-import time
-import itertools
-import threading
-import subprocess
-import contextlib
-import importlib.util
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-@contextlib.contextmanager
-def hide_cursor():
-    sys.stdout.write("\033[?25l")
-    sys.stdout.flush()
-    try:
-        yield
-    finally:
-        sys.stdout.write("\033[?25h")
-        sys.stdout.flush()
-
-def animate_installation(package):
-    for c in itertools.cycle(['|', '/', '-', '\\']):
-        if package['done']:
-            break
-        sys.stdout.write(f'\r\033[33m Installing {package["name"]} {c}\033[0m')
-        sys.stdout.flush()
-        time.sleep(0.1)
-    sys.stdout.write('\r')
-
-def install_requirements():
-    required_packages = {
-        'requests': 'requests',
-        'rich': 'rich',
-        'colorama': 'colorama',
-        'pyfiglet': 'pyfiglet',
-        'loguru': 'loguru',
-        'tqdm': 'tqdm',
-        'beautifulsoup4': 'bs4',
-        'dnspython': 'dns',
-        'multithreading': 'multithreading',
-        'prompt_toolkit': 'prompt_toolkit',
-        'InquirerPy': 'InquirerPy'
-    }
-    
-    missing_packages = [pkg for pkg, mod in required_packages.items() if importlib.util.find_spec(mod) is None]
-    if not missing_packages:
-        return
-
-    threads = []
-    for package in missing_packages:
-        package_info = {'name': package, 'done': False}
-        t = threading.Thread(target=animate_installation, args=(package_info,))
-        threads.append((t, package_info))
-        t.start()
-        
-        with hide_cursor():
-            subprocess.check_call([sys.executable, '-m', 'pip', 'install', package], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        
-        package_info['done'] = True
-    
-    for t, _ in threads:
-        t.join()
-    
-    print("\033[32m All missing packages installed successfully.\033[0m")
-
-install_requirements()
-
-from bugscanx.utils import *
 from rich.console import Console
 from rich.traceback import install
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from bugscanx.utils import *
 
 console = Console()
 install(console=console, width=80, extra_lines=1, show_locals=False, max_frames=1)
@@ -99,7 +36,7 @@ def main_menu():
             else:
                 console.print(f"[{color}] [{key}] {desc}")
 
-        choice = get_input(prompt="\n [-]  Enter your choice", validator=digit_range_validator)
+        choice = get_input("\n [-]  Enter your choice", validator=digit_range_validator)
 
         if choice in menu_options:
             clear_screen()

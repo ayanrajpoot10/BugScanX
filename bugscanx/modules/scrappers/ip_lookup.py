@@ -1,14 +1,25 @@
-import time
-import random
-import requests
 import ipaddress
+import random
 import threading
+import time
 from queue import Queue
+from concurrent.futures import ThreadPoolExecutor
+
+import requests
 from bs4 import BeautifulSoup
 from colorama import Fore, init
-from bugscanx.utils import *
-from concurrent.futures import ThreadPoolExecutor
+
+from bugscanx.utils import (
+    get_input,
+    cidr_validator,
+    choice_validator,
+    not_empty_validator,
+    file_path_validator,
+    digit_validator,
+    completer
+)
 from bugscanx.utils.http_utils import USER_AGENTS, EXTRA_HEADERS
+
 
 init(autoreset=True)
 

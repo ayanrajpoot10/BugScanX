@@ -1,14 +1,17 @@
 import os
-import pyfiglet
 import ipaddress
-from rich.text import Text
+
+import pyfiglet
 from rich.console import Console
-from prompt_toolkit.styles import Style
+from rich.text import Text
+
 from prompt_toolkit import PromptSession
+from prompt_toolkit.styles import Style
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.validation import Validator, ValidationError
-from InquirerPy import prompt
 from prompt_toolkit.patch_stdout import patch_stdout
+
+from InquirerPy import prompt
 
 console = Console()
 
@@ -38,129 +41,88 @@ class UniversalValidator(Validator):
     def __init__(self, error_messages=None, validators=None):
         self.error_messages = error_messages or {}
         self.validators = validators or {}
+        
+        self.validation_methods = {
+            "not_empty": self._validate_not_empty,
+            "is_digit": self._validate_digit,
+            "file_path": self._validate_file_path,
+            "cidr": self._validate_cidr,
+            "choice": self._validate_choice,
+        }
 
     def validate(self, document):
         text = document.text.strip()
-        for validator, value in self.validators.items():
-            if validator == "not_empty" and not text:
-                self._raise_validation_error("not_empty", "Input cannot be empty.", 0)
-            elif validator == "is_digit":
-                self._validate_digit(text)
-            elif validator == "file_path" and not os.path.isfile(text):
-                self._raise_validation_error("file_path", "File path is invalid or file does not exist.", 0)
-        if "cidr" in self.validators:
-            self._validate_cidr(text)
-        if "choice" in self.validators:
-            self._validate_choice(text)
+        for validator in self.validators:
+            if validator in self.validation_methods:
+                self.validation_methods[validator](text)
 
-    def _raise_validation_error(self, validator, default_message, cursor_position):
-        raise ValidationError(
-            message=self.error_messages.get(validator, default_message),
-            cursor_position=cursor_position
-        )
+    def _raise_error(self, key, message, pos=0):
+        raise ValidationError(message=self.error_messages.get(key, message), cursor_position=pos)
+
+    def _validate_not_empty(self, text):
+        if not text:
+            self._raise_error("not_empty", "Input cannot be empty.")
 
     def _validate_digit(self, text):
-        values = text.split(',')
+        values = map(str.strip, text.split(','))
+        min_val, max_val = self.validators.get("min_value"), self.validators.get("max_value")
+
         for value in values:
-            value = value.strip()
             if not value.isdigit():
-                self._raise_validation_error("is_digit", "Each input must be a number.", 0)
-            num_value = int(value)
-            min_value = self.validators.get("min_value")
-            max_value = self.validators.get("max_value")
-            if min_value is not None and num_value < min_value:
-                self._raise_validation_error("min_value", f"Each input must be at least {min_value}.", 0)
-            if max_value is not None and num_value > max_value:
-                self._raise_validation_error("max_value", f"Each input must be at most {max_value}.", 0)
+                self._raise_error("is_digit", "Each input must be a number.")
+            num = int(value)
+            if min_val is not None and num < min_val:
+                self._raise_error("min_value", f"Each input must be at least {min_val}.")
+            if max_val is not None and num > max_val:
+                self._raise_error("max_value", f"Each input must be at most {max_val}.")
+
+    def _validate_file_path(self, text):
+        if not os.path.isfile(text):
+            self._raise_error("file_path", "File path is invalid or file does not exist.")
 
     def _validate_cidr(self, text):
-        values = text.split(',')
-        for value in values:
-            value = value.strip()
+        for value in map(str.strip, text.split(',')):
             try:
                 ipaddress.ip_network(value, strict=False)
             except ValueError:
-                self._raise_validation_error("cidr", "Each input must be a valid CIDR block.", 0)
+                self._raise_error("cidr", "Each input must be a valid CIDR block.")
 
     def _validate_choice(self, text):
-        choices = self.validators["choice"]
-        if text not in choices:
-            self._raise_validation_error("choice", f"Input must be one of the following: {', '.join(choices)}", 0)
+        if text not in self.validators.get("choice", []):
+            self._raise_error("choice", f"Input must be one of: {', '.join(self.validators['choice'])}")
 
-def get_input(prompt: str, default: str = None, validator=None, completer=None, multiline: bool = False):
-    default = default or ""
-    style = Style.from_dict({
-        'prompt': 'cyan',
-        'default': 'gray italic',
-        'input': 'bold',
-        'error': 'bg:#ff0000 #ffffff',
-    })
+def get_input(prompt, default="", validator=None, completer=None):
+    style = Style.from_dict({'prompt': 'cyan', 'input': 'bold'})
     session = PromptSession()
-    full_prompt = [('class:prompt', prompt), ('class:prompt', ': ')]
     try:
         with patch_stdout():
-            response = session.prompt(
-                full_prompt,
-                default=default,
-                completer=completer,
-                validator=validator,
-                validate_while_typing=True,
-                multiline=multiline,
-                style=style,
-            )
-        return response.strip() if response.strip() else default
-    except ValidationError as e:
-        print(f"\n{style['error']}{e.message}{style['error']}")
-        return None
+            return session.prompt([("class:prompt", f"{prompt}: ")], default=default, completer=completer,
+                                  validator=validator, validate_while_typing=True, style=style).strip() or default
     except KeyboardInterrupt:
-        print("\n Operation cancelled by the user.")
+        print("\nOperation cancelled by the user.")
         return None
 
 def get_txt_files_completer():
-    txt_files = [f for f in os.listdir('.') if f.endswith('.txt')]
-    return WordCompleter(txt_files, ignore_case=True)
+    return WordCompleter([f for f in os.listdir('.') if f.endswith('.txt')], ignore_case=True)
 
 completer = get_txt_files_completer()
 
-not_empty_validator = UniversalValidator(
-    error_messages={"not_empty": "Input cannot be empty."},
-    validators={"not_empty": True}
-)
+def create_validator(error_msgs, **validators):
+    return UniversalValidator(error_messages=error_msgs, validators=validators)
 
-digit_validator = UniversalValidator(
-    error_messages={"not_empty": "Input cannot be empty.", "is_digit": "Input must be a number."},
-    validators={"not_empty": True, "is_digit": True}
-)
-
-file_path_validator = UniversalValidator(
-    error_messages={"not_empty": "Input cannot be empty.", "file_path": "File path is invalid or file does not exist."},
-    validators={"not_empty": True, "file_path": True}
-)
-
-cidr_validator = UniversalValidator(
-    error_messages={"not_empty": "Input cannot be empty.", "cidr": "Invalid CIDR block."},
-    validators={"not_empty": True, "cidr": True}
-)
-
-choice_validator = UniversalValidator(
-    error_messages={"not_empty": "Input cannot be empty.", "choice": "Invalid choice."},
-    validators={"not_empty": True, "choice": ["1", "2"]}
-)
-
-digit_range_validator = UniversalValidator(
-    error_messages={
-        "not_empty": "Input cannot be empty.",
-        "is_digit": "Input must be a number.",
-        "min_value": "Input must be at least 1.",
-        "max_value": "Input must be at most 12."
-    },
-    validators={
-        "not_empty": True,
-        "is_digit": True,
-        "min_value": 1,
-        "max_value": 12
-    }
-)
+not_empty_validator = create_validator({"not_empty": "Input cannot be empty."}, not_empty=True)
+digit_validator = create_validator({"not_empty": "Input cannot be empty.", "is_digit": "Input must be a number."}, 
+                                   not_empty=True, is_digit=True)
+file_path_validator = create_validator({"not_empty": "Input cannot be empty.", "file_path": "File path is invalid."},
+                                       not_empty=True, file_path=True)
+cidr_validator = create_validator({"not_empty": "Input cannot be empty.", "cidr": "Invalid CIDR block."},
+                                  not_empty=True, cidr=True)
+choice_validator = create_validator({"not_empty": "Input cannot be empty.", "choice": "Invalid choice."},
+                                    not_empty=True, choice=["1", "2"])
+digit_range_validator = create_validator({
+    "not_empty": "Input cannot be empty.", "is_digit": "Input must be a number.",
+    "min_value": "Input must be at least 1.", "max_value": "Input must be at most 12."
+}, not_empty=True, is_digit=True, min_value=1, max_value=12)
 
 def create_prompt(prompt_type, message, name, **kwargs):
     question = {

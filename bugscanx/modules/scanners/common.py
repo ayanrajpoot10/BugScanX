@@ -1,5 +1,7 @@
 from pathlib import Path
+
 from colorama import Fore
+
 from bugscanx.utils import get_input, not_empty_validator
 
 def file_manager(start_dir):

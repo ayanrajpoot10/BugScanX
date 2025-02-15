@@ -1,10 +1,13 @@
+import concurrent.futures
+
 import requests
-import concurrent
-from rich.table import Table
-from bugscanx.utils import get_input
-from rich.console import Console
-from colorama import Style as colorama_Style, init
 from requests.exceptions import RequestException
+
+from colorama import init, Style as colorama_Style
+from rich.console import Console
+from rich.table import Table
+
+from bugscanx.utils import get_input
 
 init(autoreset=True)
 console = Console()

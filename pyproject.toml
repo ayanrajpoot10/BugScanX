@@ -3,10 +3,23 @@ name = "bugscan-x"
 dynamic = ["version"]
 description = "Multifunctional tool for bug host hunting"
 readme = "README.md"
-authors = [{ name = "Ayan Rajpoot", email = "ayanrajpoot2004@gmail.com" }]
+author = "Ayan Rajpoot"
+author_email = "ayanrajpoot2004@gmail.com"
 license = { text = "MIT" }
 requires-python = ">=3.6"
-dependencies = []
+dependencies = [
+    "requests",
+    "rich",
+    "colorama",
+    "pyfiglet",
+    "loguru",
+    "tqdm",
+    "beautifulsoup4",
+    "dnspython",
+    "multithreading",
+    "prompt_toolkit",
+    "InquirerPy"
+]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -27,5 +40,4 @@ build-backend = "setuptools.build_meta"
 find = {}
 
 [tool.setuptools.dynamic]
-version = { attr = "bugscanx.__version__.__version__" }
-
+version = { attr = "bugscanx.__version__" }

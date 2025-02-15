@@ -1,13 +1,15 @@
-import os
-import sys
-import time
 import itertools
-import threading
+import os
 import subprocess
-from rich.prompt import Confirm
-from rich.console import Console
+import sys
+import threading
+import time
 from importlib.metadata import version
-PACKAGE_NAME = 'bugscan-x'
+
+from rich.console import Console
+from rich.prompt import Confirm
+
+PACKAGE_NAME = "bugscan-x"
 console = Console()
 
 def get_current_version(package_name):

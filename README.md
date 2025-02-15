@@ -11,9 +11,6 @@
     <a href="https://github.com/Ayanrajpoot10/Bugscan-x/network/members">
         <img src="https://img.shields.io/github/forks/Ayanrajpoot10/Bugscan-x?style=flat" alt="GitHub forks"/>
     </a>
-    <a href="https://github.com/Ayanrajpoot10/Bugscan-x/issues">
-        <img src="https://img.shields.io/github/issues/Ayanrajpoot10/Bugscan-x?style=flat" alt="GitHub issues"/>
-    </a>
     <a href="https://github.com/Ayanrajpoot10/Bugscan-x/blob/main/LICENSE">
         <img src="https://img.shields.io/github/license/Ayanrajpoot10/Bugscan-x?style=flat" alt="License"/>
     </a>
@@ -21,10 +18,6 @@
         <img src="https://static.pepy.tech/badge/bugscan-x" alt="PyPI Downloads"/>
     </a>
 </p>
-<!-- 
-<p align="center">
-    <img src="https://img.shields.io/github/v/release/Ayanrajpoot10/Bugscan-x?style=flat" alt="Version">
-</p> -->
 
 ##  **Features**
 

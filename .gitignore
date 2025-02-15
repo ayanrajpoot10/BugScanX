@@ -5,7 +5,7 @@ __pycache__/
 
 # My Data
 my_data/
-.message.json
+.message.txt
 
 # C extensions
 *.so

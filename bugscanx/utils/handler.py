@@ -12,8 +12,6 @@ def run_sub_scan():
 def run_ip_scan():
     from bugscanx.modules.scanners import ip_scan
     hosts, ports, output_file, threads, method = ip_scan.get_ip_scan_inputs()
-    if hosts is None: 
-        return
     ip_scan.perform_ip_scan(hosts, ports, output_file, threads, method)
 
 def run_sub_finder():

@@ -1,11 +1,23 @@
-import re
 import random
+import re
+from datetime import datetime, timedelta
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 import requests
 from bs4 import BeautifulSoup
 from rich.console import Console
-from datetime import datetime, timedelta
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from bugscanx.utils import *
+
+from bugscanx.utils import (
+    get_input,
+    choice_validator,
+    file_path_validator,
+    not_empty_validator,
+    completer,
+    HEADERS,
+    USER_AGENTS,
+    SUBFINDER_TIMEOUT
+)
+
 session = requests.Session()
 console = Console()
 
@@ -140,7 +152,7 @@ def find_subdomains():
     input_choice = get_input("\n Enter 1 for single domain or 2 for txt file", validator=choice_validator)
     
     if input_choice == '1':
-        domain = get_input(prompt=" Enter the domain to find subdomains", validator=not_empty_validator)
+        domain = get_input(" Enter the domain to find subdomains", validator=not_empty_validator)
         if not is_valid_domain(domain):
             console.print(f"\n Invalid domain: {domain}", style="bold red")
             return
@@ -153,7 +165,7 @@ def find_subdomains():
         default_output_file = f"{domain}_subdomains.txt"
         
     elif input_choice == '2':
-        file_path = get_input(prompt=" Enter the path to the file containing domains", validator=file_path_validator, completer=completer)
+        file_path = get_input(" Enter the path to the file containing domains", validator=file_path_validator, completer=completer)
         with open(file_path, 'r') as file:
             domains_to_process = [line.strip() for line in file if line.strip() and is_valid_domain(line.strip())]
 
@@ -164,7 +176,7 @@ def find_subdomains():
         ]
         default_output_file = f"{file_path.rsplit('.', 1)[0]}_subdomains.txt"
 
-    output_file = get_input(prompt=" Enter the output file name", default=default_output_file, validator=not_empty_validator)
+    output_file = get_input(" Enter the output file name", default=default_output_file, validator=not_empty_validator)
 
     with ThreadPoolExecutor(max_workers=3) as executor:
         futures = {executor.submit(process_domain, domain, output_file, sources): domain for domain in domains_to_process}

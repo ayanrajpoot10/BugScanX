@@ -1,7 +1,10 @@
 import dns.resolver
 import dns.reversename
-from bugscanx.utils import *
+
 from colorama import Fore, init
+
+from bugscanx.utils import get_input
+
 init(autoreset=True)
 
 def resolve_a_record(domain):

@@ -1,10 +1,19 @@
+import json
 import os
+import socket
 import ssl
 import sys
-import socket
-import json
+
 import multithreading
-from bugscanx.utils import *
+
+from bugscanx.utils import (
+     get_input,
+     create_prompt,
+     digit_validator,
+     file_path_validator,
+     not_empty_validator,
+     completer
+)
 
 class BugScanner(multithreading.MultiThreadRequest):
 	threads: int

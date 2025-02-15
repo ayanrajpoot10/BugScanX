@@ -1,18 +1,27 @@
-import requests
 import ipaddress
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+import requests
 from tqdm import tqdm
 from colorama import Fore
-from threading import Lock
-from bugscanx.utils import *
 from rich.console import Console
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from bugscanx.utils import SUBSCAN_TIMEOUT, EXCLUDE_LOCATIONS
 
-file_write_lock = Lock()
+from bugscanx.utils import (
+    SUBSCAN_TIMEOUT,
+    EXCLUDE_LOCATIONS,
+    get_input,
+    clear_screen,
+    create_prompt,
+    digit_validator,
+    cidr_validator
+)
+
+file_write_lock = threading.Lock()
 console = Console()
 
 def get_cidrs_from_input():
-    cidr_input = get_input(prompt=" Enter CIDR blocks (comma-separated)", validator=cidr_validator)
+    cidr_input = get_input(" Enter CIDR blocks (comma-separated)", validator=cidr_validator)
     cidr_list = [cidr.strip() for cidr in cidr_input.split(',')]
     ip_list = []
     for cidr in cidr_list:
@@ -26,7 +35,7 @@ def get_ip_scan_inputs():
         if hosts:
             break
 
-    ports_input = get_input(prompt=" Enter port list", default="80", validator=digit_validator)
+    ports_input = get_input(" Enter port list", default="80", validator=digit_validator)
     ports = ports_input.split(',') if ports_input else ["80"]
 
     output_file = get_input(" Enter output file name", default="scan_results.txt")

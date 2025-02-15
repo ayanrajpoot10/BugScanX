@@ -1,12 +1,21 @@
 import socket
+from pathlib import Path
+from threading import Lock
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 import requests
 from tqdm import tqdm
-from pathlib import Path
 from colorama import Fore
-from threading import Lock
+
 from bugscanx.modules.scanners import file_manager
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from bugscanx.utils import clear_screen, get_input, not_empty_validator, digit_validator, SUBSCAN_TIMEOUT, EXCLUDE_LOCATIONS
+from bugscanx.utils import (
+    clear_screen,
+    get_input,
+    not_empty_validator,
+    digit_validator,
+    SUBSCAN_TIMEOUT,
+    EXCLUDE_LOCATIONS,
+)
 
 FILE_WRITE_LOCK = Lock()
 def read_file(file_path):
@@ -20,10 +29,10 @@ def read_file(file_path):
 def get_scan_inputs():
     selected_file = file_manager(Path('.'))
     hosts = read_file(selected_file)
-    default_output = f"results_{selected_file.stem}.txt"
-    output_file = get_input(" Enter output file name", default=default_output, validator=not_empty_validator)
     ports = get_input(" Enter ports (comma-separated)", default="80", validator=digit_validator)
     port_list = [port.strip() for port in ports.split(',') if port.strip().isdigit()]
+    default_output = f"results_{selected_file.stem}.txt"
+    output_file = get_input(" Enter output file name", default=default_output, validator=not_empty_validator)
     return hosts, port_list, output_file, 50
 
 def check_http_response(host, port, timeout=SUBSCAN_TIMEOUT, exclude_locations=EXCLUDE_LOCATIONS):
