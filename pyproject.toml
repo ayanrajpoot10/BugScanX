@@ -3,8 +3,7 @@ name = "bugscan-x"
 dynamic = ["version"]
 description = "Multifunctional tool for bug host hunting"
 readme = "README.md"
-author = "Ayan Rajpoot"
-author_email = "ayanrajpoot2004@gmail.com"
+authors = [{ name = "Ayan Rajpoot", email = "ayanrajpoot2004@gmail.com" }]
 license = { text = "MIT" }
 requires-python = ">=3.6"
 dependencies = [
