@@ -31,7 +31,7 @@ def run_open_port():
     open_port.open_port_checker()
 
 def run_dns_info():
-    from bugscanx.modules.scrappers import dns_info
+    from bugscanx.modules.miscellaneous import dns_info
     dns_info.main()
 
 def run_osint():

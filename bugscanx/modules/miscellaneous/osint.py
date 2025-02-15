@@ -3,13 +3,11 @@ import concurrent.futures
 import requests
 from requests.exceptions import RequestException
 
-from colorama import init, Style as colorama_Style
 from rich.console import Console
 from rich.table import Table
 
 from bugscanx.utils import get_input
 
-init(autoreset=True)
 console = Console()
 
 HTTP_METHODS = ["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"]
@@ -65,5 +63,3 @@ def osint_main():
             http_table.add_row(method, str(status_code), headers, "N/A", "N/A", "N/A")
 
     console.print(http_table)
-
-    print(colorama_Style.RESET_ALL)

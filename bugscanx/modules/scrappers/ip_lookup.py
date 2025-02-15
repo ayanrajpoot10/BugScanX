@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import requests
 from bs4 import BeautifulSoup
-from colorama import Fore, init
+from rich import print
 
 from bugscanx.utils import (
     get_input,
@@ -19,9 +19,6 @@ from bugscanx.utils import (
     completer
 )
 from bugscanx.utils.http_utils import USER_AGENTS, EXTRA_HEADERS
-
-
-init(autoreset=True)
 
 file_write_lock = threading.Lock()
 
@@ -72,7 +69,7 @@ def fetch_bing(ip):
 
 def extract_domains_for_ip(ip):
     domains = []
-    print(Fore.CYAN + f" Searching domains for IP: {ip}")
+    print(f"[cyan] Searching domains for IP: {ip}[cyan]")
     
     domains += fetch_rapiddns(ip)
     domains += fetch_yougetsignal(ip)
@@ -80,7 +77,7 @@ def extract_domains_for_ip(ip):
 
     domains = sorted(set(domains))
     
-    print(Fore.GREEN + f" Domains found for IP {ip}: {len(domains)}")
+    print(f"[green] Domains found for IP {ip}: {len(domains)}[/green]")
     
     return (ip, domains)
 
@@ -95,7 +92,7 @@ def save_results_to_file(results, output_file):
             f.write(f"Domains found for IP {ip}: {total_found}\n")
             for domain in domains:
                 f.write(f"{domain}\n")
-    print(Fore.GREEN + f"\n Saved! Current total domains found across processed IPs: {total_domains_found}")
+    print(f"[green]\n Saved! Current total domains found across processed IPs: {total_domains_found}[/green]")
 
 def process_cidr(cidr, ip_queue):
     try:
@@ -134,7 +131,7 @@ def Ip_lookup_menu():
 
     total_ips = ip_queue.qsize()
     if total_ips == 0:
-        print(Fore.RED + " No valid IPs/CIDRs to process.")
+        print("[bold red] No valid IPs/CIDRs to process.[/bold red]")
         return
 
     while True:
@@ -143,7 +140,7 @@ def Ip_lookup_menu():
         if 1 <= threads <= 5:
             break
         else:
-            print(Fore.RED + " Please enter a number between 1 and 5.")
+            print("[bold red] Please enter a number between 1 and 5.[/bold red]")
 
     results = []
     progress = 0
@@ -157,8 +154,8 @@ def Ip_lookup_menu():
 
             if i % 5 == 0 or i == total_ips:
                 percent_complete = (progress / total_ips) * 100
-                print(Fore.YELLOW + f"\r Progress: {progress}/{total_ips} IPs processed ({percent_complete:.2f}%)", end="")
+                print(f"[yellow]\r Progress: {progress}/{total_ips} IPs processed ({percent_complete:.2f}%)[/yellow]", end="")
                 save_results_to_file(results[-5:], output_file)
     
     print()
-    print(Fore.GREEN + "\n All IPs processed!")
+    print("[green]\n All IPs processed![/green]")

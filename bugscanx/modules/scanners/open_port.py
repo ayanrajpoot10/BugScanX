@@ -1,13 +1,12 @@
 import socket
 import threading
-from colorama import init
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from bugscanx.utils import get_input
 from rich.console import Console
 from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
 
 file_write_lock = threading.Lock()
-init(autoreset=True)
+
 console = Console()
 
 COMMON_PORTS = [

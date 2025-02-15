@@ -4,8 +4,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 from tqdm import tqdm
-from colorama import Fore
-from rich.console import Console
+from rich import print
 
 from bugscanx.utils import (
     SUBSCAN_TIMEOUT,
@@ -18,7 +17,6 @@ from bugscanx.utils import (
 )
 
 file_write_lock = threading.Lock()
-console = Console()
 
 def get_cidrs_from_input():
     cidr_input = get_input(" Enter CIDR blocks (comma-separated)", validator=cidr_validator)
@@ -61,10 +59,10 @@ def check_http_response(host, port, method):
 
 def perform_ip_scan(hosts, ports, output_file, threads, method):
     clear_screen()
-    print(Fore.GREEN + f" Scanning using HTTP method: {method}...")
+    print(f"[bold green]Scanning using HTTP method: {method}...\n[/bold green]")
 
-    headers = f"{Fore.GREEN}{'Code':<4}{Fore.RESET} {Fore.CYAN}{'Server':<15}{Fore.RESET} {Fore.YELLOW}{'Port':<5}{Fore.RESET} {Fore.MAGENTA}{'IP Address'}{Fore.RESET}"
-    separator = f"{Fore.GREEN}{'----':<4}{Fore.RESET} {Fore.CYAN}{'------':<15}{Fore.RESET} {Fore.YELLOW}{'----':<5}{Fore.RESET} {Fore.MAGENTA}{'---------'}{Fore.RESET}"
+    headers = (f"[green]{'Code':<4}[/green] [cyan]{'Server':<15}[/cyan] [yellow]{'Port':<5}[/yellow] [magenta]{'IP Address':<15}[/magenta]")  
+    separator = (f"[green]{'----':<4}[/green] [cyan]{'------':<15}[/cyan] [yellow]{'----':<5}[/yellow] [magenta]{'---------':<15}[/magenta]")  
     
     with open(output_file, 'w') as file:
         file.write(f"{'Code':<4} {'Server':<15} {'Port':<5} {'IP Address'}\n")
@@ -87,12 +85,12 @@ def perform_ip_scan(hosts, ports, output_file, threads, method):
             if result:
                 responded += 1
                 code, server, port, ip_address = result
-                row = f"{Fore.GREEN}{code:<4}{Fore.RESET} {Fore.CYAN}{server:<15}{Fore.RESET} {Fore.YELLOW}{port:<5}{Fore.RESET} {Fore.MAGENTA}{ip_address}{Fore.RESET}"
+                row = f"\033[32m{code:<4}\033[0m \033[36m{server:<15}\033[0m \033[33m{port:<5}\033[0m \033[35m{ip_address:<15}\033[0m"
                 pbar.write(row)
                 with file_write_lock:
                     with open(output_file, 'a') as file:
                         file.write(f"{code:<4} {server:<15} {port:<5} {ip_address}\n")
             pbar.update(1)
 
-    print(f"\n\n{Fore.GREEN} Scan completed! {responded}/{scanned} hosts responded.")
-    print(f" Results saved to {output_file}.{Fore.RESET}")
+    print(f"[bold green]\n Scan completed! {responded}/{scanned} IPs responded.[/bold green]")
+    print(f"[bold green] Results saved to {output_file}.[/bold green]")

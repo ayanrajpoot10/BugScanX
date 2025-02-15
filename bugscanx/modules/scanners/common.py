@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from colorama import Fore
+from rich import print
 
 from bugscanx.utils import get_input, not_empty_validator
 
@@ -14,13 +14,13 @@ def file_manager(start_dir):
 
         short_dir = "\\".join(current_dir.parts[-3:])
 
-        print(Fore.CYAN + f"\n Current Folder: {short_dir}" + Fore.RESET)
+        print(f"\n[cyan] Current Folder: {short_dir}[/cyan]")
 
         for idx, item in enumerate(directories + files, 1):
-            color = Fore.YELLOW if item.is_dir() else Fore.WHITE
-            print(f"  {idx}. {color}{item.name}{Fore.RESET}")
+            color = "yellow" if item.is_dir() else "white"
+            print(f"  {idx}. [{color}]{item.name}[/{color}]")
 
-        print(Fore.LIGHTBLUE_EX + "\n 0. Back to the previous folder")
+        print("\n[blue] 0. Back to the previous folder[/blue]")
 
         selection = get_input(" Enter the number or filename", validator=not_empty_validator)
 
@@ -28,7 +28,7 @@ def file_manager(start_dir):
             if current_dir != current_dir.parent:
                 current_dir = current_dir.parent
             else:
-                print(Fore.RED + " Already at the root directory.")
+                print("[bold red] Already at the root directory.[/bold red]")
             continue
 
         if selection.isdigit():
@@ -45,4 +45,4 @@ def file_manager(start_dir):
         if file_path.is_file() and file_path.suffix == '.txt':
             return file_path
 
-        print(Fore.RED + " Invalid selection. Please try again.")
+        print("[bold red] Invalid selection. Please try again.[/bold red]")
