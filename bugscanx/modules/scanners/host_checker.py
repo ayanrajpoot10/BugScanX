@@ -347,7 +347,7 @@ def read_hosts(filename):
 def get_user_input():
     mode = create_prompt("list", " Select the mode", "selection", choices=["direct", "proxy", "ssl", "udp"])
     if mode == 'direct':
-        filename = get_input("\n Enter the filename", validator=file_path_validator, completer=completer)
+        filename = get_input(" Enter the filename", validator=file_path_validator, completer=completer)
         port_list = get_input(" Enter the port list", default="80", validator=digit_validator)
         output = get_input(" Enter the output file name",default=f"result_{os.path.basename(filename)}", validator=not_empty_validator)
         threads = get_input(" Enter the number of threads", default= "50", validator=digit_validator)
@@ -393,7 +393,7 @@ def get_user_input():
         }
 
     elif mode == 'ssl':
-        filename = get_input("\n Enter the filename", validator=file_path_validator, completer=completer)
+        filename = get_input(" Enter the filename", validator=file_path_validator, completer=completer)
         output = get_input(" Enter the output file name",default=f"result_{os.path.basename(filename)}", validator=not_empty_validator)
         threads = get_input(" Enter the number of threads", default= "50", validator=digit_validator)
         return{
@@ -404,7 +404,7 @@ def get_user_input():
         }
     
     elif mode == 'udp':
-        filename = get_input("\n Enter the filename", validator=file_path_validator, completer=completer)
+        filename = get_input(" Enter the filename", validator=file_path_validator, completer=completer)
         output = get_input(" Enter the output file name",default=f"result_{os.path.basename(filename)}", validator=not_empty_validator)
         threads = get_input(" Enter the number of threads", default= "50", validator=digit_validator)
         return{
