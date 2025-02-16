@@ -6,16 +6,19 @@
 
 <p align="center">
     <a href="https://github.com/Ayanrajpoot10/Bugscan-x/stargazers">
-        <img src="https://img.shields.io/github/stars/Ayanrajpoot10/Bugscan-x?style=flat" alt="GitHub stars"/>
+        <img src="https://img.shields.io/github/stars/Ayanrajpoot10/Bugscan-x?style=for-the-badge" alt="GitHub stars"/>
     </a>
     <a href="https://github.com/Ayanrajpoot10/Bugscan-x/network/members">
-        <img src="https://img.shields.io/github/forks/Ayanrajpoot10/Bugscan-x?style=flat" alt="GitHub forks"/>
+        <img src="https://img.shields.io/github/forks/Ayanrajpoot10/Bugscan-x?style=for-the-badge" alt="GitHub forks"/>
     </a>
     <a href="https://github.com/Ayanrajpoot10/Bugscan-x/blob/main/LICENSE">
-        <img src="https://img.shields.io/github/license/Ayanrajpoot10/Bugscan-x?style=flat" alt="License"/>
+        <img src="https://img.shields.io/github/license/Ayanrajpoot10/Bugscan-x?style=for-the-badge" alt="License"/>
     </a>
     <a href="https://pepy.tech/projects/bugscan-x">
-        <img src="https://static.pepy.tech/badge/bugscan-x" alt="PyPI Downloads"/>
+        <img alt="PyPI - Downloads" src="https://img.shields.io/pypi/dm/bugscan-x?style=for-the-badge">
+    </a>
+    <a href="https://pypi.org/project/bugscan-x/">
+    <img src="https://img.shields.io/pypi/v/bugscan-x?label=Latest%20Version&style=for-the-badge" alt="Latest Version"/>
     </a>
 </p>
 
