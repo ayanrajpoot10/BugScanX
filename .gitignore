@@ -4,8 +4,8 @@ __pycache__/
 *$py.class
 
 # My Data
-my_data/
-.message.txt
+trash/
+*.txt
 
 # C extensions
 *.so
