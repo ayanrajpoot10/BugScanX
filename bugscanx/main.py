@@ -29,7 +29,6 @@ def main_menu():
     while True:
         clear_screen()
         banner()
-        display_message()
         for key, (desc, _, color) in menu_options.items():
             if int(key) < 10:
                 console.print(f"[{color}] [{key}]  {desc}")
@@ -40,10 +39,10 @@ def main_menu():
 
         if choice in menu_options:
             clear_screen()
-            text_ascii(menu_options[choice][0], font="calvin_s", color="bold magenta")
-            menu_options[choice][1]()
             if choice != '12':
-                console.input("[yellow]\n Press [bold]Enter[/bold] to continue...")
+                text_ascii(menu_options[choice][0], font="calvin_s", color="bold magenta")
+            menu_options[choice][1]()
+            console.input("[yellow]\n Press Enter to continue...")
 
 if __name__ == "__main__":
     main_menu()
