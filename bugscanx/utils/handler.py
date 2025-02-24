@@ -1,18 +1,14 @@
-def run_host_checker():
-    from bugscanx.modules.scanners import host_checker
-    host_checker.main()
+def run_host_scanner_pro():
+    from bugscanx.modules.scanners.pro import main_pro_scanner
+    main_pro_scanner.main()
 
-def run_sub_scan():
+def run_host_scanner():
     from bugscanx.modules.scanners import sub_scan
-    hosts, ports, output_file, threads, = sub_scan.get_scan_inputs()
-    if hosts is None:
-        return
-    sub_scan.perform_scan(hosts, ports, output_file, threads)
+    sub_scan.get_scan_inputs()
 
-def run_ip_scan():
+def run_cidr_scanner():
     from bugscanx.modules.scanners import ip_scan
-    hosts, ports, output_file, threads, method = ip_scan.get_ip_scan_inputs()
-    ip_scan.perform_ip_scan(hosts, ports, output_file, threads, method)
+    ip_scan.get_ip_scan_inputs()
 
 def run_sub_finder():
     from bugscanx.modules.scrappers import sub_finder
@@ -30,7 +26,7 @@ def run_open_port():
     from bugscanx.modules.scanners import open_port
     open_port.open_port_checker()
 
-def run_dns_info():
+def run_dns_records():
     from bugscanx.modules.miscellaneous import dns_info
     dns_info.main()
 

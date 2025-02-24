@@ -35,11 +35,7 @@ def check_http_methods(url):
 
 def osint_main():
     host = get_input("\n Enter the host (e.g., example.com)")
-    protocol = get_input("\n Enter the protocol (http or https)").lower()
-    if protocol not in ["http", "https"]:
-        console.print("[red]Invalid protocol. Please enter 'http' or 'https'.[/red]")
-        return
-
+    protocol = get_input(" Enter the protocol", "choice", choices=["http", "https"])
     url = f"{protocol}://{host}"
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:

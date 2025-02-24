@@ -11,12 +11,6 @@ from rich import print
 
 from bugscanx.utils import (
     get_input,
-    cidr_validator,
-    choice_validator,
-    not_empty_validator,
-    file_path_validator,
-    digit_validator,
-    completer
 )
 from bugscanx.utils.http_utils import USER_AGENTS, EXTRA_HEADERS
 
@@ -103,14 +97,14 @@ def process_cidr(cidr, ip_queue):
         print(f" Invalid CIDR block {cidr}: {e}")
 
 def Ip_lookup_menu():
-    input_choice = get_input("\n Enter 1 for manual CIDR input or 2 for file input", validator=choice_validator)
+    input_choice = get_input("\n Enter 1 for manual CIDR input or 2 for file input", "choice", choices=[1, 2])
     
     if input_choice == "1":
-        cidr_or_filename = get_input(" Enter an IP or CIDR", validator=cidr_validator)
+        cidr_or_filename = get_input(" Enter an IP or CIDR", rules=["required", "is_cidr"], errors={"required": "cannot be empty", "is_cidr": "'{}' is not valid CIDR notation"})
     else:
-        cidr_or_filename = get_input(" Enter the file path containing IPs/CIDRs", validator=file_path_validator, completer=completer)
+        cidr_or_filename = get_input(" Enter the file path containing IPs/CIDRs", "file")
     
-    output_file = get_input(" Enter the output file path", validator=not_empty_validator)
+    output_file = get_input(" Enter the output file path")
 
     ip_queue = Queue()
 
@@ -135,7 +129,7 @@ def Ip_lookup_menu():
         return
 
     while True:
-        threads_input = get_input(" Enter the number of threads to use (1-5)", validator=digit_validator)
+        threads_input = get_input(" Enter the number of threads to use (1-5)", "number")
         threads = int(threads_input)
         if 1 <= threads <= 5:
             break

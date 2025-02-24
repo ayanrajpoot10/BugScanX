@@ -5,21 +5,19 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
 from tqdm import tqdm
 from rich import print
+from pathlib import Path
 
 from bugscanx.utils import (
     SUBSCAN_TIMEOUT,
     EXCLUDE_LOCATIONS,
     get_input,
     clear_screen,
-    create_prompt,
-    digit_validator,
-    cidr_validator
 )
 
 file_write_lock = threading.Lock()
 
 def get_cidrs_from_input():
-    cidr_input = get_input(" Enter CIDR blocks (comma-separated)", validator=cidr_validator)
+    cidr_input = get_input("Enter cidr", "text", rules=["required", "is_cidr"], errors={"required": "not blank", "is_cidr": "'{}' is not valid CIDR notation"})
     cidr_list = [cidr.strip() for cidr in cidr_input.split(',')]
     ip_list = []
     for cidr in cidr_list:
@@ -28,21 +26,18 @@ def get_cidrs_from_input():
     return ip_list
 
 def get_ip_scan_inputs():
-    while True:
+    try:
         hosts = get_cidrs_from_input()
-        if hosts:
-            break
+        ports_input = get_input(" Enter port list", "number", default="80")
+        ports = ports_input.split(',')
+        output_file = get_input(" Enter output file name", default="scan_results.txt")
+        threads = int(get_input(" Enter number of threads", "number", default="50"))
+        http_method = get_input(" Select the http method", "choice", choices=["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"])
 
-    ports_input = get_input(" Enter port list", default="80", validator=digit_validator)
-    ports = ports_input.split(',') if ports_input else ["80"]
+        perform_ip_scan(hosts, ports, output_file, threads, http_method)
 
-    output_file = get_input(" Enter output file name", default="scan_results.txt")
-
-    threads = int(get_input(" Enter number of threads", default="50", validator=digit_validator))
-
-    http_method = create_prompt("list", " Select the http method", "selection", choices=["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"])
-
-    return hosts, ports, output_file, threads, http_method
+    except KeyboardInterrupt:
+        return
 
 def check_http_response(host, port, method):
     protocol = "https" if port in ['443', '8443'] else "http"
@@ -64,9 +59,11 @@ def perform_ip_scan(hosts, ports, output_file, threads, method):
     headers = (f"[green]{'Code':<4}[/green] [cyan]{'Server':<15}[/cyan] [yellow]{'Port':<5}[/yellow] [magenta]{'IP Address':<15}[/magenta]")  
     separator = (f"[green]{'----':<4}[/green] [cyan]{'------':<15}[/cyan] [yellow]{'----':<5}[/yellow] [magenta]{'---------':<15}[/magenta]")  
     
-    with open(output_file, 'w') as file:
-        file.write(f"{'Code':<4} {'Server':<15} {'Port':<5} {'IP Address'}\n")
-        file.write(f"{'----':<4} {'------':<15} {'----':<5} {'---------'}\n")
+    output_path = Path(output_file)
+    if not output_path.exists():
+        with open(output_file, 'a') as file:
+            file.write(f"{'Code':<4} {'Server':<15} {'Port':<5} {'IP Address'}\n")
+            file.write(f"{'----':<4} {'------':<15} {'----':<5} {'---------'}\n")
 
     print(headers)
     print(separator)

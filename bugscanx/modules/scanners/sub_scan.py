@@ -11,8 +11,6 @@ from bugscanx.modules.scanners import file_manager
 from bugscanx.utils import (
     clear_screen,
     get_input,
-    not_empty_validator,
-    digit_validator,
     SUBSCAN_TIMEOUT,
     EXCLUDE_LOCATIONS,
 )
@@ -27,13 +25,18 @@ def read_file(file_path):
         return []
 
 def get_scan_inputs():
-    selected_file = file_manager(Path('.'))
-    hosts = read_file(selected_file)
-    ports = get_input(" Enter ports (comma-separated)", default="80", validator=digit_validator)
-    port_list = [port.strip() for port in ports.split(',') if port.strip().isdigit()]
-    default_output = f"results_{selected_file.stem}.txt"
-    output_file = get_input(" Enter output file name", default=default_output, validator=not_empty_validator)
-    return hosts, port_list, output_file, 50
+    try:
+        selected_file = file_manager(Path('.'))
+        hosts = read_file(selected_file)
+        ports = get_input(" Enter ports (comma-separated)", "number", default="80")
+        port_list = [port.strip() for port in ports.split(',') if port.strip().isdigit()]
+        default_output = f"result_{selected_file.stem}.txt"
+        output_file = get_input(" Enter output file name", default=default_output)
+
+        perform_scan(hosts, port_list, output_file, 50)
+        
+    except KeyboardInterrupt:
+        return
 
 def check_http_response(host, port, timeout=SUBSCAN_TIMEOUT, exclude_locations=EXCLUDE_LOCATIONS):
     protocol = 'https' if port in ('443', '8443') else 'http'
@@ -64,9 +67,11 @@ def perform_scan(hosts, ports, output_file, threads):
     headers = (f"[green]{'Code':<4}[/green] [cyan]{'Server':<15}[/cyan] [yellow]{'Port':<5}[/yellow] [magenta]{'IP Address':<15}[/magenta] [blue]{'Host'}[/blue]")  
     separator = (f"[green]{'----':<4}[/green] [cyan]{'------':<15}[/cyan] [yellow]{'----':<5}[/yellow] [magenta]{'---------':<15}[/magenta] [blue]{'----'}[/blue]")  
     
-    with open(output_file, 'w') as file:
-        file.write(f"{'Code':<4} {'Server':<15} {'Port':<5} {'IP Address':<15} {'Host'}\n")
-        file.write(f"{'----':<4} {'------':<15} {'----':<5} {'---------':<15} {'----'}\n")
+    output_path = Path(output_file)
+    if not output_path.exists():
+        with open(output_file, 'a') as file:
+            file.write(f"{'Code':<4} {'Server':<15} {'Port':<5} {'IP Address':<15} {'Host'}\n")
+            file.write(f"{'----':<4} {'------':<15} {'----':<5} {'---------':<15} {'----'}\n")
 
     print(headers)
     print(separator)
@@ -94,3 +99,5 @@ def perform_scan(hosts, ports, output_file, threads):
 
     print(f"[bold green]\n Scan completed! {responded}/{scanned} hosts responded.[/bold green]")
     print(f"[bold green] Results saved to {output_file}[/bold green]")
+
+# Remove the main() function as it's no longer needed

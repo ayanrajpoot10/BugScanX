@@ -1,22 +1,20 @@
-import itertools
 import os
-import subprocess
 import sys
-import threading
 import time
+import threading
+import itertools
+import subprocess
+from rich import print
 from importlib.metadata import version
-
-from rich.console import Console
-from rich.prompt import Confirm
+from bugscanx.utils import get_confirm
 
 PACKAGE_NAME = "bugscan-x"
-console = Console()
 
 def get_current_version(package_name):
     try:
         return version(package_name)
     except Exception as e:
-        console.print(f"[bold red]Error retrieving version: {e}[/bold red]")
+        print(f"[bold red]Error retrieving version: {e}[/bold red]")
         return None
 
 def get_latest_version(package_name):
@@ -27,14 +25,8 @@ def get_latest_version(package_name):
         )
         lines = result.stdout.splitlines()
         return lines[-1].split()[-1] if lines else None
-    except subprocess.TimeoutExpired:
-        console.print("[bold red]Timeout while checking for updates.[/bold red]")
-        return None
-    except subprocess.CalledProcessError as e:
-        console.print(f"[bold red]Error checking for updates: {e}[/bold red]")
-        return None
     except Exception as e:
-        console.print(f"[bold red]Unexpected error: {e}[/bold red]")
+        print(f"[bold red]Error while checking update: {e}[/bold red]")
         return None
 
 def is_update_available(package_name):
@@ -56,9 +48,9 @@ class AnimationThread:
         for c in itertools.cycle(['|', '/', '-', '\\']):
             if self.stop_event.is_set():
                 break
-            console.print(f"[bold yellow] {self.message} {c}", end="\r")
+            print(f"[bold yellow] {self.message} {c}", end="\r")
             time.sleep(0.1)
-        console.print(" " * (len(self.message) + 4), end="\r")
+        print(" " * (len(self.message) + 4), end="\r")
 
     def start(self):
         self.thread.start()
@@ -75,22 +67,22 @@ def update_package(package_name):
             [sys.executable, '-m', 'pip', 'install', '--upgrade', package_name],
             check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60
         )
-        console.print("[bold green]Update successful![/bold green]")
+        print("[bold green]Update successful![/bold green]")
     except subprocess.CalledProcessError:
-        console.print(f"[bold red]Failed to update '{package_name}'.[/bold red]")
+        print(f"[bold red]Failed to update '{package_name}'.[/bold red]")
     except subprocess.TimeoutExpired:
-        console.print(f"[bold red]Update timed out.[/bold red]")
+        print(f"[bold red]Update timed out.[/bold red]")
     except Exception as e:
-        console.print(f"[bold red]Unexpected error during update: {e}[/bold red]")
+        print(f"[bold red]Unexpected error during update: {e}[/bold red]")
     finally:
         animation.stop()
 
 def restart_program():
     try:
-        console.print("[bold green]Restarting program...[/bold green]")
+        print("[bold green]Restarting program...[/bold green]")
         os.execv(sys.executable, [sys.executable] + sys.argv)
     except Exception as e:
-        console.print(f"[bold red]Failed to restart program: {e}[/bold red]")
+        print(f"[bold red]Failed to restart program: {e}[/bold red]")
         sys.exit(1)
 
 def check_and_update():
@@ -100,9 +92,9 @@ def check_and_update():
     animation.stop()
 
     if update_available:
-        console.print(f"[bold yellow]An update is available! Current version: {current_version}, Latest version: {latest_version}[/bold yellow]")
-        if Confirm.ask("Do you want to update now?"):
+        print(f"[bold yellow]An update is available! Current version: {current_version}, Latest version: {latest_version}[/bold yellow]")
+        if get_confirm("Would you like to update"):
             update_package(PACKAGE_NAME)
             restart_program()
     else:
-        console.print(f"[bold green]No updates available. You are on the latest version: {current_version}[/bold green]")
+        print(f"[bold green]No updates available. You are on the latest version: {current_version}[/bold green]")

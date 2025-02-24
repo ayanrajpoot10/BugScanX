@@ -2,7 +2,7 @@ from pathlib import Path
 
 from rich import print
 
-from bugscanx.utils import get_input, not_empty_validator
+from bugscanx.utils import get_input
 
 def file_manager(start_dir):
     current_dir = Path(start_dir).resolve()
@@ -22,14 +22,14 @@ def file_manager(start_dir):
 
         print("\n[blue] 0. Back to the previous folder[/blue]")
 
-        selection = get_input(" Enter the number or filename", validator=not_empty_validator)
+        selection = get_input(" Enter the number or filename")
+        
+        # Handle user cancellation
+        if selection is None:
+            return None
 
         if selection == '0':
-            if current_dir != current_dir.parent:
-                current_dir = current_dir.parent
-            else:
-                print("[bold red] Already at the root directory.[/bold red]")
-            continue
+            current_dir = current_dir.parent
 
         if selection.isdigit():
             index = int(selection) - 1

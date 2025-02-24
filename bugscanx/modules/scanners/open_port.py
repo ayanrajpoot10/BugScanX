@@ -22,9 +22,6 @@ def check_port(ip, port):
 
 def open_port_checker():
     target = get_input("\n Enter the IP address or hostname to scan")
-    if not target:
-        console.print(" IP or hostname cannot be empty.", style="bold red")
-        return
 
     try:
         ip = socket.gethostbyname(target)

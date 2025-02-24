@@ -1,1 +1,1 @@
-from bugscanx.modules.scanners.common import file_manager
+from bugscanx.modules.scanners.file_selector import file_manager
