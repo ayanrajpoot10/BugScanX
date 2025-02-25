@@ -16,7 +16,6 @@ class DirectScanner(BugScanner):
         kwargs['CC'] = CC
 
         colors = {
-            'method': '\033[94m',
             'status_code': '\033[92m',
             'server': '\033[93m',
             'port': '\033[95m',
@@ -25,7 +24,6 @@ class DirectScanner(BugScanner):
         }
 
         messages = [
-            f'{colors["method"]}{{method:<6}}{CC}',
             f'{colors["status_code"]}{{status_code:<4}}{CC}',
             f'{colors["server"]}{{server:<22}}{CC}',
             f'{colors["port"]}{{port:<4}}{CC}',
@@ -47,8 +45,8 @@ class DirectScanner(BugScanner):
 
     def init(self):
         super().init()
-        self.log_info(method='Method', status_code='Code', server='Server', port='Port', host='Host', ip='IP')
-        self.log_info(method='------', status_code='----', server='------', port='----', host='----', ip='--')
+        self.log_info(status_code='Code', server='Server', port='Port', host='Host', ip='IP')
+        self.log_info(status_code='----', server='------', port='----', host='----', ip='--')
 
     def task(self, payload):
         method = payload['method']
@@ -74,7 +72,6 @@ class DirectScanner(BugScanner):
                 ip = 'N/A'
 
             data = {
-                'method': method,
                 'host': host,
                 'port': port,
                 'status_code': response.status_code,

@@ -1,3 +1,5 @@
+import asyncio
+
 def run_host_scanner_pro():
     from bugscanx.modules.scanners.pro import main_pro_scanner
     main_pro_scanner.main()
@@ -11,8 +13,8 @@ def run_cidr_scanner():
     ip_scan.get_ip_scan_inputs()
 
 def run_sub_finder():
-    from bugscanx.modules.scrappers import sub_finder
-    sub_finder.find_subdomains()
+    from bugscanx.modules.scrappers.subfinder import sub_finder
+    asyncio.run(sub_finder.find_subdomains())
 
 def run_ip_lookup():
     from bugscanx.modules.scrappers import ip_lookup

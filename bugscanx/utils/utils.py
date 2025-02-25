@@ -82,21 +82,23 @@ def get_input(
     max_value=None,
     only_files=True,
     style=style,
-    qmark="👉",
+    qmark="➡️",
     amark="",
     newline_before=False,
-    validate_input=True,  # New parameter
+    validate_input=True,
+    use_async=False,
     **kwargs
 ):
     if newline_before:
         qmark = "\n" + qmark
 
     message += ":"
+    execute_method = "execute_async" if use_async else "execute"
 
     if input_type == "choice":
         if choices is None:
             raise ValueError("'choices' must be provided for input_type 'choice'")
-        return inquirer.select(
+        return getattr(inquirer.select(
             message=message,
             choices=choices,
             default=default,
@@ -106,7 +108,7 @@ def get_input(
             amark=amark,
             style=style,
             **kwargs
-        ).execute()
+        ), execute_method)()
     elif input_type == "file":
         rules = rules or ["required", "is_file"]
         errors = errors or {
@@ -114,7 +116,7 @@ def get_input(
             "is_file": "Input is not a valid file path"
         }
         only_files = kwargs.pop('only_files', True)
-        return inquirer.filepath(
+        return getattr(inquirer.filepath(
             message=message,
             validate=UniversalValidator(rules=rules, errors=errors),
             default=str(default) if default is not None else "",
@@ -123,7 +125,7 @@ def get_input(
             amark=amark,
             style=style,
             **kwargs
-        ).execute()
+        ), execute_method)()
     elif input_type == "number":
         rules = rules or ["required", "is_digit"]
         if min_value is not None and "min" not in rules:
@@ -148,7 +150,7 @@ def get_input(
             min=min_value,
             max=max_value
         )
-        return inquirer.text(
+        return getattr(inquirer.text(
             message=message,
             validate=validator,
             default=str(default) if default is not None else "",
@@ -156,15 +158,15 @@ def get_input(
             amark=amark,
             style=style,
             **kwargs
-        ).execute()
+        ), execute_method)()
     elif input_type == "text":
         validator = None
-        if validate_input:  # Only apply validation if validate_input is True
+        if validate_input:
             rules = rules or ["required"]
             errors = errors or {"required": "Input cannot be empty"}
             validator = UniversalValidator(rules=rules, errors=errors)
         
-        return inquirer.text(
+        return getattr(inquirer.text(
             message=message,
             validate=validator,
             default=str(default) if default is not None else "",
@@ -172,19 +174,19 @@ def get_input(
             amark=amark,
             style=style,
             **kwargs
-        ).execute()
+        ), execute_method)()
     else:
         raise ValueError(f"Unsupported input_type: {input_type}")
 
-def get_confirm(message, default=True, style=style, **kwargs):
-    return inquirer.confirm(
+def get_confirm(message, default=True, style=style, use_async=False, **kwargs):
+    return getattr(inquirer.confirm(
         message=message,
         default=default,
         qmark="",
         amark="",
         style=style,
         **kwargs
-    ).execute()
+    ), "execute_async" if use_async else "execute")()
 
 def banner():
     banner_text = """

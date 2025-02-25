@@ -1,0 +1,45 @@
+from threading import RLock
+from rich.console import Console
+
+console = Console()
+
+class AsyncLogger:
+    def __init__(self):
+        self._lock = RLock()
+
+    async def clear_line(self):
+        with self._lock:
+            print("\033[2K\r", end='', flush=True)
+
+    async def replace(self, message):
+        with self._lock:
+            print(f"{message}", end='', flush=True)
+
+class SubFinderConsole:
+    def __init__(self):
+        self.total_subdomains = 0
+        self.domain_stats = {}
+        self.logger = AsyncLogger()
+    
+    async def start_domain_scan(self, domain):
+        await self.logger.clear_line()
+        console.print(f"[cyan]→[/cyan] Scanning {domain}...")
+    
+    def update_domain_stats(self, domain, count):
+        self.domain_stats[domain] = count
+        self.total_subdomains += count
+    
+    async def print_domain_complete(self, domain, subdomains_count):
+        await self.logger.clear_line()
+        console.print(f"[green]✓[/green] {domain}: {subdomains_count} subdomains found")
+    
+    def print_final_summary(self, output_file):
+        console.print(f"\n[green]✓[/green] Total: [bold]{self.total_subdomains}[/bold] subdomains found")
+        console.print(f"[green]✓[/green] Results saved to {output_file}")
+        
+    def print_error(self, message):
+        console.print(f"[bold red]✗ ERROR: {message}[/bold red]")
+
+    async def show_progress(self, current, total):
+        progress_message = f"Progress: [{current}/{total}]\r"
+        await self.logger.replace(progress_message)

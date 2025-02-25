@@ -22,11 +22,7 @@ def file_manager(start_dir):
 
         print("\n[blue] 0. Back to the previous folder[/blue]")
 
-        selection = get_input(" Enter the number or filename")
-        
-        # Handle user cancellation
-        if selection is None:
-            return None
+        selection = get_input(" Enter the number or filename", newline_before=True)
 
         if selection == '0':
             current_dir = current_dir.parent

@@ -1,19 +1,16 @@
 import os
 import re
+from rich import print
 from collections import defaultdict
+from bugscanx.utils import get_input, get_confirm
 
-from rich.console import Console
-
-from bugscanx.utils import get_input
-
-console = Console()
 
 def read_file_lines(file_path):
     try:
         with open(file_path, "r", encoding="utf-8") as file:
             return file.readlines()
     except Exception as e:
-        console.print(f"[red] Error reading file {file_path}: {e}[/red]")
+        print(f"[red] Error reading file {file_path}: {e}[/red]")
         return []
 
 def write_file_lines(file_path, lines):
@@ -21,11 +18,11 @@ def write_file_lines(file_path, lines):
         with open(file_path, "w", encoding="utf-8") as file:
             file.writelines(lines)
     except Exception as e:
-        console.print(f"[red] Error writing to file {file_path}: {e}[/red]")
+        print(f"[red] Error writing to file {file_path}: {e}[/red]")
 
 def split_txt_file():
-    file_path = get_input(" Enter the file path to split")
-    parts = int(get_input(" Enter number of parts to split the file"))
+    file_path = get_input(" Enter the file path to split", "file")
+    parts = int(get_input(" Enter number of parts to split the file", "number"))
     lines = read_file_lines(file_path)
     if not lines:
         return
@@ -35,13 +32,13 @@ def split_txt_file():
         part_lines = lines[i * lines_per_file: (i + 1) * lines_per_file] if i < parts - 1 else lines[i * lines_per_file:]
         part_file = f"{file_base}_part_{i + 1}.txt"
         write_file_lines(part_file, part_lines)
-        console.print(f"[green] Created file: {part_file}[/green]")
+        print(f"[green] Created file: {part_file}[/green]")
 
 def merge_txt_files():
     directory = get_input(" Input the directory path where your txt files are located", default=os.getcwd())
-    merge_all = get_input(" Do you want to merge all txt files in the directory? (yes/no)", default="yes")
+    merge_all = get_confirm(" Do you want to merge all txt files in the directory")
     files_to_merge = []
-    if merge_all == "no":
+    if not merge_all:
         filenames = get_input(" Enter the filenames to merge, separated by commas")
         files_to_merge = [filename.strip() for filename in filenames.split(',') if filename.strip()]
     output_file = get_input(" Enter the name for the merged output file")
@@ -51,23 +48,23 @@ def merge_txt_files():
                 with open(os.path.join(directory, filename), 'r', encoding="utf-8") as infile:
                     outfile.write(infile.read())
                     outfile.write("\n")
-        console.print(f"[green] Files merged into '{output_file}' in directory '{directory}'.[/green]")
+        print(f"[green] Files merged into '{output_file}' in directory '{directory}'.[/green]")
     except Exception as e:
-        console.print(f"[red] Error merging files: {e}[/red]")
+        print(f"[red] Error merging files: {e}[/red]")
 
 def remove_duplicate_domains():
-    file_path = get_input(" Enter the file path from which you want to remove duplicates")
+    file_path = get_input(" Enter the file path from which you want to remove duplicates", "file")
     lines = read_file_lines(file_path)
     if not lines:
         return
     domains = set(lines)
     write_file_lines(file_path, sorted(domains))
-    console.print(f"[green] Duplicates removed from {file_path}[/green]")
+    print(f"[green] Duplicates removed from {file_path}[/green]")
 
 def txt_cleaner():
-    input_file = get_input(" Enter the file path you want to clean: ")
-    domain_output_file = get_input(" Enter the output file path to save domains: ")
-    ip_output_file = get_input(" Enter the output file path to save IPs: ")
+    input_file = get_input(" Enter the file path you want to clean", "file")
+    domain_output_file = get_input(" Enter the output file path to save domains")
+    ip_output_file = get_input(" Enter the output file path to save IPs")
     
     file_contents = read_file_lines(input_file)
     if not file_contents:
@@ -86,22 +83,22 @@ def txt_cleaner():
     write_file_lines(domain_output_file, [f"{domain}\n" for domain in sorted(domains)])
     write_file_lines(ip_output_file, [f"{ip}\n" for ip in sorted(ips)])
     
-    console.print(f"[green] Domains have been saved to '{domain_output_file}'.[/green]")
-    console.print(f"[green] IP addresses have been saved to '{ip_output_file}'.[/green]")
+    print(f"[green] Domains have been saved to '{domain_output_file}'.[/green]")
+    print(f"[green] IP addresses have been saved to '{ip_output_file}'.[/green]")
 
 def convert_subdomains_to_domains():
-    file_path = get_input(" Enter the file path")
+    file_path = get_input(" Enter the file path", "file")
     output_file = get_input(" Enter the output file path")
     lines = read_file_lines(file_path)
     if not lines:
         return
     root_domains = set(subdomain.split('.')[-2] + '.' + subdomain.split('.')[-1] for subdomain in lines)
     write_file_lines(output_file, [f"{domain}\n" for domain in sorted(root_domains)])
-    console.print(f"[green] Subdomains converted to root domains and saved to {output_file}[/green]")
+    print(f"[green] Subdomains converted to root domains and saved to {output_file}[/green]")
 
 def separate_domains_by_extension():
-    file_path = get_input(" Enter the input file path")
-    extensions_input = get_input(" Enter the domain extensions to filter (comma-separated) or type 'all': ")
+    file_path = get_input(" Enter the input file path", "file")
+    extensions_input = get_input(" Enter the domain extensions to filter (comma-separated) or type 'all'")
     extensions = extensions_input.lower().split(',')
     
     lines = read_file_lines(file_path)
@@ -119,20 +116,20 @@ def separate_domains_by_extension():
         for extension, domain_list in extensions_dict.items():
             ext_file = f"{base_name}_{extension}.txt"
             write_file_lines(ext_file, [f"{domain}\n" for domain in domain_list])
-            console.print(f"[green] Domains with .{extension} saved to {ext_file}[/green]")
+            print(f"[green] Domains with .{extension} saved to {ext_file}[/green]")
     else:
         for extension in extensions:
             extension = extension.strip()
             if extension in extensions_dict:
                 ext_file = f"{base_name}_{extension}.txt"
                 write_file_lines(ext_file, [f"{domain}\n" for domain in extensions_dict[extension]])
-                console.print(f"[green] Domains with .{extension} saved to {ext_file}[/green]")
+                print(f"[green] Domains with .{extension} saved to {ext_file}[/green]")
             else:
-                console.print(f"[yellow] No domains found with .{extension} extension[/yellow]")
+                print(f"[yellow] No domains found with .{extension} extension[/yellow]")
 
 def filter_by_keywords():
-    file_path = get_input(" Enter the input file path")
-    keywords_input = get_input(" Enter the keywords to filter (comma-separated): ")
+    file_path = get_input(" Enter the input file path", "file")
+    keywords_input = get_input(" Enter the keywords to filter (comma-separated)")
     output_file = get_input(" Enter the output file path")
     keywords = keywords_input.lower().split(',')
     
@@ -147,7 +144,7 @@ def filter_by_keywords():
             filtered_domains.append(domain)
     
     write_file_lines(output_file, [f"{domain}\n" for domain in filtered_domains])
-    console.print(f"[green] Filtered domains saved to {output_file}[/green]")
+    print(f"[green] Filtered domains saved to {output_file}[/green]")
 
 def txt_toolkit_main_menu():
     options = {
@@ -162,13 +159,11 @@ def txt_toolkit_main_menu():
     }
     
     while True:
-        console.print("\n".join(f"[{color}] [{key}] {desc}" for key, (desc, _, color) in options.items()))
+        print("\n".join(f"[{color}] [{key}] {desc}" for key, (desc, _, color) in options.items()))
         
-        choice = get_input("\n [-] Enter your choice: ")
+        choice = get_input(" Your Choice", "number", min_value=0, max_value=7, qmark="\n [-]")
         
         if choice in options:
             options[choice][1]()
             if choice == '0':
                 break
-        else:
-            console.print("[red] Invalid choice. Please try again.[/red]")

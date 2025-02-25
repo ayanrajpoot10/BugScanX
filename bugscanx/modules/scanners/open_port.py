@@ -21,7 +21,7 @@ def check_port(ip, port):
         return port if result == 0 else None
 
 def open_port_checker():
-    target = get_input("\n Enter the IP address or hostname to scan")
+    target = get_input(" Enter the IP address or hostname to scan", newline_before=True)
 
     try:
         ip = socket.gethostbyname(target)

@@ -17,7 +17,7 @@ from bugscanx.utils import (
 file_write_lock = threading.Lock()
 
 def get_cidrs_from_input():
-    cidr_input = get_input("Enter cidr", "text", rules=["required", "is_cidr"], errors={"required": "not blank", "is_cidr": "'{}' is not valid CIDR notation"})
+    cidr_input = get_input("Enter cidr", "text", newline_before=True, rules=["required", "is_cidr"], errors={"required": "not blank", "is_cidr": "'{}' is not valid CIDR notation"})
     cidr_list = [cidr.strip() for cidr in cidr_input.split(',')]
     ip_list = []
     for cidr in cidr_list:
@@ -26,18 +26,15 @@ def get_cidrs_from_input():
     return ip_list
 
 def get_ip_scan_inputs():
-    try:
-        hosts = get_cidrs_from_input()
-        ports_input = get_input(" Enter port list", "number", default="80")
-        ports = ports_input.split(',')
-        output_file = get_input(" Enter output file name", default="scan_results.txt")
-        threads = int(get_input(" Enter number of threads", "number", default="50"))
-        http_method = get_input(" Select the http method", "choice", choices=["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"])
+    hosts = get_cidrs_from_input()
+    ports_input = get_input(" Enter port list", "number", default="80")
+    ports = ports_input.split(',')
+    output_file = get_input(" Enter output file name", default="scan_results.txt")
+    threads = int(get_input(" Enter number of threads", "number", default="50"))
+    http_method = get_input(" Select the http method", "choice", choices=["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"])
 
-        perform_ip_scan(hosts, ports, output_file, threads, http_method)
+    perform_ip_scan(hosts, ports, output_file, threads, http_method)
 
-    except KeyboardInterrupt:
-        return
 
 def check_http_response(host, port, method):
     protocol = "https" if port in ['443', '8443'] else "http"

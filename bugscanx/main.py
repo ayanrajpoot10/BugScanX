@@ -23,13 +23,16 @@ def main_menu():
         banner()
         for key, (desc, _, color) in menu_options.items():
             print(f"[{color}] [{key}]{' ' if len(key)==1 else ''} {desc}")
-       
+
         choice = get_input(" Your Choice", "number", min_value=1, max_value=12, qmark="\n [-]")
 
         if choice in menu_options:
             clear_screen()
             if choice != '12':
                 text_ascii(menu_options[choice][0], font="calvin_s", color="bold magenta")
-            menu_options[choice][1]()
+            try:
+                menu_options[choice][1]()
+            except KeyboardInterrupt:
+                print("\n\n[yellow] Operation cancelled by user.")
             print("[yellow]\n Press Enter to continue...", end="")
             input()

@@ -10,11 +10,13 @@ license = { text = "MIT" }
 requires-python = ">=3.6"
 dependencies = [
     "requests",
+    "httpx",
     "rich",
     "pyfiglet",
     "loguru",
     "tqdm",
     "beautifulsoup4",
+    "aiofiles",
     "dnspython",
     "multithreading",
     "prompt_toolkit",

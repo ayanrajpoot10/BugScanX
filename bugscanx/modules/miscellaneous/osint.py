@@ -34,7 +34,7 @@ def check_http_methods(url):
     return results
 
 def osint_main():
-    host = get_input("\n Enter the host (e.g., example.com)")
+    host = get_input(" Enter the host (e.g., example.com)", newline_before=True)
     protocol = get_input(" Enter the protocol", "choice", choices=["http", "https"])
     url = f"{protocol}://{host}"
 

@@ -2,6 +2,10 @@ import json
 import os
 
 from bugscanx.utils import get_input
+from .direct_scanner import DirectScanner
+from .proxy_scanner import ProxyScanner
+from .ssl_scanner import SSLScanner
+from .ping_scanner import PingScanner
 
 def read_hosts(filename):
     with open(filename) as file:
@@ -9,7 +13,7 @@ def read_hosts(filename):
             yield line.strip()
 
 def get_user_input():
-    mode = get_input(" Select the mode", "choice", choices=["direct", "proxy", "ssl", "udp", "ping"])
+    mode = get_input(" Select the mode", "choice", choices=["direct", "proxy", "ssl", "udp", "ping"], newline_before=True)
     if mode == 'direct':
         filename = get_input(" Enter the filename", "file")
         port_list = get_input(" Enter the port list", "number", default="80")
@@ -94,7 +98,7 @@ def main():
     user_input = get_user_input()
 
     if user_input['mode'] == 'direct':
-        from .direct_scanner import DirectScanner
+
         method_list = user_input['method_list'].split(',')
         host_list = read_hosts(user_input['filename'])
         port_list = user_input['port_list'].split(',')
@@ -105,7 +109,7 @@ def main():
         scanner.port_list = port_list
 
     elif user_input['mode'] == 'proxy':
-        from .proxy_scanner import ProxyScanner
+
         proxy_list = list(read_hosts(user_input['proxy_file']))
         port_list = user_input['port_list'].split(',')
 
@@ -120,7 +124,7 @@ def main():
         scanner.port_list = port_list
 
     elif user_input['mode'] == 'ssl':
-        from .ssl_scanner import SSLScanner
+
         host_list = read_hosts(user_input['filename'])
 
         scanner = SSLScanner()
@@ -136,7 +140,7 @@ def main():
         scanner.udp_server_port = '8853'
 
     elif user_input['mode'] == 'ping':
-        from .ping_scanner import PingScanner
+
         host_list = read_hosts(user_input['filename'])
         port_list = user_input['port_list'].split(',')
 

@@ -25,18 +25,15 @@ def read_file(file_path):
         return []
 
 def get_scan_inputs():
-    try:
-        selected_file = file_manager(Path('.'))
-        hosts = read_file(selected_file)
-        ports = get_input(" Enter ports (comma-separated)", "number", default="80")
-        port_list = [port.strip() for port in ports.split(',') if port.strip().isdigit()]
-        default_output = f"result_{selected_file.stem}.txt"
-        output_file = get_input(" Enter output file name", default=default_output)
+    selected_file = file_manager(Path('.'))
+    hosts = read_file(selected_file)
+    ports = get_input(" Enter ports (comma-separated)", "number", default="80")
+    port_list = [port.strip() for port in ports.split(',') if port.strip().isdigit()]
+    default_output = f"result_{selected_file.stem}.txt"
+    output_file = get_input(" Enter output file name", default=default_output)
 
-        perform_scan(hosts, port_list, output_file, 50)
+    perform_scan(hosts, port_list, output_file, 50)
         
-    except KeyboardInterrupt:
-        return
 
 def check_http_response(host, port, timeout=SUBSCAN_TIMEOUT, exclude_locations=EXCLUDE_LOCATIONS):
     protocol = 'https' if port in ('443', '8443') else 'http'
@@ -99,5 +96,3 @@ def perform_scan(hosts, ports, output_file, threads):
 
     print(f"[bold green]\n Scan completed! {responded}/{scanned} hosts responded.[/bold green]")
     print(f"[bold green] Results saved to {output_file}[/bold green]")
-
-# Remove the main() function as it's no longer needed

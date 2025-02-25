@@ -97,7 +97,7 @@ def process_cidr(cidr, ip_queue):
         print(f" Invalid CIDR block {cidr}: {e}")
 
 def Ip_lookup_menu():
-    input_choice = get_input("\n Enter 1 for manual CIDR input or 2 for file input", "choice", choices=[1, 2])
+    input_choice = get_input(" Enter 1 for manual CIDR input or 2 for file input", "choice", choices=[1, 2], newline_before=True)
     
     if input_choice == "1":
         cidr_or_filename = get_input(" Enter an IP or CIDR", rules=["required", "is_cidr"], errors={"required": "cannot be empty", "is_cidr": "'{}' is not valid CIDR notation"})
