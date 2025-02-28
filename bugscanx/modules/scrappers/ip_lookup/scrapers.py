@@ -1,12 +1,11 @@
 import random
-from typing import List
 import httpx
 from bs4 import BeautifulSoup
 from bugscanx.utils import USER_AGENTS, EXTRA_HEADERS
 from .rate_limiter import RateLimiter
 
 class DomainScraper:
-    def __init__(self, rate_limit: float = 1.0):
+    def __init__(self, rate_limit=1.0):
         self.headers = {
             "User-Agent": random.choice(USER_AGENTS),
             **EXTRA_HEADERS
@@ -14,7 +13,7 @@ class DomainScraper:
         self.rate_limiter = RateLimiter(rate_limit)
         self.client = httpx.AsyncClient(timeout=10.0, follow_redirects=True)
 
-    async def _make_request(self, url: str, method='get', data=None):
+    async def _make_request(self, url, method='get', data=None):
         await self.rate_limiter.acquire()
         try:
             if method == 'get':
@@ -26,7 +25,7 @@ class DomainScraper:
         except httpx.HTTPError:
             return None
 
-    async def fetch_domains(self, ip: str) -> List[str]:
+    async def fetch_domains(self, ip):
         """Method to be implemented by subclasses"""
         raise NotImplementedError
 
@@ -35,7 +34,7 @@ class DomainScraper:
 
 
 class RapidDNSScraper(DomainScraper):
-    async def fetch_domains(self, ip: str) -> List[str]:
+    async def fetch_domains(self, ip):
         response = await self._make_request(f"https://rapiddns.io/sameip/{ip}")
         if not response:
             return []
@@ -45,7 +44,7 @@ class RapidDNSScraper(DomainScraper):
 
 
 class YouGetSignalScraper(DomainScraper):
-    async def fetch_domains(self, ip: str) -> List[str]:
+    async def fetch_domains(self, ip):
         data = {'remoteAddress': ip, 'key': '', '_': ''}
         response = await self._make_request("https://domains.yougetsignal.com/domains.php",
                                     method='post', data=data)

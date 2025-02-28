@@ -1,5 +1,4 @@
 import asyncio
-from typing import List
 from rich import print
 
 class ResultManager:
@@ -8,7 +7,7 @@ class ResultManager:
         self.total_domains = 0
         self.lock = asyncio.Lock()
 
-    async def save_result(self, ip: str, domains: List[str]):
+    async def save_result(self, ip, domains):
         if not domains:
             return
             

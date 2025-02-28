@@ -1,18 +1,15 @@
 import asyncio
-from typing import Callable, List, Set, TypeVar, Any
-
-T = TypeVar("T")
 
 class ConcurrentProcessor:
-    def __init__(self, max_concurrent: int = 3):
+    def __init__(self, max_concurrent=3):
         self.max_concurrent = max_concurrent
 
-    async def process_items(self, items: List[Any], process_func: Callable, on_error: Callable = None) -> Set[T]:
+    async def process_items(self, items, process_func, on_error=None):
         semaphore = asyncio.Semaphore(self.max_concurrent)
         results = [None] * len(items)
         tasks = {}
 
-        async def process_item(index: int, item: Any):
+        async def process_item(index, item):
             async with semaphore:
                 try:
                     result = await process_func(item, index)

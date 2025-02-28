@@ -1,6 +1,5 @@
 import asyncio
 from rich import print
-from typing import List, Tuple, Optional
 from bugscanx.utils import get_input, is_cidr
 
 from .scrapers import get_scrapers
@@ -8,7 +7,7 @@ from .ip_utils import process_input, process_file
 from .result_manager import ResultManager
 
 
-async def extract_domains(ip: str, scrapers) -> Tuple[str, List[str]]:
+async def extract_domains(ip, scrapers):
     print(f"[cyan] Searching domains for IP: {ip}[/cyan]")
     domains = []
     tasks = [scraper.fetch_domains(ip) for scraper in scrapers]
@@ -22,7 +21,7 @@ async def extract_domains(ip: str, scrapers) -> Tuple[str, List[str]]:
     return (ip, domains)
 
 
-async def process_ips(ips: List[str], output_file: str) -> int:
+async def process_ips(ips, output_file):
     if not ips:
         print("[bold red] No valid IPs/CIDRs to process.[/bold red]")
         return 0
@@ -60,7 +59,7 @@ async def process_ips(ips: List[str], output_file: str) -> int:
     return total_domains
     
 
-async def get_input_interactively() -> Tuple[List[str], str]:
+async def get_input_interactively():
     ips = []
     
     input_choice = await get_input("Choose input type", "choice", 
@@ -78,7 +77,7 @@ async def get_input_interactively() -> Tuple[List[str], str]:
     return ips, output_file
 
 
-async def iplookup_main(ips: Optional[List[str]] = None, output_file: Optional[str] = None):
+async def iplookup_main(ips=None, output_file=None):
     if ips is None or output_file is None:
         ips, output_file = await get_input_interactively()
     await process_ips(ips, output_file)

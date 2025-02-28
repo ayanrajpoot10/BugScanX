@@ -7,7 +7,6 @@ from InquirerPy.prompts import ListPrompt as select
 from InquirerPy.prompts import FilePathPrompt as filepath
 from InquirerPy.prompts import InputPrompt as text
 from InquirerPy.prompts import ConfirmPrompt as confirm
-from typing import List, Dict, Any, Callable, Union
 
 from .validators import (
     create_validator, required, is_file, is_digit
@@ -16,23 +15,23 @@ from .validators import (
 DEFAULT_STYLE = get_style({"question": "#87CEEB", "answer": "#00FF7F", "answered_question": "#808080", "questionmark": "#00ffff"}, style_override=False)
 
 def get_input(
-    message: str,
-    input_type: str = "text",
-    default: Any = None,
-    validators: List[Union[Callable, Dict[str, Any]]] = None,
-    choices: List[Any] = None,
-    multiselect: bool = False,
-    transformer: Callable = None,
-    style = DEFAULT_STYLE,
-    qmark: str = "",
-    amark: str = "",
-    validate_input: bool = True,
-    use_async: bool = False,
-    show_cursor: bool = False,
-    instruction: str = "",
-    long_instruction: str = "",
+    message,
+    input_type="text",
+    default=None,
+    validators=None,
+    choices=None,
+    multiselect=False,
+    transformer=None,
+    style=DEFAULT_STYLE,
+    qmark="",
+    amark="",
+    validate_input=True,
+    use_async=False,
+    show_cursor=False,
+    instruction="",
+    long_instruction="",
     **kwargs
-) -> Any:
+):
 
     message = f" {message}:"
     execute_method = "execute_async" if use_async else "execute"
@@ -95,12 +94,12 @@ def get_input(
         raise ValueError(f"Unsupported input_type: {input_type}")
 
 def get_confirm(
-    message: str, 
-    default: bool = True, 
-    style = DEFAULT_STYLE, 
-    use_async: bool = False,
+    message, 
+    default=True, 
+    style=DEFAULT_STYLE, 
+    use_async=False,
     **kwargs
-) -> bool:
+):
     return getattr(confirm(
         message=message,
         default=default,
@@ -122,7 +121,7 @@ def banner():
 
 figlet = Figlet(font="calvin_s")
 
-def text_ascii(text: str, color: str = "white", shift: int = 2):
+def text_ascii(text, color="white", shift=2):
     ascii_banner = figlet.renderText(text)
     shifted_banner = "\n".join((" " * shift) + line for line in ascii_banner.splitlines())
     print(Text(shifted_banner, style=color))

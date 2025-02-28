@@ -1,16 +1,13 @@
 import os
 import ipaddress
-from typing import Callable, List, Dict, Any, Union, Optional
 from prompt_toolkit.validation import Validator, ValidationError
 
-ValidatorFn = Callable[[str], Union[bool, str]]
-
 class ValidationResult:
-    def __init__(self, valid: bool, message: Optional[str] = None):
+    def __init__(self, valid, message=None):
         self.valid = valid
         self.message = message
 
-def create_validator(validators: List[Union[ValidatorFn, Dict[str, Any]]]) -> Validator:
+def create_validator(validators):
     
     class CustomValidator(Validator):
         def validate(self, document):
@@ -35,16 +32,16 @@ def create_validator(validators: List[Union[ValidatorFn, Dict[str, Any]]]) -> Va
 
 # ---------- Common Validators ----------
 
-def required(text: str) -> Union[bool, str]:
+def required(text):
     return bool(text.strip()) or "Input cannot be empty"
 
-def is_file(text: str) -> Union[bool, str]:
+def is_file(text):
     return os.path.isfile(text) or f"File does not exist: {text}"
 
-def is_directory(text: str) -> Union[bool, str]:
+def is_directory(text):
     return os.path.isdir(text) or f"Directory does not exist: {text}"
 
-def is_cidr(text: str) -> Union[bool, str]:
+def is_cidr(text):
     if not text.strip():
         return "CIDR input cannot be empty"
         
@@ -56,7 +53,7 @@ def is_cidr(text: str) -> Union[bool, str]:
             return f"Invalid CIDR notation: {part}"
     return True
 
-def is_digit(text: str) -> Union[bool, str]:
+def is_digit(text):
     if not text.strip():
         return True
     
@@ -66,11 +63,11 @@ def is_digit(text: str) -> Union[bool, str]:
             return f"Not a valid number: {part}"
     return True
 
-def regex_match(pattern: str, message: str = None) -> ValidatorFn:
+def regex_match(pattern, message=None):
     import re
     compiled = re.compile(pattern)
     
-    def validator(text: str) -> Union[bool, str]:
+    def validator(text):
         if compiled.match(text):
             return True
         return message or f"Input must match pattern: {pattern}"
