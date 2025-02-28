@@ -2,7 +2,7 @@ import socket
 from .bug_scanner import BugScanner
 
 class ProxyScanner(BugScanner):
-    proxy_list = []
+    host_list = []
     port_list = []
     target = ''
     method = 'GET'
@@ -18,13 +18,12 @@ class ProxyScanner(BugScanner):
         if status_code == 'N/A':
              return
         
-        # Format the response lines with indentation and add extra newline
         formatted_response = '\n    '.join(response_lines)
         message = f"{color_code}{proxy_host_port.ljust(32)} {status_code}\n    {formatted_response}{CC}\n"
         super().log(message)
 
     def get_task_list(self):
-        for proxy_host in self.filter_list(self.proxy_list):
+        for proxy_host in self.filter_list(self.host_list):
             for port in self.filter_list(self.port_list):
                 yield {
                     'proxy_host': proxy_host,
@@ -75,13 +74,8 @@ class ProxyScanner(BugScanner):
                 if response_lines and ' 101 ' in response_lines[0]:
                     success = True
 
-        # except socket.timeout:
-        #     response_lines = ['Timeout']
-        # except ConnectionRefusedError:
-        #     response_lines = ['Connection Refused']
         except Exception:
              pass
-            # response_lines = [f'Error: {str(e)}']
         finally:
             if 'conn' in locals():
                 conn.close()

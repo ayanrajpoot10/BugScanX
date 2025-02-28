@@ -21,8 +21,8 @@ def write_file_lines(file_path, lines):
         print(f"[red] Error writing to file {file_path}: {e}[/red]")
 
 def split_txt_file():
-    file_path = get_input(" Enter the file path to split", "file")
-    parts = int(get_input(" Enter number of parts to split the file", "number"))
+    file_path = get_input("Enter the file path to split", "file")
+    parts = int(get_input("Enter number of parts to split the file", "number"))
     lines = read_file_lines(file_path)
     if not lines:
         return
@@ -35,13 +35,13 @@ def split_txt_file():
         print(f"[green] Created file: {part_file}[/green]")
 
 def merge_txt_files():
-    directory = get_input(" Input the directory path where your txt files are located", default=os.getcwd())
-    merge_all = get_confirm(" Do you want to merge all txt files in the directory")
+    directory = get_input("Input the directory path where your txt files are located", default=os.getcwd())
+    merge_all = get_confirm("Do you want to merge all txt files in the directory")
     files_to_merge = []
     if not merge_all:
-        filenames = get_input(" Enter the filenames to merge, separated by commas")
+        filenames = get_input("Enter the filenames to merge, separated by commas")
         files_to_merge = [filename.strip() for filename in filenames.split(',') if filename.strip()]
-    output_file = get_input(" Enter the name for the merged output file")
+    output_file = get_input("Enter the name for the merged output file")
     try:
         with open(os.path.join(directory, output_file), 'w', encoding="utf-8") as outfile:
             for filename in files_to_merge:
@@ -53,7 +53,7 @@ def merge_txt_files():
         print(f"[red] Error merging files: {e}[/red]")
 
 def remove_duplicate_domains():
-    file_path = get_input(" Enter the file path from which you want to remove duplicates", "file")
+    file_path = get_input("Enter the file path from which you want to remove duplicates", "file")
     lines = read_file_lines(file_path)
     if not lines:
         return
@@ -62,9 +62,9 @@ def remove_duplicate_domains():
     print(f"[green] Duplicates removed from {file_path}[/green]")
 
 def txt_cleaner():
-    input_file = get_input(" Enter the file path you want to clean", "file")
-    domain_output_file = get_input(" Enter the output file path to save domains")
-    ip_output_file = get_input(" Enter the output file path to save IPs")
+    input_file = get_input("Enter the file path you want to clean", "file")
+    domain_output_file = get_input("Enter the output file path to save domains")
+    ip_output_file = get_input("Enter the output file path to save IPs")
     
     file_contents = read_file_lines(input_file)
     if not file_contents:
@@ -87,8 +87,8 @@ def txt_cleaner():
     print(f"[green] IP addresses have been saved to '{ip_output_file}'.[/green]")
 
 def convert_subdomains_to_domains():
-    file_path = get_input(" Enter the file path", "file")
-    output_file = get_input(" Enter the output file path")
+    file_path = get_input("Enter the file path", "file")
+    output_file = get_input("Enter the output file path")
     lines = read_file_lines(file_path)
     if not lines:
         return
@@ -97,8 +97,8 @@ def convert_subdomains_to_domains():
     print(f"[green] Subdomains converted to root domains and saved to {output_file}[/green]")
 
 def separate_domains_by_extension():
-    file_path = get_input(" Enter the input file path", "file")
-    extensions_input = get_input(" Enter the domain extensions to filter (comma-separated) or type 'all'")
+    file_path = get_input("Enter the input file path", "file")
+    extensions_input = get_input("Enter the domain extensions to filter (comma-separated) or type 'all'")
     extensions = extensions_input.lower().split(',')
     
     lines = read_file_lines(file_path)
@@ -128,9 +128,9 @@ def separate_domains_by_extension():
                 print(f"[yellow] No domains found with .{extension} extension[/yellow]")
 
 def filter_by_keywords():
-    file_path = get_input(" Enter the input file path", "file")
-    keywords_input = get_input(" Enter the keywords to filter (comma-separated)")
-    output_file = get_input(" Enter the output file path")
+    file_path = get_input("Enter the input file path", "file")
+    keywords_input = get_input("Enter the keywords to filter (comma-separated)")
+    output_file = get_input("Enter the output file path")
     keywords = keywords_input.lower().split(',')
     
     lines = read_file_lines(file_path)
@@ -146,7 +146,7 @@ def filter_by_keywords():
     write_file_lines(output_file, [f"{domain}\n" for domain in filtered_domains])
     print(f"[green] Filtered domains saved to {output_file}[/green]")
 
-def txt_toolkit_main_menu():
+def txt_toolkit_main():
     options = {
         "1": ("Split TXT File", split_txt_file, "bold cyan"),
         "2": ("Merge TXT files", merge_txt_files, "bold blue"),
@@ -161,7 +161,7 @@ def txt_toolkit_main_menu():
     while True:
         print("\n".join(f"[{color}] [{key}] {desc}" for key, (desc, _, color) in options.items()))
         
-        choice = get_input(" Your Choice", "number", min_value=0, max_value=7, qmark="\n [-]")
+        choice = get_input("Your Choice", "number", qmark="\n [-]")
         
         if choice in options:
             options[choice][1]()

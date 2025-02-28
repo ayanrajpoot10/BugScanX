@@ -4,10 +4,10 @@ import aiofiles
 import asyncio
 
 from bugscanx.utils import get_input
-from bugscanx.modules.scrappers.subfinder.subfinder_console import SubFinderConsole
-from bugscanx.modules.scrappers.subfinder.subfinder_sources import get_all_sources, get_bulk_sources
-from bugscanx.modules.scrappers.subfinder.subfinder_utils import is_valid_domain, filter_valid_subdomains
-from bugscanx.modules.scrappers.subfinder.concurrent_processor import ConcurrentProcessor
+from .subfinder_console import SubFinderConsole
+from .subfinder_sources import get_all_sources, get_bulk_sources
+from .subfinder_utils import is_valid_domain, filter_valid_subdomains
+from .concurrent_processor import ConcurrentProcessor
 
 async def process_domain(domain, output_file, sources, console, total=1, current=1):
     if not is_valid_domain(domain):
@@ -43,14 +43,14 @@ async def find_subdomains():
     console = SubFinderConsole()
     domains = []
     
-    if await get_input(" Select input type", "choice", 
+    if await get_input("Select input type", "choice", 
                        choices=["single domain", "bulk domains from file"],
-                       newline_before=True, use_async=True) == "single domain":
-        domains = [await get_input(" Enter the domain to find subdomains", use_async=True)]
+                       use_async=True) == "single domain":
+        domains = [await get_input("Enter the domain to find subdomains", use_async=True)]
         sources = get_all_sources()
         output_file = f"{domains[0]}_subdomains.txt"
     else:
-        file_path = await get_input(" Enter the path to the file containing domains", "file", use_async=True)
+        file_path = await get_input("Enter the path to the file containing domains", "file", use_async=True)
         with open(file_path, 'r') as f:
             domains = [d.strip() for d in f if is_valid_domain(d.strip())]
         sources = get_bulk_sources()
@@ -60,7 +60,7 @@ async def find_subdomains():
         console.print_error("No valid domains provided")
         return
 
-    output_file = await get_input(" Enter the output file name", default=output_file, use_async=True)
+    output_file = await get_input("Enter the output file name", default=output_file, use_async=True)
     os.makedirs(os.path.dirname(output_file) or '.', exist_ok=True)
 
     async def process_domain_wrapper(domain: str, index: int):

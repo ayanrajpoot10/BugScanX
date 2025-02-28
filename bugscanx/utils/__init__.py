@@ -5,7 +5,7 @@ from bugscanx.utils.utils import (
     clear_screen,
     text_ascii,
     get_input,
-    get_confirm,
+    get_confirm
 )
 
 from bugscanx.utils.http_utils import (
@@ -15,4 +15,14 @@ from bugscanx.utils.http_utils import (
     SUBSCAN_TIMEOUT,
     USER_AGENTS,
     EXCLUDE_LOCATIONS,
+)
+
+from bugscanx.utils.validators import (
+    create_validator,
+    required,
+    is_file,
+    is_directory,
+    is_cidr,
+    is_digit,
+    regex_match
 )

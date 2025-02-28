@@ -34,8 +34,8 @@ def check_http_methods(url):
     return results
 
 def osint_main():
-    host = get_input(" Enter the host (e.g., example.com)", newline_before=True)
-    protocol = get_input(" Enter the protocol", "choice", choices=["http", "https"])
+    host = get_input("Enter the host (e.g., example.com)")
+    protocol = get_input("Enter the protocol", "choice", choices=["http", "https"])
     url = f"{protocol}://{host}"
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:

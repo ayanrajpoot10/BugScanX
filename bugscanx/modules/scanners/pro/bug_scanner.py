@@ -1,6 +1,6 @@
-import multithreading
+from multithreading import MultiThreadRequest
 
-class BugScanner(multithreading.MultiThreadRequest):
+class BugScanner(MultiThreadRequest):
 	threads: int
 
 	def request_connection_error(self, *args, **kwargs):

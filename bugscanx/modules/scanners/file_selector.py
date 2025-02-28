@@ -1,7 +1,5 @@
 from pathlib import Path
-
 from rich import print
-
 from bugscanx.utils import get_input
 
 def file_manager(start_dir):
@@ -20,9 +18,9 @@ def file_manager(start_dir):
             color = "yellow" if item.is_dir() else "white"
             print(f"  {idx}. [{color}]{item.name}[/{color}]")
 
-        print("\n[blue] 0. Back to the previous folder[/blue]")
+        print("\n[blue] 0. Back to previous folder[/blue]")
 
-        selection = get_input(" Enter the number or filename", newline_before=True)
+        selection = get_input("Enter number or filename")
 
         if selection == '0':
             current_dir = current_dir.parent

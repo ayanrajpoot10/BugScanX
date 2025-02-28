@@ -86,7 +86,6 @@
 
 ### Installation Command
 
-**Via pip**
 ```bash
 pip install bugscan-x
 ```

@@ -93,7 +93,7 @@ def perform_scan(hosts, ports, output_file, threads):
     if output_file:
         print(f"[bold green] Results saved to {output_file}[/bold green]")
 
-def main():
+def sub_main():
     selected_file = file_manager(Path('.'))
     hosts = read_file(selected_file)
     ports = get_input("Enter port", "number", default="80")

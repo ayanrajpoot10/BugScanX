@@ -75,7 +75,7 @@ class C99Source(SubdomainSource):
         super().__init__("C99")
         self.recently_seen_subdomains = set()
     
-    async def fetch(self, domain, client, days=10):
+    async def fetch(self, domain, client, days=1):
         base_url = "https://subdomainfinder.c99.nl/scans"
         dates = [(datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d') for i in range(days)]
         urls = [f"{base_url}/{date}/{domain}" for date in dates]
@@ -98,7 +98,7 @@ def get_all_sources():
         RapidDnsSource(),
         AnubisDbSource(),
         AlienVaultSource(),
-        C99Source()
+        # C99Source() very slow
     ]
 
 def get_bulk_sources():

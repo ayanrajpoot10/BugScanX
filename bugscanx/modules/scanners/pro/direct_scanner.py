@@ -11,6 +11,8 @@ class DirectScanner(BugScanner):
         kwargs.setdefault('status_code', '')
         kwargs.setdefault('server', '')
         kwargs.setdefault('ip', '')
+        kwargs.setdefault('port', '')
+        kwargs.setdefault('host', '')
 
         CC = self.logger.special_chars['CC']
         kwargs['CC'] = CC
@@ -57,7 +59,7 @@ class DirectScanner(BugScanner):
             return
 
         try:
-            response = self.request(method, self.get_url(host, port), retry=1, timeout=3, allow_redirects=False)
+            response = self.request(method, self.get_url(host, port), retry=3, timeout=3, allow_redirects=False)
         except Exception:
             return
 

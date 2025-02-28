@@ -65,8 +65,8 @@ def nslookup(domain):
         else:
             print(f"[red]\n No {record_type} records found for {domain}.[/red]")
 
-def main():
-    domain = get_input("\n Enter the domain to lookup")
+def dns_main():
+    domain = get_input("Enter the domain to lookup")
     if not domain:
         print("[red] Please enter a valid domain.[/red]")
     nslookup(domain)
