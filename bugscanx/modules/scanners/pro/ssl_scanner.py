@@ -11,26 +11,19 @@ class SSLScanner(BugScanner):
 				'host': host,
 			}
 
-	def log_info(self, color, status, server_name_indication):
-		super().log(f'{color}{status:<6}  {server_name_indication}')
+	def log_info(self, status, server_name_indication):
+		super().log(f'{status:<6}  {server_name_indication}')
 
 	def log_info_result(self, **kwargs):
-		G1 = self.logger.special_chars['G1']
-		W2 = self.logger.special_chars['W2']
-
 		status = kwargs.get('status', '')
 		status = 'True' if status else ''
 		server_name_indication = kwargs.get('server_name_indication', '')
-
-		color = G1 if status else W2
-
-		self.log_info(color, status, server_name_indication)
+		self.log_info(status, server_name_indication)
 
 	def init(self):
 		super().init()
-
-		self.log_info('', 'Status', 'Server Name Indication')
-		self.log_info('', '------', '----------------------')
+		self.log_info('Status', 'Server Name Indication')
+		self.log_info('------', '----------------------')
 
 	def task(self, payload):
 		server_name_indication = payload['host']

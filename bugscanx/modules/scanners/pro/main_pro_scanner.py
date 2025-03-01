@@ -21,7 +21,8 @@ def get_input_direct():
     filename = get_input("Enter filename", "file")
     port_list = get_input("Enter ports", "number", default="80").split(',')
     output, threads = get_common_inputs(filename)
-    method_list = get_input("Select HTTP method", "choice", choices=["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"]).split(',')
+    method_list = get_input("Select HTTP method", "choice", multiselect=True, 
+                           choices=["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"])
     
     scanner = DirectScanner()
     scanner.method_list = method_list

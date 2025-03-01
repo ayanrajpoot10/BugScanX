@@ -13,14 +13,14 @@ class UdpScanner(BugScanner):
 				'host': host,
 			}
 
-	def log_info(self, color, status, hostname):
-		super().log(f'{color}{status:<6}  {hostname}')
+	def log_info(self, status, hostname):
+		super().log(f'{status:<6}  {hostname}')
 
 	def init(self):
 		super().init()
 
-		self.log_info('', 'Status', 'Host')
-		self.log_info('', '------', '----')
+		self.log_info('Status', 'Host')
+		self.log_info('------', '----')
 
 	def task(self, payload):
 		host = payload['host']
@@ -31,9 +31,6 @@ class UdpScanner(BugScanner):
 		self.log_replace(host)
 
 		bug = f'{host}.{self.udp_server_host}'
-
-		G1 = self.logger.special_chars['G1']
-		W2 = self.logger.special_chars['W2']
 
 		try:
 			client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -50,12 +47,12 @@ class UdpScanner(BugScanner):
 			client.sendto(bug.encode(), (bug, int(self.udp_server_port)))
 			client.recv(4)
 
-			self.log_info(G1, 'True', host)
+			self.log_info('True', host)
 
 			self.task_success(host)
 
 		except (OSError, socket.timeout):
-			self.log_info(W2, '', host)
+			self.log_info('', host)
 
 		finally:
 			client.close()

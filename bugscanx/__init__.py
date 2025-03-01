@@ -8,7 +8,7 @@ def import_modules_in_background():
             from bugscanx.modules.scanners import host_scanner
             from bugscanx.modules.scanners.pro import main_pro_scanner
             from bugscanx.modules.scrappers.subfinder import sub_finder
-        except ImportError:
+        except:
             pass
 
     thread = threading.Thread(target=import_task, daemon=True)

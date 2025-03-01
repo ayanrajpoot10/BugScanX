@@ -2,6 +2,11 @@ import socket
 from .bug_scanner import BugScanner
 
 class ProxyScanner(BugScanner):
+    # Color constants
+    COLOR_RESET = '\033[0m'
+    COLOR_SUCCESS = '\033[32m'  # Green for successful connections
+    COLOR_NORMAL = '\033[90m'   # Gray for normal output
+    
     host_list = []
     port_list = []
     target = ''
@@ -12,14 +17,13 @@ class ProxyScanner(BugScanner):
     bug = ''
 
     def log_info(self, proxy_host_port, response_lines, color):
-        CC = self.logger.special_chars['CC']
-        color_code = self.logger.special_chars.get(color, '')
         status_code = response_lines[0].split(' ')[1] if response_lines and len(response_lines[0].split(' ')) > 1 else 'N/A'
-        if status_code == 'N/A':
+        if status_code == 'N/A' or status_code == '302':
              return
         
+        color_code = self.COLOR_SUCCESS if color == 'G1' else self.COLOR_NORMAL
         formatted_response = '\n    '.join(response_lines)
-        message = f"{color_code}{proxy_host_port.ljust(32)} {status_code}\n    {formatted_response}{CC}\n"
+        message = f"{color_code}{proxy_host_port.ljust(32)} {status_code}\n    {formatted_response}{self.COLOR_RESET}\n"
         super().log(message)
 
     def get_task_list(self):
@@ -34,7 +38,6 @@ class ProxyScanner(BugScanner):
         super().init()
         self.log_info('Proxy:Port', ['Code'], 'G1')
         self.log_info('----------', ['----'], 'G1')
-        self.log_replace("Initializing scan...")
 
     def task(self, payload):
         proxy_host = payload['proxy_host']
@@ -42,6 +45,8 @@ class ProxyScanner(BugScanner):
         proxy_host_port = f"{proxy_host}:{port}"
         response_lines = []
         success = False
+
+        self.log_replace(f"{proxy_host}")
 
         formatted_payload = (
             self.payload
@@ -82,7 +87,7 @@ class ProxyScanner(BugScanner):
 
         color = 'G1' if success else 'W2'
         self.log_info(proxy_host_port, response_lines, color)
-        self.log_replace()
+        self.log_replace(f"{proxy_host}")
         
         if success:
             self.task_success({
@@ -92,3 +97,6 @@ class ProxyScanner(BugScanner):
                 'target': self.target
             })
 
+    def complete(self):
+        self.log_replace("Scan completed")
+        super().complete()

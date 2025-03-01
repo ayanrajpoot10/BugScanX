@@ -21,8 +21,6 @@ from bugscanx.utils.validators import (
     create_validator,
     required,
     is_file,
-    is_directory,
     is_cidr,
     is_digit,
-    regex_match
 )

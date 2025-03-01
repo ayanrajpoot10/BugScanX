@@ -59,8 +59,6 @@ EXTRA_HEADERS = {
     "X-Forwarded-Host": "127.0.0.1"
 }
 
-# Some commonly used values
-
 SUBSCAN_TIMEOUT = 5
 
 SUBFINDER_TIMEOUT = 10

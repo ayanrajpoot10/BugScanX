@@ -43,7 +43,6 @@ def check_http_response(host, port, method):
 def perform_ip_scan(hosts, ports, output_file, threads, method):
     clear_screen()
     print(f"[bold green]Scanning using HTTP method: {method}...\n[/bold green]")
-
     headers = (f"[green]{'Code':<4}[/green] [cyan]{'Server':<15}[/cyan] [yellow]{'Port':<5}[/yellow] [magenta]{'IP Address':<15}[/magenta]")  
     separator = (f"[green]{'----':<4}[/green] [cyan]{'------':<15}[/cyan] [yellow]{'----':<5}[/yellow] [magenta]{'---------':<15}[/magenta]")  
     

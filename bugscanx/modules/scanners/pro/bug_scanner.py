@@ -1,16 +1,7 @@
-from multithreading import MultiThreadRequest
+from .threading.multithread_requests import MultiThreadRequest
 
 class BugScanner(MultiThreadRequest):
 	threads: int
-
-	def request_connection_error(self, *args, **kwargs):
-		return 1
-
-	def request_read_timeout(self, *args, **kwargs):
-		return 1
-
-	def request_timeout(self, *args, **kwargs):
-		return 1
 
 	def convert_host_port(self, host, port):
 		return host + (f':{port}' if bool(port not in ['80', '443']) else '')

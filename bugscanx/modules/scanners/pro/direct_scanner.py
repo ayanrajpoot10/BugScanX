@@ -9,28 +9,30 @@ class DirectScanner(BugScanner):
     def log_info(self, **kwargs):
         kwargs.setdefault('color', '')
         kwargs.setdefault('status_code', '')
-        kwargs.setdefault('server', '')
+        server = kwargs.get('server', '')
+        kwargs['server'] = (server[:12] + "...") if len(server) > 12 else f"{server:<12}"
         kwargs.setdefault('ip', '')
         kwargs.setdefault('port', '')
         kwargs.setdefault('host', '')
 
-        CC = self.logger.special_chars['CC']
-        kwargs['CC'] = CC
+        CC = '\033[0m'
 
         colors = {
+            'method': '\033[94m',
             'status_code': '\033[92m',
             'server': '\033[93m',
             'port': '\033[95m',
-            'host': '\033[96m',
-            'ip': '\033[97m'
+            'ip': '\033[97m',
+            'host': '\033[96m'
         }
 
         messages = [
+            f'{colors["method"]}{{method:<6}}{CC}',
             f'{colors["status_code"]}{{status_code:<4}}{CC}',
-            f'{colors["server"]}{{server:<22}}{CC}',
+            f'{colors["server"]}{{server:<15}}{CC}',
             f'{colors["port"]}{{port:<4}}{CC}',
-            f'{colors["host"]}{{host:<20}}{CC}',
-            f'{colors["ip"]}{{ip}}{CC}'
+            f'{colors["ip"]}{{ip:<16}}{CC}'
+            f'{colors["host"]}{{host}}{CC}',
         ]
 
         super().log('  '.join(messages).format(**kwargs))
@@ -47,40 +49,43 @@ class DirectScanner(BugScanner):
 
     def init(self):
         super().init()
-        self.log_info(status_code='Code', server='Server', port='Port', host='Host', ip='IP')
-        self.log_info(status_code='----', server='------', port='----', host='----', ip='--')
+        self.log_info(method='Method', status_code='Code', server='Server', port='Port', ip='IP', host='Host')
+        self.log_info(method='------', status_code='----', server='------', port='----', ip='--', host='----')
 
     def task(self, payload):
         method = payload['method']
         host = payload['host']
         port = payload['port']
 
-        if not host:
+        response = self.request(method, self.get_url(host, port), retry=1, timeout=3, allow_redirects=False, verify=False)
+
+        if response is None:
+            self.task_failed(payload)
+            return
+
+        location = response.headers.get('location', '')
+        if location and location.startswith("https://jio.com/BalanceExhaust"):
+            self.task_failed(payload)
             return
 
         try:
-            response = self.request(method, self.get_url(host, port), retry=3, timeout=3, allow_redirects=False)
-        except Exception:
-            return
+            ip = socket.gethostbyname(host)
+        except socket.gaierror:
+            ip = 'N/A'
 
-        if response:
-            location = response.headers.get('location', '')
-            if location and location.startswith("https://jio.com/BalanceExhaust"):
-                return
+        data = {
+            'method': method,
+            'host': host,
+            'port': port,
+            'status_code': response.status_code,
+            'server': response.headers.get('server', ''),
+            'location': location,
+            'ip': ip
+        }
 
-            try:
-                ip = socket.gethostbyname(host)
-            except socket.gaierror:
-                ip = 'N/A'
+        self.task_success(data)
+        self.log_info(**data)
 
-            data = {
-                'host': host,
-                'port': port,
-                'status_code': response.status_code,
-                'server': response.headers.get('server', ''),
-                'location': location,
-                'ip': ip
-            }
-
-            self.task_success(data)
-            self.log_info(**data)
+    def complete(self):
+        self.log_replace("Scan completed")
+        super().complete()
