@@ -21,7 +21,7 @@ def run_5():
     asyncio.run(ip_lookup.iplookup_main())
 
 def run_6():
-    from bugscanx.modules.miscellaneous import txt_toolkit
+    from bugscanx.modules.others import txt_toolkit
     txt_toolkit.txt_toolkit_main()
 
 def run_7():
@@ -29,17 +29,17 @@ def run_7():
     open_port.open_port_main()
 
 def run_8():
-    from bugscanx.modules.miscellaneous import dns_info
+    from bugscanx.modules.others import dns_info
     dns_info.dns_main()
 
 def run_9():
-    from bugscanx.modules.miscellaneous import osint
+    from bugscanx.modules.others import osint
     osint.osint_main()
 
 def run_10():
-    from bugscanx.modules.miscellaneous import script_help
+    from bugscanx.modules.others import script_help
     script_help.show_help()
 
 def run_11():
-    from bugscanx.modules.miscellaneous import script_updater
+    from bugscanx.modules.others import script_updater
     script_updater.check_and_update()
