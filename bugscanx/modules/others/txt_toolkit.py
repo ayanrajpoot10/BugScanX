@@ -1,5 +1,6 @@
 import os
 import re
+import ipaddress
 from rich import print
 from collections import defaultdict
 from bugscanx.utils import get_input, get_confirm
@@ -21,8 +22,8 @@ def write_file_lines(file_path, lines):
         print(f"[red] Error writing to file {file_path}: {e}[/red]")
 
 def split_txt_file():
-    file_path = get_input("Enter the file path to split", "file")
-    parts = int(get_input("Enter number of parts to split the file", "number"))
+    file_path = get_input("File to split", "file")
+    parts = int(get_input("Number of parts", "number"))
     lines = read_file_lines(file_path)
     if not lines:
         return
@@ -35,13 +36,13 @@ def split_txt_file():
         print(f"[green] Created file: {part_file}[/green]")
 
 def merge_txt_files():
-    directory = get_input("Input the directory path where your txt files are located", default=os.getcwd())
-    merge_all = get_confirm("Do you want to merge all txt files in the directory")
+    directory = get_input("Directory path", default=os.getcwd())
+    merge_all = get_confirm("Merge all txt files?")
     files_to_merge = []
     if not merge_all:
-        filenames = get_input("Enter the filenames to merge, separated by commas")
+        filenames = get_input("Files to merge (comma-separated)")
         files_to_merge = [filename.strip() for filename in filenames.split(',') if filename.strip()]
-    output_file = get_input("Enter the name for the merged output file")
+    output_file = get_input("Output filename")
     try:
         with open(os.path.join(directory, output_file), 'w', encoding="utf-8") as outfile:
             for filename in files_to_merge:
@@ -53,7 +54,7 @@ def merge_txt_files():
         print(f"[red] Error merging files: {e}[/red]")
 
 def remove_duplicate_domains():
-    file_path = get_input("Enter the file path from which you want to remove duplicates", "file")
+    file_path = get_input("File path", "file")
     lines = read_file_lines(file_path)
     if not lines:
         return
@@ -62,9 +63,9 @@ def remove_duplicate_domains():
     print(f"[green] Duplicates removed from {file_path}[/green]")
 
 def txt_cleaner():
-    input_file = get_input("Enter the file path you want to clean", "file")
-    domain_output_file = get_input("Enter the output file path to save domains")
-    ip_output_file = get_input("Enter the output file path to save IPs")
+    input_file = get_input("Input file", "file")
+    domain_output_file = get_input("Domain output file")
+    ip_output_file = get_input("IP output file")
     
     file_contents = read_file_lines(input_file)
     if not file_contents:
@@ -87,8 +88,8 @@ def txt_cleaner():
     print(f"[green] IP addresses have been saved to '{ip_output_file}'.[/green]")
 
 def convert_subdomains_to_domains():
-    file_path = get_input("Enter the file path", "file")
-    output_file = get_input("Enter the output file path")
+    file_path = get_input("Input file", "file")
+    output_file = get_input("Output file")
     lines = read_file_lines(file_path)
     if not lines:
         return
@@ -97,10 +98,9 @@ def convert_subdomains_to_domains():
     print(f"[green] Subdomains converted to root domains and saved to {output_file}[/green]")
 
 def separate_domains_by_extension():
-    file_path = get_input("Enter the input file path", "file")
-    extensions_input = get_input("Enter the domain extensions to filter (comma-separated) or type 'all'")
+    file_path = get_input("Input file", "file")
+    extensions_input = get_input("Extensions (comma-separated) or 'all'")
     extensions = extensions_input.lower().split(',')
-    
     lines = read_file_lines(file_path)
     if not lines:
         return
@@ -128,10 +128,10 @@ def separate_domains_by_extension():
                 print(f"[yellow] No domains found with .{extension} extension[/yellow]")
 
 def filter_by_keywords():
-    file_path = get_input("Enter the input file path", "file")
-    keywords_input = get_input("Enter the keywords to filter (comma-separated)")
-    output_file = get_input("Enter the output file path")
+    file_path = get_input("Input file", "file")
+    keywords_input = get_input("Keywords (comma-separated)")
     keywords = keywords_input.lower().split(',')
+    output_file = get_input("Output file")
     
     lines = read_file_lines(file_path)
     if not lines:
@@ -146,6 +146,18 @@ def filter_by_keywords():
     write_file_lines(output_file, [f"{domain}\n" for domain in filtered_domains])
     print(f"[green] Filtered domains saved to {output_file}[/green]")
 
+def cidr_to_ip():
+    cidr_input = get_input("CIDR range")
+    output_file = get_input("Output file")
+    
+    try:
+        network = ipaddress.ip_network(cidr_input.strip(), strict=False)
+        ip_addresses = [str(ip) + '\n' for ip in network.hosts()]
+        write_file_lines(output_file, ip_addresses)
+        print(f"[green]{len(ip_addresses)} IP addresses have been saved to '{output_file}'[/green]")
+    except ValueError as e:
+        print(f"[red]Invalid CIDR range: {cidr_input} - {str(e)}[/red]")
+
 def txt_toolkit_main():
     options = {
         "1": ("Split TXT File", split_txt_file, "bold cyan"),
@@ -155,6 +167,7 @@ def txt_toolkit_main():
         "5": ("TXT Cleaner", txt_cleaner, "bold cyan"),
         "6": ("Filter domains by Extension", separate_domains_by_extension, "bold magenta"),
         "7": ("Filter domains by Keywords", filter_by_keywords, "bold yellow"),
+        "8": ("Convert CIDR to IP", cidr_to_ip, "bold green"),
         "0": ("Back", lambda: None, "bold red")
     }
     
