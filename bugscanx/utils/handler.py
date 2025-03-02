@@ -33,8 +33,8 @@ def run_8():
     dns_info.dns_main()
 
 def run_9():
-    from bugscanx.modules.others import osint
-    osint.osint_main()
+    from bugscanx.modules.others import host_info
+    host_info.osint_main()
 
 def run_10():
     from bugscanx.modules.others import script_help

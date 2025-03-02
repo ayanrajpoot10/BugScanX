@@ -13,7 +13,7 @@ def main_menu():
             '6': ("TXT TOOLKIT", run_6, "bold magenta"),
             '7': ("OPEN PORT", run_7, "bold white"),
             '8': ("DNS RECORDS", run_8, "bold green"),
-            '9': ("OSINT", run_9, "bold blue"),
+            '9': ("HOST INFO", run_9, "bold blue"),
             '10': ("HELP", run_10, "bold yellow"),
             '11': ("UPDATE", run_11, "bold magenta"),
             '12': ("EXIT", lambda: sys.exit(), "bold red")
