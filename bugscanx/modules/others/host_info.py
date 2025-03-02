@@ -1,5 +1,7 @@
 import concurrent.futures
 import socket
+import queue
+import threading
 
 import requests
 from requests.exceptions import RequestException
@@ -16,13 +18,39 @@ def check_http_method(url, method):
     except RequestException as e:
         return method, None, str(e)
 
+def print_result(method, status_code, headers):
+    print(f"\n[bold yellow]{'='*50}[/bold yellow]")
+    print(f"[bold cyan]HTTP Method:[/bold cyan] {method}")
+    print(f"[bold magenta]Status Code:[/bold magenta] {status_code}")
+    
+    if isinstance(headers, dict):
+        print("[bold green]Headers:[/bold green]")
+        for header_name, header_value in headers.items():
+            print(f"  {header_name}: {header_value}")
+    else:
+        print(f"[bold red]Error:[/bold red] {headers}")
+
+def result_printer(result_queue):
+    while True:
+        result = result_queue.get()
+        if result is None:
+            break
+        method, status_code, headers = result
+        print_result(method, status_code, headers)
+        result_queue.task_done()
+
 def check_http_methods(url):
-    results = []
+    result_queue = queue.Queue()
+    printer_thread = threading.Thread(target=result_printer, args=(result_queue,))
+    printer_thread.start()
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
         futures = [executor.submit(check_http_method, url, method) for method in HTTP_METHODS]
         for future in concurrent.futures.as_completed(futures):
-            results.append(future.result())
-    return results
+            result_queue.put(future.result())
+    
+    result_queue.put(None)
+    printer_thread.join()
 
 def get_host_ips(hostname):
     try:
@@ -45,21 +73,5 @@ def osint_main():
     for ip in ip_addresses:
         print(f"  → {ip}")
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-        http_methods_future = executor.submit(check_http_methods, url)
-
-    http_methods_results = http_methods_future.result()
-    
     print("\n[bold cyan]HTTP Methods Information[/bold cyan]")
-    
-    for method, status_code, headers in http_methods_results:
-        print(f"\n[bold yellow]{'='*50}[/bold yellow]")
-        print(f"[bold cyan]HTTP Method:[/bold cyan] {method}")
-        print(f"[bold magenta]Status Code:[/bold magenta] {status_code}")
-        
-        if isinstance(headers, dict):
-            print("[bold green]Headers:[/bold green]")
-            for header_name, header_value in headers.items():
-                print(f"  {header_name}: {header_value}")
-        else:
-            print(f"[bold red]Error:[/bold red] {headers}")
+    check_http_methods(url)
