@@ -1,11 +1,12 @@
 from threading import Lock
-from rich import print
+from .iplookup_console import console, IPLookupConsole
 
 class ResultManager:
-    def __init__(self, output_file: str):
+    def __init__(self, output_file: str, ip_console: IPLookupConsole):
         self.output_file = output_file
         self.total_domains = 0
         self.lock = Lock()
+        self.console = ip_console
 
     def save_result(self, ip, domains):
         if not domains:
@@ -16,4 +17,5 @@ class ResultManager:
                 for domain in domains:
                     f.write(f"{domain}\n")
             self.total_domains += len(domains)
-            print(f"[green] Saved domains for {ip}. Current total domains found: {self.total_domains}[/green]")
+            self.console.update_ip_stats(ip, len(domains))
+            self.console.print_ip_complete(ip, len(domains))

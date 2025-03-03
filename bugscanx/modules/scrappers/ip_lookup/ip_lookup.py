@@ -1,14 +1,14 @@
 import concurrent.futures
-from rich import print
 from bugscanx.utils import get_input, is_cidr
 
 from .scrapers import get_scrapers
 from .ip_utils import process_input, process_file
 from .result_manager import ResultManager
+from .iplookup_console import IPLookupConsole, console
 
 
-def extract_domains(ip, scrapers):
-    print(f"[cyan] Searching domains for IP: {ip}[/cyan]")
+def extract_domains(ip, scrapers, ip_console):
+    ip_console.start_ip_scan(ip)
     domains = []
     for scraper in scrapers:
         domain_list = scraper.fetch_domains(ip)
@@ -21,27 +21,17 @@ def extract_domains(ip, scrapers):
 
 def process_ips(ips, output_file):
     if not ips:
-        print("[bold red] No valid IPs/CIDRs to process.[/bold red]")
+        console.print("[bold red] No valid IPs/CIDRs to process.[/bold red]")
         return 0
         
     scrapers = get_scrapers()
-    result_manager = ResultManager(output_file)
-    
-    total_ips = len(ips)
-    processed = 0
-    total_domains = 0
+    ip_console = IPLookupConsole()
+    result_manager = ResultManager(output_file, ip_console)
     
     def process_ip(ip):
-        ip, domains = extract_domains(ip, scrapers)
+        ip, domains = extract_domains(ip, scrapers, ip_console)
         if domains:
             result_manager.save_result(ip, domains)
-            nonlocal total_domains
-            total_domains += len(domains)
-            
-        nonlocal processed
-        processed += 1
-        progress = processed / total_ips * 100
-        print(f"[yellow] Progress: {processed}/{total_ips} IPs processed ({progress:.2f}%)[/yellow]")
         return ip, domains
 
     # Use ThreadPoolExecutor to parallelize requests
@@ -53,8 +43,8 @@ def process_ips(ips, output_file):
     for scraper in scrapers:
         scraper.close()
         
-    print(f"[green]\n All IPs processed! Total domains found: {total_domains}[/green]")
-    return total_domains
+    ip_console.print_final_summary(output_file)
+    return ip_console.total_domains
     
 
 def get_input_interactively():
