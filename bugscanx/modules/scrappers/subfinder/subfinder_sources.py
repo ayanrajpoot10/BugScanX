@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 
-from bugscanx.modules.scrappers.subfinder.subfinder_utils import make_request
+from .subfinder_utils import make_request
 
 class SubdomainSource:
     def __init__(self, name):

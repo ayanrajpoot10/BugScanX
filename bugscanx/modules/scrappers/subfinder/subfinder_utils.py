@@ -32,7 +32,6 @@ def filter_valid_subdomains(subdomains, domain):
     result = set()
     for sub in subdomains:
         if isinstance(sub, str) and is_valid_domain(sub):
-            # Ensure it's related to the target domain
             if sub.endswith(f".{domain}") or sub == domain:
                 result.add(sub)
     return result

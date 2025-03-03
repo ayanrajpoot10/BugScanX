@@ -1,5 +1,7 @@
 from threading import RLock
-from rich import print
+from rich.console import Console
+
+console = Console()
 
 class Logger:
     def __init__(self):
@@ -21,7 +23,7 @@ class SubFinderConsole:
     
     def start_domain_scan(self, domain):
         self.logger.clear_line()
-        print(f"[cyan]→[/cyan] Scanning {domain}...")
+        console.print(f"[cyan]→[/cyan] Scanning {domain}...")
     
     def update_domain_stats(self, domain, count):
         self.domain_stats[domain] = count
@@ -29,14 +31,14 @@ class SubFinderConsole:
     
     def print_domain_complete(self, domain, subdomains_count):
         self.logger.clear_line()
-        print(f"[green]✓[/green] {domain}: {subdomains_count} subdomains found")
+        console.print(f"[green]✓[/green] {domain}: {subdomains_count} subdomains found")
     
     def print_final_summary(self, output_file):
         print(f"\n[green]✓[/green] Total: [bold]{self.total_subdomains}[/bold] subdomains found")
-        print(f"[green]✓[/green] Results saved to {output_file}")
+        console.print(f"[green]✓[/green] Results saved to {output_file}")
         
     def print_error(self, message):
-        print(f"[bold red]✗ ERROR: {message}[/bold red]")
+        console.print(f"[bold red]✗ ERROR: {message}[/bold red]")
 
     def show_progress(self, current, total):
         progress_message = f"Progress: [{current}/{total}]\r"

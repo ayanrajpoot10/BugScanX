@@ -39,8 +39,10 @@ def process_domain(domain, output_file, sources, console, total=1, current=1):
     console.update_domain_stats(domain, len(subdomains))
     console.print_domain_complete(domain, len(subdomains))
 
-    with open(output_file, "a", encoding="utf-8") as f:
-        f.write("\n".join(sorted(subdomains)) + "\n")
+    # Only write to file if subdomains were found
+    if subdomains:
+        with open(output_file, "a", encoding="utf-8") as f:
+            f.write("\n".join(sorted(subdomains)) + "\n")
 
     return subdomains
 
