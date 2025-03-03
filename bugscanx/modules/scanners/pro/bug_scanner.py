@@ -1,19 +1,35 @@
-from .threading.multithread_requests import MultiThreadRequest
+from .threading.multithread import MultiThread
+from .threading.logger import Logger
 
-class BugScanner(MultiThreadRequest):
-	threads: int
+class BugScanner(MultiThread):
+    threads: int
 
-	def convert_host_port(self, host, port):
-		return host + (f':{port}' if bool(port not in ['80', '443']) else '')
+    @classmethod
+    def colorize(cls, text, color):
+        return Logger.colorize(text, color)
 
-	def get_url(self, host, port, uri=None):
-		port = str(port)
-		protocol = 'https' if port == '443' else 'http'
+    def convert_host_port(self, host, port):
+        return host + (f':{port}' if bool(port not in ['80', '443']) else '')
 
-		return f'{protocol}://{self.convert_host_port(host, port)}' + (f'/{uri}' if uri is not None else '')
+    def get_url(self, host, port, uri=None):
+        port = str(port)
+        protocol = 'https' if port == '443' else 'http'
 
-	def init(self):
-		self._threads = self.threads or self._threads
+        return f'{protocol}://{self.convert_host_port(host, port)}' + (f'/{uri}' if uri is not None else '')
 
-	def complete(self):
-		pass
+    def filter_list(self, data):
+        filtered_data = []
+
+        for item in data:
+            item = str(item).strip()
+            if item.startswith('#'):
+                continue
+            filtered_data.append(item)
+
+        return list(set(filtered_data))
+
+    def init(self):
+        self._threads = self.threads or self._threads
+
+    def complete(self):
+        pass

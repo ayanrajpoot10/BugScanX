@@ -1,17 +1,22 @@
 import re
 import random
-import httpx
+import requests
+from requests.exceptions import RequestException
 from bugscanx.utils import HEADERS, USER_AGENTS, SUBFINDER_TIMEOUT
 
-async def make_request(url, client):
+def make_request(url, session=None):
     try:
         headers = HEADERS.copy()
         headers["user-agent"] = random.choice(USER_AGENTS)
         
-        response = await client.get(url, headers=headers, timeout=SUBFINDER_TIMEOUT)
+        if session:
+            response = session.get(url, headers=headers, timeout=SUBFINDER_TIMEOUT)
+        else:
+            response = requests.get(url, headers=headers, timeout=SUBFINDER_TIMEOUT)
+            
         if response.status_code == 200:
             return response
-    except httpx.RequestError:
+    except RequestException:
         pass
     return None
 
@@ -23,7 +28,7 @@ def is_valid_domain(domain):
     )
     return domain and isinstance(domain, str) and re.match(regex, domain) is not None
 
-async def filter_valid_subdomains(subdomains, domain):
+def filter_valid_subdomains(subdomains, domain):
     result = set()
     for sub in subdomains:
         if isinstance(sub, str) and is_valid_domain(sub):

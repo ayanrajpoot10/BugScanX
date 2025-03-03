@@ -1,10 +1,54 @@
 import socket
+import requests
 from .bug_scanner import BugScanner
 
 class DirectScanner(BugScanner):
     method_list = []
     host_list = []
     port_list = []
+    requests = requests
+
+    def request_connection_error(self, method, url, **_):
+        for _ in self.sleep(1):
+            self.log_replace(method, url, 'connection error')
+        return 1
+
+    def request_read_timeout(self, method, url, **_):
+        for remains in self.sleep(10):
+            self.log_replace(method, url, 'read timeout', remains)
+        return 1
+
+    def request_timeout(self, method, url, **_):
+        for remains in self.sleep(5):
+            self.log_replace(method, url, 'timeout', remains)
+        return 1
+
+    def request(self, method, url, **kwargs):
+        method = method.upper()
+
+        kwargs['timeout'] = kwargs.get('timeout', 5)
+
+        retry = int(kwargs.pop('retry', 5))
+
+        while retry > 0:
+            self.log_replace(method, url)
+
+            try:
+                return self.requests.request(method, url, **kwargs)
+
+            except requests.exceptions.ConnectionError:
+                retry_decrease = self.request_connection_error(method, url, **kwargs)
+                retry -= retry_decrease or 0
+
+            except requests.exceptions.ReadTimeout:
+                retry_decrease = self.request_read_timeout(method, url, **kwargs)
+                retry -= retry_decrease or 0
+
+            except requests.exceptions.Timeout:
+                retry_decrease = self.request_timeout(method, url, **kwargs)
+                retry -= retry_decrease or 0
+
+        return None
 
     def log_info(self, **kwargs):
         kwargs.setdefault('color', '')
@@ -15,24 +59,13 @@ class DirectScanner(BugScanner):
         kwargs.setdefault('port', '')
         kwargs.setdefault('host', '')
 
-        CC = '\033[0m'
-
-        colors = {
-            'method': '\033[94m',
-            'status_code': '\033[92m',
-            'server': '\033[93m',
-            'port': '\033[95m',
-            'ip': '\033[97m',
-            'host': '\033[96m'
-        }
-
         messages = [
-            f'{colors["method"]}{{method:<6}}{CC}',
-            f'{colors["status_code"]}{{status_code:<4}}{CC}',
-            f'{colors["server"]}{{server:<15}}{CC}',
-            f'{colors["port"]}{{port:<4}}{CC}',
-            f'{colors["ip"]}{{ip:<16}}{CC}'
-            f'{colors["host"]}{{host}}{CC}',
+            self.colorize(f"{{method:<6}}", "CYAN"),
+            self.colorize(f"{{status_code:<4}}", "GREEN"),
+            self.colorize(f"{{server:<15}}", "MAGENTA"),
+            self.colorize(f"{{port:<4}}", "ORANGE"),
+            self.colorize(f"{{ip:<16}}", "BLUE"),
+            self.colorize(f"{{host}}", "LGRAY")
         ]
 
         super().log('  '.join(messages).format(**kwargs))
@@ -87,5 +120,5 @@ class DirectScanner(BugScanner):
         self.log_info(**data)
 
     def complete(self):
-        self.log_replace("Scan completed")
+        self.log_replace(self.colorize("Scan completed", "GREEN"))
         super().complete()

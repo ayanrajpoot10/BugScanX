@@ -1,4 +1,3 @@
-import asyncio
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 
@@ -9,15 +8,15 @@ class SubdomainSource:
         self.name = name
         self.subdomains = set()
     
-    async def fetch(self, domain, client):
+    def fetch(self, domain, session=None):
         raise NotImplementedError
 
 class CrtshSource(SubdomainSource):
     def __init__(self):
         super().__init__("Crt.sh")
     
-    async def fetch(self, domain, client):
-        response = await make_request(f"https://crt.sh/?q=%25.{domain}&output=json", client)
+    def fetch(self, domain, session=None):
+        response = make_request(f"https://crt.sh/?q=%25.{domain}&output=json", session)
         if response and response.headers.get('Content-Type') == 'application/json':
             for entry in response.json():
                 self.subdomains.update(entry['name_value'].splitlines())
@@ -27,8 +26,8 @@ class HackertargetSource(SubdomainSource):
     def __init__(self):
         super().__init__("Hackertarget")
     
-    async def fetch(self, domain, client):
-        response = await make_request(f"https://api.hackertarget.com/hostsearch/?q={domain}", client)
+    def fetch(self, domain, session=None):
+        response = make_request(f"https://api.hackertarget.com/hostsearch/?q={domain}", session)
         if response and 'text' in response.headers.get('Content-Type', ''):
             self.subdomains.update([line.split(",")[0] for line in response.text.splitlines()])
         return self.subdomains
@@ -37,8 +36,8 @@ class RapidDnsSource(SubdomainSource):
     def __init__(self):
         super().__init__("RapidDNS")
     
-    async def fetch(self, domain, client):
-        response = await make_request(f"https://rapiddns.io/subdomain/{domain}?full=1", client)
+    def fetch(self, domain, session=None):
+        response = make_request(f"https://rapiddns.io/subdomain/{domain}?full=1", session)
         if response:
             soup = BeautifulSoup(response.text, 'html.parser')
             for link in soup.find_all('td'):
@@ -51,8 +50,8 @@ class AnubisDbSource(SubdomainSource):
     def __init__(self):
         super().__init__("AnubisDB")
     
-    async def fetch(self, domain, client):
-        response = await make_request(f"https://jldc.me/anubis/subdomains/{domain}", client)
+    def fetch(self, domain, session=None):
+        response = make_request(f"https://jldc.me/anubis/subdomains/{domain}", session)
         if response:
             self.subdomains.update(response.json())
         return self.subdomains
@@ -61,8 +60,8 @@ class AlienVaultSource(SubdomainSource):
     def __init__(self):
         super().__init__("AlienVault")
     
-    async def fetch(self, domain, client):
-        response = await make_request(f"https://otx.alienvault.com/api/v1/indicators/domain/{domain}/passive_dns", client)
+    def fetch(self, domain, session=None):
+        response = make_request(f"https://otx.alienvault.com/api/v1/indicators/domain/{domain}/passive_dns", session)
         if response:
             for entry in response.json().get("passive_dns", []):
                 hostname = entry.get("hostname")
@@ -75,20 +74,19 @@ class C99Source(SubdomainSource):
         super().__init__("C99")
         self.recently_seen_subdomains = set()
     
-    async def fetch(self, domain, client, days=1):
+    def fetch(self, domain, session=None, days=1):
         base_url = "https://subdomainfinder.c99.nl/scans"
         dates = [(datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d') for i in range(days)]
         urls = [f"{base_url}/{date}/{domain}" for date in dates]
 
-        async def fetch_url(url):
-            response = await make_request(url, client)
+        for url in urls:
+            response = make_request(url, session)
             if response:
                 soup = BeautifulSoup(response.text, 'html.parser')
                 new_subdomains = {link.get_text(strip=True) for link in soup.select('td a.link.sd')}
                 self.subdomains.update(new_subdomains - self.recently_seen_subdomains)
                 self.recently_seen_subdomains.update(new_subdomains)
 
-        await asyncio.gather(*[fetch_url(url) for url in urls])
         return self.subdomains
 
 def get_all_sources():

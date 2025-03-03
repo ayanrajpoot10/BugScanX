@@ -2,10 +2,6 @@ import socket
 from .bug_scanner import BugScanner
 
 class ProxyScanner(BugScanner):
-    # Color constants
-    COLOR_RESET = '\033[0m'
-    COLOR_SUCCESS = '\033[32m'  # Green for successful connections
-    COLOR_NORMAL = '\033[90m'   # Gray for normal output
     
     host_list = []
     port_list = []
@@ -21,9 +17,10 @@ class ProxyScanner(BugScanner):
         if status_code == 'N/A' or status_code == '302':
              return
         
-        color_code = self.COLOR_SUCCESS if color == 'G1' else self.COLOR_NORMAL
+        color_name = 'GREEN' if color == 'G1' else 'GRAY'
         formatted_response = '\n    '.join(response_lines)
-        message = f"{color_code}{proxy_host_port.ljust(32)} {status_code}\n    {formatted_response}{self.COLOR_RESET}\n"
+        message = f"{self.colorize(proxy_host_port.ljust(32) + ' ' + status_code, color_name)}\n"
+        message += f"{self.colorize('    ' + formatted_response, color_name)}\n"
         super().log(message)
 
     def get_task_list(self):
@@ -98,5 +95,5 @@ class ProxyScanner(BugScanner):
             })
 
     def complete(self):
-        self.log_replace("Scan completed")
+        self.log_replace(self.colorize("Scan completed", "green"))
         super().complete()

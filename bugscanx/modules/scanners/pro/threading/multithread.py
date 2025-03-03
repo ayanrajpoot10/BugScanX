@@ -104,27 +104,19 @@ class MultiThread:
         self.logger.log(*args, **kwargs)
 
     def log_replace(self, *messages):
+        percentage = f'{self.percentage_scanned():.3f}%'
+        progress = f'{self._task_list_scanned_total} of {self._task_list_total}'
+        success_count = f'{len(self.success_list())}'
+        
         default_messages = [
             ' ',
-            f'{self.percentage_scanned():.3f}%',
-            f'{self._task_list_scanned_total} of {self._task_list_total}',
-            f'{len(self.success_list())}',
+            f'{self.logger.YELLOW}{percentage}{self.logger.RESET}',
+            f'{self.logger.BLUE}{progress}{self.logger.RESET}',
+            f'{self.logger.GREEN}{success_count}{self.logger.RESET}',
         ]
 
         messages = [str(x) for x in messages if x is not None and str(x)]
-
         self.logger.replace(' - '.join(default_messages + messages))
-
-    def filter_list(self, data):
-        filtered_data = []
-
-        for item in data:
-            item = str(item).strip()
-            if item.startswith('#'):
-                continue
-            filtered_data.append(item)
-
-        return list(set(filtered_data))
 
     def sleep(self, seconds):
         while seconds > 0:

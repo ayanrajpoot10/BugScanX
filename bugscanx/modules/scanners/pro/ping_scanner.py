@@ -10,18 +10,10 @@ class PingScanner(BugScanner):
         kwargs.setdefault('status', '')
         kwargs.setdefault('host', '')
 
-        CC = '\033[0m'
-
-        colors = {
-            'status': '\033[92m',
-            'port': '\033[95m',
-            'host': '\033[96m',
-        }
-
         messages = [
-            f'{colors["status"]}{{status:<8}}{CC}',
-            f'{colors["port"]}{{port:<6}}{CC}',
-            f'{colors["host"]}{{host:<20}}{CC}',
+            self.colorize('{status:<8}', 'GREEN'),
+            self.colorize('{port:<6}', 'CYAN'),
+            self.colorize('{host:<20}', 'LGRAY'),
         ]
 
         super().log('  '.join(messages).format(**kwargs))

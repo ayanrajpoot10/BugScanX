@@ -1,7 +1,6 @@
 import os
-import httpx
-import aiofiles
-import asyncio
+import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from bugscanx.utils import get_input
 from .subfinder_console import SubFinderConsole
@@ -9,48 +8,53 @@ from .subfinder_sources import get_all_sources, get_bulk_sources
 from .subfinder_utils import is_valid_domain, filter_valid_subdomains
 from .concurrent_processor import ConcurrentProcessor
 
-async def process_domain(domain, output_file, sources, console, total=1, current=1):
+def process_domain(domain, output_file, sources, console, total=1, current=1):
     if not is_valid_domain(domain):
         console.print_error(f"Invalid domain: {domain}")
         return set()
 
-    await console.start_domain_scan(domain)
-    await console.show_progress(current, total)
+    console.start_domain_scan(domain)
+    console.show_progress(current, total)
     
-    async with httpx.AsyncClient() as client:
-        async def fetch_source(source):
-            try:
-                found = await source.fetch(domain, client)
-                return await filter_valid_subdomains(found, domain)
-            except Exception as e:
-                console.print_error(f"[red]Error with {source.name}: {str(e)}[/red]")
-                return set()
-
-        results = await asyncio.gather(
-            *[fetch_source(source) for source in sources]
-        )
-        subdomains = set().union(*results)
+    with requests.Session() as session:
+        results = []
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            future_to_source = {
+                executor.submit(source.fetch, domain, session): source.name
+                for source in sources
+            }
+            
+            for future in as_completed(future_to_source):
+                source_name = future_to_source[future]
+                try:
+                    found = future.result()
+                    filtered = filter_valid_subdomains(found, domain)
+                    results.append(filtered)
+                except Exception as e:
+                    console.print_error(f"Error with {source_name}: {str(e)}")
+                    results.append(set())
+        
+        subdomains = set().union(*results) if results else set()
 
     console.update_domain_stats(domain, len(subdomains))
-    await console.print_domain_complete(domain, len(subdomains))
+    console.print_domain_complete(domain, len(subdomains))
 
-    async with aiofiles.open(output_file, "a", encoding="utf-8") as f:
-        await f.write("\n".join(sorted(subdomains)) + "\n")
+    with open(output_file, "a", encoding="utf-8") as f:
+        f.write("\n".join(sorted(subdomains)) + "\n")
 
     return subdomains
 
-async def find_subdomains():
+def find_subdomains():
     console = SubFinderConsole()
     domains = []
     
-    if await get_input("Select input type", "choice", 
-                       choices=["single domain", "bulk domains from file"],
-                       use_async=True) == "single domain":
-        domains = [await get_input("Enter the domain to find subdomains", use_async=True)]
+    if get_input("Select input type", "choice", 
+               choices=["single domain", "bulk domains from file"]) == "single domain":
+        domains = [get_input("Enter the domain to find subdomains")]
         sources = get_all_sources()
         output_file = f"{domains[0]}_subdomains.txt"
     else:
-        file_path = await get_input("Enter the path to the file containing domains", "file", use_async=True)
+        file_path = get_input("Enter the path to the file containing domains", "file")
         with open(file_path, 'r') as f:
             domains = [d.strip() for d in f if is_valid_domain(d.strip())]
         sources = get_bulk_sources()
@@ -60,14 +64,19 @@ async def find_subdomains():
         console.print_error("No valid domains provided")
         return
 
-    output_file = await get_input("Enter the output file name", default=output_file, use_async=True)
+    output_file = get_input("Enter the output file name", default=output_file)
     os.makedirs(os.path.dirname(output_file) or '.', exist_ok=True)
-
-    async def process_domain_wrapper(domain: str, index: int):
-        return await process_domain(domain, output_file, sources, console, len(domains), index + 1)
-
-    processor = ConcurrentProcessor(max_concurrent=3)
-    all_subdomains = await processor.process_items(
+    
+    processor = ConcurrentProcessor(max_workers=3)
+    
+    def process_domain_wrapper(domain, index):
+        try:
+            return process_domain(domain, output_file, sources, console, len(domains), index + 1)
+        except Exception as error:
+            console.print_error(f"Error processing {domain}: {error}")
+            return set()
+    
+    processor.process_items(
         domains,
         process_domain_wrapper,
         on_error=lambda domain, error: console.print_error(f"Error processing {domain}: {error}")

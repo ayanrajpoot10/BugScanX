@@ -1,14 +1,15 @@
-import asyncio
+import time
+from threading import Lock
 
 class RateLimiter:
     def __init__(self, requests_per_second: float):
         self.delay = 1.0 / requests_per_second
         self.last_request = 0
-        self._lock = asyncio.Lock()
+        self._lock = Lock()
 
-    async def acquire(self):
-        async with self._lock:
-            now = asyncio.get_event_loop().time()
+    def acquire(self):
+        with self._lock:
+            now = time.time()
             if now - self.last_request < self.delay:
-                await asyncio.sleep(self.delay - (now - self.last_request))
-            self.last_request = now
+                time.sleep(self.delay - (now - self.last_request))
+            self.last_request = time.time()

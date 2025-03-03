@@ -1,17 +1,17 @@
-import asyncio
+from threading import Lock
 from rich import print
 
 class ResultManager:
     def __init__(self, output_file: str):
         self.output_file = output_file
         self.total_domains = 0
-        self.lock = asyncio.Lock()
+        self.lock = Lock()
 
-    async def save_result(self, ip, domains):
+    def save_result(self, ip, domains):
         if not domains:
             return
             
-        async with self.lock:
+        with self.lock:
             with open(self.output_file, 'a') as f:
                 for domain in domains:
                     f.write(f"{domain}\n")
