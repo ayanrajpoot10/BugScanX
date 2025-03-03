@@ -1,5 +1,3 @@
-import asyncio
-
 def run_1():
     from bugscanx.modules.scanners.pro import main_pro_scanner
     main_pro_scanner.pro_main()
@@ -14,11 +12,11 @@ def run_3():
 
 def run_4():
     from bugscanx.modules.scrappers.subfinder import sub_finder
-    asyncio.run(sub_finder.find_subdomains())
+    sub_finder.find_subdomains()
 
 def run_5():
     from bugscanx.modules.scrappers.ip_lookup import ip_lookup
-    asyncio.run(ip_lookup.iplookup_main())
+    ip_lookup.iplookup_main()
 
 def run_6():
     from bugscanx.modules.others import txt_toolkit
