@@ -22,7 +22,7 @@ class BugScanner(MultiThread):
 
         for item in data:
             item = str(item).strip()
-            if item.startswith('#'):
+            if item.startswith('#') or not item:
                 continue
             filtered_data.append(item)
 

@@ -1,5 +1,6 @@
 import socket
 import requests
+from itertools import product
 from .bug_scanner import BugScanner
 
 class DirectScanner(BugScanner):
@@ -71,14 +72,13 @@ class DirectScanner(BugScanner):
         super().log('  '.join(messages).format(**kwargs))
 
     def get_task_list(self):
-        for method in self.filter_list(self.method_list):
-            for host in self.filter_list(self.host_list):
-                for port in self.filter_list(self.port_list):
-                    yield {
-                        'method': method.upper(),
-                        'host': host,
-                        'port': port,
-                    }
+        methods = self.filter_list(self.method_list)
+        hosts = self.filter_list(self.host_list)
+        ports = self.filter_list(self.port_list)
+        return (
+            {'method': m.upper(), 'host': h, 'port': p}
+            for m, h, p in product(methods, hosts, ports)
+        )
 
     def init(self):
         super().init()

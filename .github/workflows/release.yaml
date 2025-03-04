@@ -6,6 +6,12 @@ on:
       - '*'
 
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Manual version override (e.g., v1.0.0)'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   deploy:
@@ -17,10 +23,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Extract version from Git tag
+      - name: Extract version from Git tag or input
         run: |
-          VERSION_TAG=$(git describe --tags --always)
-          echo "Extracted version: $VERSION_TAG"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ github.event.inputs.version }}" ]]; then
+            VERSION_TAG="${{ github.event.inputs.version }}"
+            echo "Using manually provided version: $VERSION_TAG"
+          else
+            VERSION_TAG=$(git describe --tags --always)
+            echo "Extracted version from git: $VERSION_TAG"
+          fi
           echo "$VERSION_TAG" > VERSION  # Save version to file
 
       - name: Set up Python

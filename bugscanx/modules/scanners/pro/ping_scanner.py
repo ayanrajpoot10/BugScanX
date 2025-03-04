@@ -9,11 +9,13 @@ class PingScanner(BugScanner):
         kwargs.setdefault('color', '')
         kwargs.setdefault('status', '')
         kwargs.setdefault('host', '')
+        kwargs.setdefault('ip', '')
 
         messages = [
             self.colorize('{status:<8}', 'GREEN'),
             self.colorize('{port:<6}', 'CYAN'),
             self.colorize('{host:<20}', 'LGRAY'),
+            self.colorize('{ip:<15}', 'YELLOW'),
         ]
 
         super().log('  '.join(messages).format(**kwargs))
@@ -28,8 +30,14 @@ class PingScanner(BugScanner):
 
     def init(self):
         super().init()
-        self.log_info(status='Status', port='Port', host='Host')
-        self.log_info(status='------', port='----', host='----')
+        self.log_info(status='Status', port='Port', host='Host', ip='IP')
+        self.log_info(status='------', port='----', host='----', ip='--')
+
+    def resolve_ip(self, host):
+        try:
+            return socket.gethostbyname(host)
+        except Exception:
+            return "Unknown"
 
     def task(self, payload):
         host = payload['host']
@@ -46,10 +54,12 @@ class PingScanner(BugScanner):
                 result = sock.connect_ex((host, int(port)))
 
             if result == 0:
+                ip = self.resolve_ip(host)
                 data = {
                     'host': host,
                     'port': port,
-                    'status': 'OPEN'
+                    'status': 'OPEN',
+                    'ip': ip
                 }
                 self.task_success(data)
                 self.log_info(**data)
