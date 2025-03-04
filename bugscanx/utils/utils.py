@@ -26,15 +26,12 @@ def get_input(
     qmark="",
     amark="",
     validate_input=True,
-    use_async=False,
     show_cursor=False,
     instruction="",
     long_instruction="",
     **kwargs
 ):
-
     message = f" {message}:"
-    execute_method = "execute_async" if use_async else "execute"
 
     common_params = {
         "message": message,
@@ -62,33 +59,33 @@ def get_input(
         validator = create_validator(validators)
 
     if input_type == "choice":
-        return getattr(select(
+        return select(
             choices=choices,
             multiselect=multiselect,
             transformer=transformer,
             show_cursor=show_cursor,
             **common_params
-        ), execute_method)()
+        ).execute()
     
     elif input_type == "file":
         only_files = kwargs.pop('only_files', True)
-        return getattr(filepath(
+        return filepath(
             validate=validator,
             only_files=only_files,
             **common_params
-        ), execute_method)()
+        ).execute()
     
     elif input_type == "number":
-        return getattr(text(
+        return text(
             validate=validator,
             **common_params
-        ), execute_method)()
+        ).execute()
     
     elif input_type == "text":
-        return getattr(text(
+        return text(
             validate=validator,
             **common_params
-        ), execute_method)()
+        ).execute()
     
     else:
         raise ValueError(f"Unsupported input_type: {input_type}")
@@ -96,18 +93,17 @@ def get_input(
 def get_confirm(
     message, 
     default=True, 
-    style=DEFAULT_STYLE, 
-    use_async=False,
+    style=DEFAULT_STYLE,
     **kwargs
 ):
-    return getattr(confirm(
+    return confirm(
         message=message,
         default=default,
         qmark="",
         amark="",
         style=style,
         **kwargs
-    ), "execute_async" if use_async else "execute")()
+    ).execute()
 
 def banner():
     banner_text = """

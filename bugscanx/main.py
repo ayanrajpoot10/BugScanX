@@ -38,4 +38,4 @@ def main_menu():
                 print("\n[yellow] Press Enter to continue...", end="")
                 input()
     except KeyboardInterrupt:
-        sys.exit(1)
+        sys.exit()

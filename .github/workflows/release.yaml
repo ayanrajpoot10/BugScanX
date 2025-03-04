@@ -14,6 +14,14 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from Git tag
+        run: |
+          VERSION_TAG=$(git describe --tags --always)
+          echo "Extracted version: $VERSION_TAG"
+          echo "$VERSION_TAG" > VERSION  # Save version to file
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -25,7 +33,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install build twine
 
-      - name: Build the package (using pyproject.toml)
+      - name: Build the package
         run: |
           python -m build
 

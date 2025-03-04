@@ -30,16 +30,11 @@ def create_validator(validators):
     
     return CustomValidator()
 
-# ---------- Common Validators ----------
-
 def required(text):
     return bool(text.strip()) or "Input cannot be empty"
 
 def is_file(text):
     return os.path.isfile(text) or f"File does not exist: {text}"
-
-def is_directory(text):
-    return os.path.isdir(text) or f"Directory does not exist: {text}"
 
 def is_cidr(text):
     if not text.strip():

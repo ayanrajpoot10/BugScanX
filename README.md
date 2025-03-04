@@ -1,7 +1,7 @@
 <div align="center">
     <img src="https://raw.githubusercontent.com/Ayanrajpoot10/bugscan-x/refs/heads/main/assets/logo.png" width="128" height="128"/>
     <h1>BugScanX</h1>
-    <p>🔍 Advanced SNI/HTTP Bug Host Detection & Security Analysis Tool</p>
+    <p> Advanced SNI/HTTP Bug Host Detection & Security Analysis Tool</p>
 </div>
 
 <p align="center">

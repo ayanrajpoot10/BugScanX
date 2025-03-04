@@ -1,5 +1,3 @@
-__version__ = "1.1.8"
-
 import threading
 
 def import_modules_in_background():

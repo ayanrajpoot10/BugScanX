@@ -37,4 +37,4 @@ build-backend = "setuptools.build_meta"
 find = {}
 
 [tool.setuptools.dynamic]
-version = { attr = "bugscanx.__version__" }
+version = {file = "VERSION"}

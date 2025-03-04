@@ -33,6 +33,7 @@ class ProxyScanner(BugScanner):
 
     def init(self):
         super().init()
+        self.log("\n")
         self.log_info('Proxy:Port', ['Code'], 'G1')
         self.log_info('----------', ['----'], 'G1')
 
