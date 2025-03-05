@@ -174,7 +174,7 @@ def txt_toolkit_main():
     while True:
         print("\n".join(f"[{color}] [{key}] {desc}" for key, (desc, _, color) in options.items()))
         
-        choice = get_input("Your Choice", "number", qmark="\n [-]")
+        choice = input("\n \033[36m[-]  Your Choice: \033[0m")
         
         if choice in options:
             options[choice][1]()
