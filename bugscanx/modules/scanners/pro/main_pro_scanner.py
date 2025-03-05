@@ -82,7 +82,7 @@ def get_input_udp():
 
 def get_input_ping():
     filename = get_input("Enter filename", "file")
-    port_list = get_input("Enter port list", "number", default="80").split(',')
+    port_list = get_input("Enter port list", "number", default="443").split(',')
     output, threads = get_common_inputs(filename)
     
     scanner = PingScanner()

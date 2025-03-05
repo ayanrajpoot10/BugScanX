@@ -14,8 +14,8 @@ class PingScanner(BugScanner):
         messages = [
             self.colorize('{status:<8}', 'GREEN'),
             self.colorize('{port:<6}', 'CYAN'),
-            self.colorize('{host:<20}', 'LGRAY'),
             self.colorize('{ip:<15}', 'YELLOW'),
+            self.colorize('{host}', 'LGRAY'),
         ]
 
         super().log('  '.join(messages).format(**kwargs))
@@ -30,8 +30,8 @@ class PingScanner(BugScanner):
 
     def init(self):
         super().init()
-        self.log_info(status='Status', port='Port', host='Host', ip='IP')
-        self.log_info(status='------', port='----', host='----', ip='--')
+        self.log_info(status='Status', port='Port', ip='IP', host='Host')
+        self.log_info(status='------', port='----', ip='--', host='----')
 
     def resolve_ip(self, host):
         try:
