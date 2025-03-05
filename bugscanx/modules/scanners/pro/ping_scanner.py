@@ -70,5 +70,5 @@ class PingScanner(BugScanner):
         self.log_replace(f"{host}:{port}")
 
     def complete(self):
-        self.log_replace("Scan completed")
+        self.log_replace(self.colorize("Scan completed", "GREEN"))
         super().complete()
