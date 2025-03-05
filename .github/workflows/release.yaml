@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Manual version override (e.g., v1.0.0)'
+        description: 'Input version'
         required: false
         default: ''
         type: string
@@ -23,7 +23,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Extract version from Git tag or input
+      - name: Get version
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ github.event.inputs.version }}" ]]; then
             VERSION_TAG="${{ github.event.inputs.version }}"
@@ -32,7 +32,7 @@ jobs:
             VERSION_TAG=$(git describe --tags --always)
             echo "Extracted version from git: $VERSION_TAG"
           fi
-          echo "$VERSION_TAG" > VERSION  # Save version to file
+          echo "$VERSION_TAG" > VERSION
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -48,7 +48,7 @@ jobs:
         run: |
           python -m build
 
-      - name: Publish to PyPI
+      - name: Publish
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
