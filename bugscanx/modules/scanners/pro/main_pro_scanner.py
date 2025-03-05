@@ -92,7 +92,7 @@ def get_input_ping():
     return scanner, output, threads
 
 def get_user_input():
-    mode = get_input("Select mode", "choice", choices=["direct", "proxy", "ssl", "udp", "ping"])
+    mode = get_input("Select mode", "choice", choices=["direct", "proxy", "ping", "ssl", "udp"])
     
     input_handlers = {
         'direct': get_input_direct,

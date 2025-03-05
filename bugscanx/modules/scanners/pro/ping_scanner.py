@@ -58,7 +58,7 @@ class PingScanner(BugScanner):
                 data = {
                     'host': host,
                     'port': port,
-                    'status': 'OPEN',
+                    'status': 'True',
                     'ip': ip
                 }
                 self.task_success(data)
