@@ -27,8 +27,8 @@ def run_7():
     open_port.open_port_main()
 
 def run_8():
-    from bugscanx.modules.others import dns_info
-    dns_info.dns_main()
+    from bugscanx.modules.others import dns_records
+    dns_records.dns_main()
 
 def run_9():
     from bugscanx.modules.others import host_info
