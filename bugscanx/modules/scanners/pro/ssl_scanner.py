@@ -16,9 +16,10 @@ class SSLScanner(BugScanner):
 
 	def log_info_result(self, **kwargs):
 		status = kwargs.get('status', '')
-		status = 'True' if status else ''
-		server_name_indication = kwargs.get('server_name_indication', '')
-		self.log_info(status, server_name_indication)
+		if status:
+			status = 'True'
+			server_name_indication = kwargs.get('server_name_indication', '')
+			self.log_info(status, server_name_indication)
 
 	def init(self):
 		super().init()
@@ -45,10 +46,8 @@ class SSLScanner(BugScanner):
 				socket_client, server_hostname=server_name_indication, do_handshake_on_connect=True
 			)
 			response['status'] = True
-
 			self.task_success(server_name_indication)
+			self.log_info_result(**response)
 
 		except Exception:
 			response['status'] = False
-
-		self.log_info_result(**response)
