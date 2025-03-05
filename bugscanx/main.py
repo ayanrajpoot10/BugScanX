@@ -2,23 +2,23 @@ import sys
 from rich import print
 from .utils import *
 
+menu_options = {
+    '1': ("HOST SCANNER PRO", run_1, "bold cyan"),
+    '2': ("HOST SCANNER", run_2, "bold blue"),
+    '3': ("CIDR SCANNER", run_3, "bold yellow"),
+    '4': ("SUBFINDER", run_4, "bold magenta"),
+    '5': ("IP LOOKUP", run_5, "bold cyan"),
+    '6': ("TXT TOOLKIT", run_6, "bold magenta"),
+    '7': ("OPEN PORT", run_7, "bold white"),
+    '8': ("DNS RECORDS", run_8, "bold green"),
+    '9': ("HOST INFO", run_9, "bold blue"),
+    '10': ("HELP", run_10, "bold yellow"),
+    '11': ("UPDATE", run_11, "bold magenta"),
+    '12': ("EXIT", lambda: sys.exit(), "bold red")
+}
+
 def main_menu():  
     try:
-        menu_options = {
-            '1': ("HOST SCANNER PRO", run_1, "bold cyan"),
-            '2': ("HOST SCANNER", run_2, "bold blue"),
-            '3': ("CIDR SCANNER", run_3, "bold yellow"),
-            '4': ("SUBFINDER", run_4, "bold magenta"),
-            '5': ("IP LOOKUP", run_5, "bold cyan"),
-            '6': ("TXT TOOLKIT", run_6, "bold magenta"),
-            '7': ("OPEN PORT", run_7, "bold white"),
-            '8': ("DNS RECORDS", run_8, "bold green"),
-            '9': ("HOST INFO", run_9, "bold blue"),
-            '10': ("HELP", run_10, "bold yellow"),
-            '11': ("UPDATE", run_11, "bold magenta"),
-            '12': ("EXIT", lambda: sys.exit(), "bold red")
-        }
-
         while True:
             clear_screen()
             banner()
