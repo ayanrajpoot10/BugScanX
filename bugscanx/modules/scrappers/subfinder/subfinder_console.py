@@ -34,8 +34,8 @@ class SubFinderConsole:
         console.print(f"[green]✓[/green] {domain}: {subdomains_count} subdomains found")
     
     def print_final_summary(self, output_file):
-        print(f"\n[green]✓[/green] Total: [bold]{self.total_subdomains}[/bold] subdomains found")
-        console.print(f"[green]✓[/green] Results saved to {output_file}")
+        console.print(f"\n[green]✓ Total: [bold]{self.total_subdomains}[/bold] subdomains found[/green]")
+        console.print(f"[green]✓ Results saved to {output_file}[/green]")
         
     def print_error(self, message):
         console.print(f"[bold red]✗ ERROR: {message}[/bold red]")
