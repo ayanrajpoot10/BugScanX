@@ -25,7 +25,7 @@ def main_menu():
             for key, (desc, _, color) in menu_options.items():
                 print(f"[{color}] [{key}]{' ' if len(key)==1 else ''} {desc}")
 
-            choice = get_input("Your Choice", "number", qmark="\n [-]")
+            choice = input("\n \033[36m[-]  Your Choice: \033[0m")
 
             if choice in menu_options:
                 clear_screen()
