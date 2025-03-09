@@ -2,6 +2,7 @@ import socket
 import requests
 from itertools import product
 from .bug_scanner import BugScanner
+from bugscanx.utils import EXCLUDE_LOCATIONS
 
 class DirectScanner(BugScanner):
     method_list = []
@@ -97,7 +98,7 @@ class DirectScanner(BugScanner):
             return
 
         location = response.headers.get('location', '')
-        if location and location.startswith("https://jio.com/BalanceExhaust"):
+        if location and location in EXCLUDE_LOCATIONS:
             self.task_failed(payload)
             return
 

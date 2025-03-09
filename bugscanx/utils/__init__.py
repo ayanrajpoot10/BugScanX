@@ -1,9 +1,7 @@
 from bugscanx.utils.handler import *  
 
 from bugscanx.utils.utils import (
-    banner,
     clear_screen,
-    text_ascii,
     get_input,
     get_confirm
 )

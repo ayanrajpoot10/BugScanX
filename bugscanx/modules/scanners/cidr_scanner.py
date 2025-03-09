@@ -32,8 +32,8 @@ def check_http_response(host, port, method):
     url = f"{protocol}://{host}:{port}"
     try:
         response = requests.request(method, url, timeout=SUBSCAN_TIMEOUT, allow_redirects=True)
-        location = response.headers.get('Location', '')
-        if any(exclude in location for exclude in EXCLUDE_LOCATIONS):
+        location = response.headers.get('Location', '').strip()
+        if location in EXCLUDE_LOCATIONS:
             return None
         server_header = response.headers.get('Server', 'N/A')
         return response.status_code, server_header, port, host

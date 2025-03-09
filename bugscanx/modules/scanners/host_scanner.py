@@ -32,8 +32,6 @@ def check_http_response(host, port, timeout=SUBSCAN_TIMEOUT, exclude_locations=E
     protocol = 'https' if port in ('443', '8443') else 'http'
     url = f"{protocol}://{host}:{port}"
     
-    exclude_set = set(exclude_locations) if exclude_locations else set()
-    
     try:
         response = requests.head(url, timeout=timeout, allow_redirects=False, verify=False)
         status_code = response.status_code
@@ -41,7 +39,7 @@ def check_http_response(host, port, timeout=SUBSCAN_TIMEOUT, exclude_locations=E
 
         if status_code == 302:
             location = response.headers.get('Location', '').strip()
-            if exclude_set and any(exclude.lower() in location.lower() for exclude in exclude_set):
+            if location in exclude_locations:
                 return None
 
         ip_address = socket.gethostbyname(host)

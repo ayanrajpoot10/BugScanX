@@ -1,7 +1,4 @@
 import os
-from rich import print
-from rich.text import Text
-from pyfiglet import Figlet
 from InquirerPy import get_style
 from InquirerPy.prompts import ListPrompt as select
 from InquirerPy.prompts import FilePathPrompt as filepath
@@ -104,24 +101,6 @@ def get_confirm(
         style=style,
         **kwargs
     ).execute()
-
-def banner():
-    banner_text = """
-    [bold red]╔╗[/bold red] [turquoise2]╦ ╦╔═╗╔═╗╔═╗╔═╗╔╗╔═╗ ╦[/turquoise2]
-    [bold red]╠╩╗[/bold red][turquoise2]║ ║║ ╦╚═╗║  ╠═╣║║║╔╩╦╝[/turquoise2]
-    [bold red]╚═╝[/bold red][turquoise2]╚═╝╚═╝╚═╝╚═╝╩ ╩╝╚╝╩ ╚═[/turquoise2]
-     [bold magenta]Dᴇᴠᴇʟᴏᴘᴇʀ: Aʏᴀɴ Rᴀᴊᴘᴏᴏᴛ
-      Tᴇʟᴇɢʀᴀᴍ: @BᴜɢSᴄᴀɴX[/bold magenta]
-    """
-    print(banner_text)
-
-figlet = Figlet(font="calvin_s")
-
-def text_ascii(text, color="white", shift=2):
-    ascii_banner = figlet.renderText(text)
-    shifted_banner = "\n".join((" " * shift) + line for line in ascii_banner.splitlines())
-    print(Text(shifted_banner, style=color))
-    print()
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
