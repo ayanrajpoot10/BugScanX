@@ -5,9 +5,7 @@ from InquirerPy.prompts import FilePathPrompt as filepath
 from InquirerPy.prompts import InputPrompt as text
 from InquirerPy.prompts import ConfirmPrompt as confirm
 
-from .validators import (
-    create_validator, required, is_file, is_digit
-)
+from .validators import create_validator, required, is_file, is_digit
 
 DEFAULT_STYLE = get_style({"question": "#87CEEB", "answer": "#00FF7F", "answered_question": "#808080"}, style_override=False)
 
@@ -29,10 +27,12 @@ def get_input(
     **kwargs
 ):
     message = f" {message}:"
-
+    
+    default_str = "" if default is None else str(default)
+    
     common_params = {
         "message": message,
-        "default": str(default) if default is not None else "",
+        "default": default_str,
         "qmark": qmark,
         "amark": amark,
         "style": style,
@@ -41,15 +41,13 @@ def get_input(
         **kwargs
     }
 
-    if validators is None:
-        validators = []
-        if validate_input:
-            if input_type == "file":
-                validators = [required, is_file]
-            elif input_type == "number":
-                validators = [required, is_digit]
-            elif input_type == "text":
-                validators = [required]
+    if validators is None and validate_input:
+        if input_type == "file":
+            validators = [required, is_file]
+        elif input_type == "number":
+            validators = [required, is_digit]
+        elif input_type == "text":
+            validators = [required]
     
     validator = None
     if validators and validate_input:
@@ -72,13 +70,7 @@ def get_input(
             **common_params
         ).execute()
     
-    elif input_type == "number":
-        return text(
-            validate=validator,
-            **common_params
-        ).execute()
-    
-    elif input_type == "text":
+    elif input_type == "number" or input_type == "text":
         return text(
             validate=validator,
             **common_params

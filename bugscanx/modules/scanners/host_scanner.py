@@ -8,7 +8,7 @@ import requests
 from tqdm import tqdm
 from rich import print
 
-from bugscanx.modules.scanners import file_manager
+from .file_selector import file_manager
 from bugscanx.utils import (
     clear_screen,
     get_input,

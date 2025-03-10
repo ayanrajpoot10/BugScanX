@@ -1,11 +1,9 @@
-import os
 import threading
 
 def import_modules_in_background():
     def import_task():
         try:
             from bugscanx.modules.scanners.pro import main_pro_scanner
-            from bugscanx.modules.scanners import host_scanner
             from bugscanx.modules.scrappers.subfinder import sub_finder
         except Exception:
             pass
@@ -15,6 +13,7 @@ def import_modules_in_background():
 
 import_modules_in_background()
 
+import os
 from rich import print
 from pyfiglet import Figlet
 from rich.text import Text

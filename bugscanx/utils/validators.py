@@ -1,14 +1,9 @@
 import os
 import ipaddress
+import re
 from prompt_toolkit.validation import Validator, ValidationError
 
-class ValidationResult:
-    def __init__(self, valid, message=None):
-        self.valid = valid
-        self.message = message
-
 def create_validator(validators):
-    
     class CustomValidator(Validator):
         def validate(self, document):
             text = document.text.strip()
@@ -39,7 +34,7 @@ def is_file(text):
 def is_cidr(text):
     if not text.strip():
         return "CIDR input cannot be empty"
-        
+    
     parts = [p.strip() for p in text.split(',') if p.strip()]
     for part in parts:
         try:
@@ -52,14 +47,14 @@ def is_digit(text):
     if not text.strip():
         return True
     
-    parts = [p.strip() for p in text.split(',')]
+    parts = text.split(',')
     for part in parts:
-        if not part.isdigit():
+        part = part.strip()
+        if part and not part.isdigit():
             return f"Not a valid number: {part}"
     return True
 
 def regex_match(pattern, message=None):
-    import re
     compiled = re.compile(pattern)
     
     def validator(text):

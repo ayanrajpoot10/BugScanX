@@ -1,5 +1,3 @@
-from bugscanx.utils.handler import *  
-
 from bugscanx.utils.utils import (
     clear_screen,
     get_input,
