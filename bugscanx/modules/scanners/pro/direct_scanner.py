@@ -1,8 +1,11 @@
 import socket
 import requests
+import urllib3
 from itertools import product
 from .bug_scanner import BugScanner
 from bugscanx.utils import EXCLUDE_LOCATIONS
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class DirectScanner(BugScanner):
     method_list = []

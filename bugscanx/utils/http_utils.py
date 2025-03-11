@@ -78,4 +78,5 @@ EXCLUDE_LOCATIONS = ["https://jio.com/BalanceExhaust",
                     "https://zbr.zong.com.pk/",
                     "https://www.mtn.co.rw",
                     "https://portal.ncnd.vodafone.ua",
+                    "http://www.iam.ma/imgs/internet-gratuit-435-350.png"
                     ]
