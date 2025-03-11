@@ -9,47 +9,26 @@ class DirectScanner(BugScanner):
     host_list = []
     port_list = []
     requests = requests
-
-    def request_connection_error(self, method, url, **_):
-        for _ in self.sleep(1):
-            self.log_replace(method, url, 'connection error')
-        return 1
-
-    def request_read_timeout(self, method, url, **_):
-        for remains in self.sleep(10):
-            self.log_replace(method, url, 'read timeout', remains)
-        return 1
-
-    def request_timeout(self, method, url, **_):
-        for remains in self.sleep(5):
-            self.log_replace(method, url, 'timeout', remains)
-        return 1
+    DEFAULT_TIMEOUT = 3
+    DEFAULT_RETRY = 1
 
     def request(self, method, url, **kwargs):
         method = method.upper()
-
-        kwargs['timeout'] = kwargs.get('timeout', 5)
-
-        retry = int(kwargs.pop('retry', 5))
-
-        while retry > 0:
+        kwargs['timeout'] = self.DEFAULT_TIMEOUT
+        max_attempts = self.DEFAULT_RETRY
+        
+        for attempt in range(max_attempts):
             self.log_replace(method, url)
-
             try:
                 return self.requests.request(method, url, **kwargs)
-
-            except requests.exceptions.ConnectionError:
-                retry_decrease = self.request_connection_error(method, url, **kwargs)
-                retry -= retry_decrease or 0
-
-            except requests.exceptions.ReadTimeout:
-                retry_decrease = self.request_read_timeout(method, url, **kwargs)
-                retry -= retry_decrease or 0
-
-            except requests.exceptions.Timeout:
-                retry_decrease = self.request_timeout(method, url, **kwargs)
-                retry -= retry_decrease or 0
-
+            except (requests.exceptions.ConnectionError, 
+                    requests.exceptions.ReadTimeout,
+                    requests.exceptions.Timeout) as e:
+                wait_time = 1 if isinstance(e, requests.exceptions.ConnectionError) else 5
+                for _ in self.sleep(wait_time):
+                    self.log_replace(method, url)
+                if attempt == max_attempts - 1:
+                    return None
         return None
 
     def log_info(self, **kwargs):
@@ -91,7 +70,7 @@ class DirectScanner(BugScanner):
         host = payload['host']
         port = payload['port']
 
-        response = self.request(method, self.get_url(host, port), retry=1, timeout=3, allow_redirects=False, verify=False)
+        response = self.request(method, self.get_url(host, port), verify=False, allow_redirects=False)
 
         if response is None:
             self.task_failed(payload)

@@ -1,7 +1,6 @@
 import re
 import random
 import requests
-from requests.exceptions import RequestException
 from bugscanx.utils import HEADERS, USER_AGENTS, SUBFINDER_TIMEOUT
 
 def make_request(url, session=None):
@@ -16,22 +15,30 @@ def make_request(url, session=None):
             
         if response.status_code == 200:
             return response
-    except RequestException:
+    except requests.RequestException:
         pass
     return None
 
+DOMAIN_REGEX = re.compile(
+    r'^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+'
+    r'[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$'
+)
+
 def is_valid_domain(domain):
-    regex = re.compile(
-        r'^(?:[a-zA-Z0-9]'
-        r'(?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)*'
-        r'[a-zA-Z]{2,6}$'
-    )
-    return domain and isinstance(domain, str) and re.match(regex, domain) is not None
+    return bool(domain and isinstance(domain, str) and DOMAIN_REGEX.match(domain))
 
 def filter_valid_subdomains(subdomains, domain):
+    if not domain or not isinstance(domain, str):
+        return set()
+    
+    domain_suffix = f".{domain}"
     result = set()
+    
     for sub in subdomains:
-        if isinstance(sub, str) and is_valid_domain(sub):
-            if sub.endswith(f".{domain}") or sub == domain:
-                result.add(sub)
+        if not isinstance(sub, str):
+            continue
+            
+        if sub == domain or sub.endswith(domain_suffix):
+            result.add(sub)
+                
     return result

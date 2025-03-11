@@ -50,4 +50,8 @@ class SSLScanner(BugScanner):
 			self.log_info_result(**response)
 
 		except Exception:
-			response['status'] = False
+			pass
+
+	def complete(self):
+		self.log_replace(self.colorize("Scan completed", "GREEN"))
+		super().complete()

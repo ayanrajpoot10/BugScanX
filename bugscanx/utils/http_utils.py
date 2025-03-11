@@ -48,7 +48,6 @@ USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64; Trident/7.0; .NET4.0; .NET4.6; .NET4.5; .NET4.7) like Gecko"
 ]
 
-
 EXTRA_HEADERS = { 
     "X-Originating-IP": "127.0.0.1",
     "X-Forwarded-For": "127.0.0.1",

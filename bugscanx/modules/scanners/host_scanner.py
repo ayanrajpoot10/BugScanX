@@ -26,7 +26,7 @@ def read_file(file_path):
             return [line.strip() for line in file if line.strip()]
     except (FileNotFoundError, IOError) as e:
         print(f"[red]Error reading file: {e}[/red]")
-        return []      
+        return []
 
 def check_http_response(host, port, timeout=SUBSCAN_TIMEOUT, exclude_locations=EXCLUDE_LOCATIONS):
     protocol = 'https' if port in ('443', '8443') else 'http'

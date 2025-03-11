@@ -10,7 +10,6 @@ from .concurrent_processor import ConcurrentProcessor
 
 def process_domain(domain, output_file, sources, console, total=1, current=1):
     if not is_valid_domain(domain):
-        console.print_error(f"Invalid domain: {domain}")
         return set()
 
     console.start_domain_scan(domain)
@@ -25,13 +24,11 @@ def process_domain(domain, output_file, sources, console, total=1, current=1):
             }
             
             for future in as_completed(future_to_source):
-                source_name = future_to_source[future]
                 try:
                     found = future.result()
                     filtered = filter_valid_subdomains(found, domain)
                     results.append(filtered)
-                except Exception as e:
-                    console.print_error(f"Error with {source_name}: {str(e)}")
+                except Exception:
                     results.append(set())
         
         subdomains = set().union(*results) if results else set()
@@ -39,7 +36,6 @@ def process_domain(domain, output_file, sources, console, total=1, current=1):
     console.update_domain_stats(domain, len(subdomains))
     console.print_domain_complete(domain, len(subdomains))
 
-    # Only write to file if subdomains were found
     if subdomains:
         with open(output_file, "a", encoding="utf-8") as f:
             f.write("\n".join(sorted(subdomains)) + "\n")
@@ -74,14 +70,13 @@ def find_subdomains():
     def process_domain_wrapper(domain, index):
         try:
             return process_domain(domain, output_file, sources, console, len(domains), index + 1)
-        except Exception as error:
-            console.print_error(f"Error processing {domain}: {error}")
+        except Exception:
             return set()
     
     processor.process_items(
         domains,
         process_domain_wrapper,
-        on_error=lambda domain, error: console.print_error(f"Error processing {domain}: {error}")
+        on_error=lambda domain, error: None
     )
 
     console.print_final_summary(output_file)

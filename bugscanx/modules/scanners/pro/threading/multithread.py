@@ -1,10 +1,8 @@
 import time
-
 from queue import Queue
 from threading import Thread, RLock
 
 from .logger import Logger
-
 
 class MultiThread:
     logger = Logger(level='DEBUG')
@@ -20,8 +18,7 @@ class MultiThread:
         self._task_list_success = []
         self._task_list_failed = []
 
-        self._threads = threads or 16
-
+        self._threads = threads or 50
 
     def set_threads(self, threads):
         self._threads = threads or self._threads
@@ -70,7 +67,6 @@ class MultiThread:
     def complete(self):
         pass
 
-
     def lock(self):
         return self._lock
 
@@ -98,7 +94,6 @@ class MultiThread:
         with self.lock_queue():
             self._queue_task_list.unfinished_tasks -= len(self._queue_task_list.queue)
             self._queue_task_list.queue.clear()
-
 
     def log(self, *args, **kwargs):
         self.logger.log(*args, **kwargs)

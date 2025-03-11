@@ -39,6 +39,3 @@ def dns_main():
         nslookup(domain)
     except Exception as e:
         print(f"[red]An error occurred during DNS lookup: {str(e)}[/red]")
-
-
-
