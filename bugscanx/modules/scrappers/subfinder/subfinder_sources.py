@@ -78,7 +78,7 @@ class CertSpotterSource(SubdomainSource):
             for cert in response.json():
                 self.subdomains.update(cert.get('dns_names', []))
         return self.subdomains
-    
+
 # Removed due to slowness will be added back later
 
 # class C99Source(SubdomainSource):

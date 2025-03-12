@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Input version'
+        description: 'Version'
         required: false
         default: ''
         type: string
