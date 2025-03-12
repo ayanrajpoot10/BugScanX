@@ -39,9 +39,14 @@ def merge_txt_files():
     directory = get_input("Directory path", default=os.getcwd())
     merge_all = get_confirm("Merge all txt files?")
     files_to_merge = []
-    if not merge_all:
+    if merge_all:
+        files_to_merge = [f for f in os.listdir(directory) if f.endswith('.txt')]
+    else:
         filenames = get_input("Files to merge (comma-separated)")
         files_to_merge = [filename.strip() for filename in filenames.split(',') if filename.strip()]
+    if not files_to_merge:
+        print("[red]No files found to merge[/red]")
+        return
     output_file = get_input("Output filename")
     try:
         with open(os.path.join(directory, output_file), 'w', encoding="utf-8") as outfile:
