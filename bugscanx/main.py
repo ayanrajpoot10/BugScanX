@@ -18,25 +18,28 @@ menu_options = {
 }
 
 def main_menu():
-    while True:
-        clear_screen()
-        banner()
-        print('\n'.join(f"[{color}] [{key}]{' ' if len(key)==1 else ''} {desc}" 
-                       for key, (desc, color) in menu_options.items()))
+    try:
+        while True:
+            clear_screen()
+            banner()
+            print('\n'.join(f"[{color}] [{key}]{' ' if len(key)==1 else ''} {desc}" 
+                        for key, (desc, color) in menu_options.items()))
 
-        choice = input("\n \033[36m[-]  Your Choice: \033[0m")
-        if choice not in menu_options:
-            continue
-            
-        if choice == '12':
-            sys.exit()
-            
-        clear_screen()
-        text_ascii(menu_options[choice][0], color="bold magenta")
-        try:
-            module = __import__('bugscanx.utils.handler', fromlist=[f'run_{choice}'])
-            getattr(module, f'run_{choice}')()
-        except KeyboardInterrupt:
-            print("\n\n[yellow] Operation cancelled by user.")
-        print("\n[yellow] Press Enter to continue...", end="")
-        input()
+            choice = input("\n \033[36m[-]  Your Choice: \033[0m")
+            if choice not in menu_options:
+                continue
+                
+            if choice == '12':
+                sys.exit()
+                
+            clear_screen()
+            text_ascii(menu_options[choice][0], color="bold magenta")
+            try:
+                module = __import__('bugscanx.utils.handler', fromlist=[f'run_{choice}'])
+                getattr(module, f'run_{choice}')()
+            except KeyboardInterrupt:
+                print("\n\n[yellow] Operation cancelled by user.")
+            print("\n[yellow] Press Enter to continue...", end="")
+            input()
+    except KeyboardInterrupt:
+        sys.exit()

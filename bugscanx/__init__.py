@@ -1,4 +1,7 @@
+import os
 import threading
+from rich import print
+from pyfiglet import Figlet
 
 def import_modules():
     def task():
@@ -7,27 +10,19 @@ def import_modules():
             from bugscanx.modules.scrappers.subfinder import sub_finder
         except Exception:
             pass
+    
+    threading.Thread(target=task, daemon=True).start()
 
-    thread = threading.Thread(target=task, daemon=True)
-    thread.start()
-
-import_modules()
-
-import os
-from rich import print
-from pyfiglet import Figlet
+figlet = Figlet(font="calvin_s")
 
 def banner():
-    banner_text = """
+    print("""
     [bold red]╔╗[/bold red] [turquoise2]╦ ╦╔═╗╔═╗╔═╗╔═╗╔╗╔═╗ ╦[/turquoise2]
     [bold red]╠╩╗[/bold red][turquoise2]║ ║║ ╦╚═╗║  ╠═╣║║║╔╩╦╝[/turquoise2]
     [bold red]╚═╝[/bold red][turquoise2]╚═╝╚═╝╚═╝╚═╝╩ ╩╝╚╝╩ ╚═[/turquoise2]
      [bold magenta]Dᴇᴠᴇʟᴏᴘᴇʀ: Aʏᴀɴ Rᴀᴊᴘᴏᴏᴛ
       Tᴇʟᴇɢʀᴀᴍ: @BᴜɢSᴄᴀɴX[/bold magenta]
-    """
-    print(banner_text)
-
-figlet = Figlet(font="calvin_s")
+    """)
 
 def text_ascii(text, color="white", shift=2):
     ascii_banner = figlet.renderText(text)
@@ -37,3 +32,5 @@ def text_ascii(text, color="white", shift=2):
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
+
+import_modules()
