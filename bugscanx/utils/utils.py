@@ -1,10 +1,11 @@
 import os
 from InquirerPy import get_style
-from InquirerPy.prompts import ListPrompt as select
-from InquirerPy.prompts import FilePathPrompt as filepath
-from InquirerPy.prompts import InputPrompt as text
-from InquirerPy.prompts import ConfirmPrompt as confirm
-
+from InquirerPy.prompts import (
+    ListPrompt as select,
+    FilePathPrompt as filepath,
+    InputPrompt as text,
+    ConfirmPrompt as confirm
+)
 from .validators import create_validator, required, is_file, is_digit
 
 DEFAULT_STYLE = get_style({"question": "#87CEEB", "answer": "#00FF7F", "answered_question": "#808080"}, style_override=False)
@@ -18,73 +19,54 @@ def get_input(
     multiselect=False,
     transformer=None,
     style=DEFAULT_STYLE,
-    qmark="",
-    amark="",
     validate_input=True,
-    show_cursor=False,
     instruction="",
-    long_instruction="",
     **kwargs
 ):
     message = f" {message}:"
-    
-    default_str = "" if default is None else str(default)
-    
     common_params = {
         "message": message,
-        "default": default_str,
-        "qmark": qmark,
-        "amark": amark,
+        "default": "" if default is None else str(default),
+        "qmark": kwargs.pop("qmark", ""),
+        "amark": kwargs.pop("amark", ""),
         "style": style,
         "instruction": instruction,
-        "long_instruction": long_instruction,
-        **kwargs
+        "long_instruction": kwargs.pop("long_instruction", "")
     }
-
-    if validators is None and validate_input:
-        if input_type == "file":
-            validators = [required, is_file]
-        elif input_type == "number":
-            validators = [required, is_digit]
-        elif input_type == "text":
-            validators = [required]
     
-    validator = None
-    if validators and validate_input:
-        validator = create_validator(validators)
-
+    if validators is None and validate_input:
+        validators = {
+            "file": [required, is_file],
+            "number": [required, is_digit],
+            "text": [required]
+        }.get(input_type)
+    
+    validator = create_validator(validators) if validators and validate_input else None
+    
     if input_type == "choice":
         return select(
             choices=choices,
             multiselect=multiselect,
             transformer=transformer,
-            show_cursor=show_cursor,
-            **common_params
+            show_cursor=kwargs.pop("show_cursor", False),
+            **common_params,
+            **kwargs
         ).execute()
     
-    elif input_type == "file":
-        only_files = kwargs.pop('only_files', True)
+    if input_type == "file":
         return filepath(
             validate=validator,
-            only_files=only_files,
-            **common_params
+            only_files=kwargs.pop("only_files", True),
+            **common_params,
+            **kwargs
         ).execute()
     
-    elif input_type == "number" or input_type == "text":
-        return text(
-            validate=validator,
-            **common_params
-        ).execute()
+    if input_type in ["number", "text"]:
+        return text(validate=validator, **common_params, **kwargs).execute()
     
-    else:
-        raise ValueError(f"Unsupported input_type: {input_type}")
+    raise ValueError(f"Unsupported input_type: {input_type}")
 
-def get_confirm(
-    message, 
-    default=True, 
-    style=DEFAULT_STYLE,
-    **kwargs
-):
+def get_confirm(message, default=True, style=DEFAULT_STYLE, **kwargs):
     return confirm(
         message=message,
         default=default,
