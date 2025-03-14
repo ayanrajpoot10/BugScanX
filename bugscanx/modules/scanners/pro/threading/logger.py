@@ -7,12 +7,12 @@ class Logger:
     COLORS = {
         'ORANGE': '\033[33m',
         'MAGENTA': '\033[35m',
+        'CYAN': '\033[36m',
         'GRAY': '\033[90m',
         'RED': '\033[91m',
         'GREEN': '\033[92m',
         'YELLOW': '\033[93m',
         'BLUE': '\033[94m',
-        'CYAN': '\033[96m'
     }
     RESET = '\033[0m'
     CLEAR_LINE = '\033[2K'

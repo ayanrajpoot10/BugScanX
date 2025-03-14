@@ -25,7 +25,6 @@ def resolve_and_print(domain, record_type):
 def nslookup(domain):
     print(f"[cyan]\n Performing NSLOOKUP for: {domain}[/cyan]")
     
-    # Process each record type sequentially
     record_types = ['A', 'CNAME', 'MX', 'NS', 'TXT']
     for record_type in record_types:
         resolve_and_print(domain, record_type)

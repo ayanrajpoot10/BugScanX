@@ -167,14 +167,14 @@ def cidr_to_ip():
 
 def txt_toolkit_main():
     options = {
-        "1": ("Split TXT File", split_txt_file, "bold cyan"),
-        "2": ("Merge TXT files", merge_txt_files, "bold blue"),
+        "1": ("Split File", split_txt_file, "bold cyan"),
+        "2": ("Merge Files", merge_txt_files, "bold blue"),
         "3": ("Remove Duplicate", remove_duplicate_domains, "bold yellow"),
         "4": ("Subdomains to Domains", convert_subdomains_to_domains, "bold magenta"),
         "5": ("TXT Cleaner", txt_cleaner, "bold cyan"),
-        "6": ("Filter domains by Extension", separate_domains_by_extension, "bold magenta"),
-        "7": ("Filter domains by Keywords", filter_by_keywords, "bold yellow"),
-        "8": ("Convert CIDR to IP", cidr_to_ip, "bold green"),
+        "6": ("Filter by Extension", separate_domains_by_extension, "bold magenta"),
+        "7": ("Filter by Keywords", filter_by_keywords, "bold yellow"),
+        "8": ("CIDR to IP", cidr_to_ip, "bold green"),
         "0": ("Back", lambda: None, "bold red")
     }
     

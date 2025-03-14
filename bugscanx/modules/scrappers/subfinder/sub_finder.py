@@ -48,11 +48,11 @@ def find_subdomains():
     
     if get_input("Select input type", "choice", 
                choices=["single domain", "bulk domains from file"]) == "single domain":
-        domains = [get_input("Enter the domain to find subdomains")]
+        domains = [get_input("Enter domain")]
         sources = get_all_sources()
         output_file = f"{domains[0]}_subdomains.txt"
     else:
-        file_path = get_input("Enter the path to the file containing domains", "file")
+        file_path = get_input("Enter filename", "file")
         with open(file_path, 'r') as f:
             domains = [d.strip() for d in f if is_valid_domain(d.strip())]
         sources = get_bulk_sources()
@@ -62,7 +62,7 @@ def find_subdomains():
         console.print_error("No valid domains provided")
         return
 
-    output_file = get_input("Enter the output file name", default=output_file)
+    output_file = get_input("Enter output filename", default=output_file)
     os.makedirs(os.path.dirname(output_file) or '.', exist_ok=True)
     
     processor = ConcurrentProcessor(max_workers=3)

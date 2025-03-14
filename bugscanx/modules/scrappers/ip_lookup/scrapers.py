@@ -27,12 +27,10 @@ class DomainScraper:
             return None
 
     def fetch_domains(self, ip):
-        """Method to be implemented by subclasses"""
         raise NotImplementedError
 
     def close(self):
         self.session.close()
-
 
 class RapidDNSScraper(DomainScraper):
     def fetch_domains(self, ip):
@@ -43,7 +41,6 @@ class RapidDNSScraper(DomainScraper):
         return [row.find_all('td')[0].text.strip() 
                 for row in soup.find_all('tr') if row.find_all('td')]
 
-
 class YouGetSignalScraper(DomainScraper):
     def fetch_domains(self, ip):
         data = {'remoteAddress': ip, 'key': '', '_': ''}
@@ -53,8 +50,6 @@ class YouGetSignalScraper(DomainScraper):
             return []
         return [domain[0] for domain in response.json().get("domainArray", [])]
 
-
-# Factory function to get all available scrapers
 def get_scrapers():
     return [
         RapidDNSScraper(),

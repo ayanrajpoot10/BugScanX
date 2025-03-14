@@ -11,7 +11,7 @@ console = Console()
 
 def check_and_update():
     try:
-        with console.status("[yellow] Checking for updates", spinner="dots") as status:
+        with console.status("[yellow]Checking for updates", spinner="dots") as status:
             current_version = version(PACKAGE_NAME)
             
             result = subprocess.run(

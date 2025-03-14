@@ -14,7 +14,7 @@ def read_hosts(filename):
 
 def get_common_inputs(filename):
     output = get_input("Enter output filename", default=f"result_{os.path.basename(filename)}", validate_input=False)
-    threads = get_input("Enter number of threads", "number", default="50")
+    threads = get_input("Enter threads", "number", default="50")
     return output, threads
 
 def get_input_direct():
@@ -82,7 +82,7 @@ def get_input_udp():
 
 def get_input_ping():
     filename = get_input("Enter filename", "file")
-    port_list = get_input("Enter port list", "number", default="443").split(',')
+    port_list = get_input("Enter ports", "number", default="443").split(',')
     output, threads = get_common_inputs(filename)
     
     scanner = PingScanner()

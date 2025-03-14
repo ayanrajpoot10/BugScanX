@@ -6,7 +6,6 @@ from .ip_utils import process_input, process_file
 from .result_manager import ResultManager
 from .iplookup_console import IPLookupConsole, console
 
-
 def extract_domains(ip, scrapers, ip_console):
     ip_console.start_ip_scan(ip)
     domains = []
@@ -17,7 +16,6 @@ def extract_domains(ip, scrapers, ip_console):
             
     domains = sorted(set(domains))
     return (ip, domains)
-
 
 def process_ips(ips, output_file):
     if not ips:
@@ -34,7 +32,6 @@ def process_ips(ips, output_file):
             result_manager.save_result(ip, domains)
         return ip, domains
 
-    # Use ThreadPoolExecutor to parallelize requests
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         futures = {executor.submit(process_ip, ip): ip for ip in ips}
         for future in concurrent.futures.as_completed(futures):
@@ -45,7 +42,6 @@ def process_ips(ips, output_file):
         
     ip_console.print_final_summary(output_file)
     return ip_console.total_domains
-    
 
 def get_input_interactively():
     ips = []
@@ -54,18 +50,16 @@ def get_input_interactively():
                            choices=["Manual IP/CIDR", "IP/CIDR from file"])
     
     if input_choice == "Manual IP/CIDR":
-        cidr = get_input("Enter an IP or CIDR", validators=[is_cidr])
+        cidr = get_input("Enter IP or CIDR", validators=[is_cidr])
         ips.extend(process_input(cidr))
     else:
-        file_path = get_input("Enter the file path containing IPs/CIDRs", "file")
+        file_path = get_input("Enter filename", "file")
         ips.extend(process_file(file_path))
         
-    output_file = get_input("Enter the output file path")
+    output_file = get_input("Enter output filename")
     return ips, output_file
-
 
 def iplookup_main(ips=None, output_file=None):
     if ips is None or output_file is None:
         ips, output_file = get_input_interactively()
     process_ips(ips, output_file)
-
