@@ -31,7 +31,6 @@ def get_input(
         "amark": kwargs.pop("amark", ""),
         "style": style,
         "instruction": instruction,
-        "long_instruction": kwargs.pop("long_instruction", "")
     }
     
     if validators is None and validate_input:

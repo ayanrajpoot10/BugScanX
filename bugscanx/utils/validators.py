@@ -1,6 +1,5 @@
 import os
 import ipaddress
-import re
 from prompt_toolkit.validation import Validator, ValidationError
 
 def create_validator(validators):
@@ -53,12 +52,3 @@ def is_digit(text):
         if part and not part.isdigit():
             return f"Not a valid number: {part}"
     return True
-
-def regex_match(pattern, message=None):
-    compiled = re.compile(pattern)
-    
-    def validator(text):
-        if compiled.match(text):
-            return True
-        return message or f"Input must match pattern: {pattern}"
-    return validator

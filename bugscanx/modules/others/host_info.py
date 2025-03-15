@@ -75,7 +75,7 @@ def get_sni_info(hostname, port=443):
         return f"Error getting SNI info: {e}"
 
 def osint_main():
-    host = get_input("Enter the host (e.g., example.com)")
+    host = get_input("Enter the host")
     protocol = get_input("Enter the protocol", "choice", choices=["http", "https"])
     url = f"{protocol}://{host}"
 

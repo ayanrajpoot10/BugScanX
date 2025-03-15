@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# My Data
+# Extra files
 trash/
 *.txt
 
