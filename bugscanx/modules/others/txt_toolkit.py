@@ -1,7 +1,10 @@
 import os
 import re
+import socket
 import ipaddress
 from rich import print
+from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from collections import defaultdict
 from bugscanx.utils import get_input, get_confirm
 
@@ -17,7 +20,7 @@ def write_file_lines(file_path, lines):
     try:
         with open(file_path, "w", encoding="utf-8") as file:
             file.writelines(f"{line}\n" for line in lines)
-        print(f"[green] Successfully wrote to {file_path}[/green]")
+        print(f"[green]Successfully wrote to file[/green]")
         return True
     except Exception as e:
         print(f"[red] Error writing to file {file_path}: {e}[/red]")
@@ -165,6 +168,50 @@ def cidr_to_ip():
     except ValueError as e:
         print(f"[red]Invalid CIDR range: {cidr_input} - {str(e)}[/red]")
 
+def resolve_domain(domain):
+    try:
+        ip = socket.gethostbyname_ex(domain.strip())[2][0]
+        return domain, ip
+    except (socket.gaierror, socket.timeout):
+        return domain, None
+
+def domains_to_ip():
+    file_path = get_file_input()
+    output_file = get_input("Output file")
+    
+    domains = read_file_lines(file_path)
+    if not domains:
+        return
+        
+    ip_addresses = set()
+    total_domains = len(domains)
+    resolved_count = 0
+
+    socket.setdefaulttimeout(1)
+    
+    with Progress(
+        SpinnerColumn(),
+        *Progress.get_default_columns(),
+        TimeElapsedColumn(),
+        transient=True
+    ) as progress:
+        task = progress.add_task("[yellow]Resolving", total=total_domains)
+        
+        with ThreadPoolExecutor(max_workers=100) as executor:
+            future_to_domain = {executor.submit(resolve_domain, domain): domain for domain in domains}
+            for future in as_completed(future_to_domain):
+                domain, ip = future.result()
+                if ip:
+                    ip_addresses.add(ip)
+                progress.update(task, advance=1)
+                resolved_count += 1
+    
+    if ip_addresses:
+        write_file_lines(output_file, sorted(ip_addresses))
+        print(f"[green] Successfully resolved domains to IP addresses[/green]")
+    else:
+        print("[red] No domains could be resolved[/red]")
+
 def txt_toolkit_main():
     options = {
         "1": ("Split File", split_txt_file, "bold cyan"),
@@ -175,6 +222,7 @@ def txt_toolkit_main():
         "6": ("Filter by Extension", separate_domains_by_extension, "bold magenta"),
         "7": ("Filter by Keywords", filter_by_keywords, "bold yellow"),
         "8": ("CIDR to IP", cidr_to_ip, "bold green"),
+        "9": ("Domains to IP", domains_to_ip, "bold blue"),
         "0": ("Back", lambda: None, "bold red")
     }
     
