@@ -27,3 +27,4 @@ class ConcurrentProcessor:
         if results:
             return set().union(*results)
         return set()
+    

@@ -3,6 +3,7 @@ import json
 
 from bugscanx.utils import get_input
 from .direct_scanner import DirectScanner
+from .custom_direct_scanner import CustomDirectScanner
 from .proxy_scanner import ProxyScanner
 from .ssl_scanner import SSLScanner
 from .ping_scanner import PingScanner
@@ -25,6 +26,20 @@ def get_input_direct():
                            choices=["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"])
     
     scanner = DirectScanner()
+    scanner.method_list = method_list
+    scanner.host_list = read_hosts(filename)
+    scanner.port_list = port_list
+    
+    return scanner, output, threads
+
+def get_input_direct_no302():
+    filename = get_input("Enter filename", "file")
+    port_list = get_input("Enter ports", "number", default="80").split(',')
+    output, threads = get_common_inputs(filename)
+    method_list = get_input("Select HTTP method", "choice", multiselect=True, 
+                           choices=["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"])
+    
+    scanner = CustomDirectScanner()
     scanner.method_list = method_list
     scanner.host_list = read_hosts(filename)
     scanner.port_list = port_list
@@ -92,10 +107,12 @@ def get_input_ping():
     return scanner, output, threads
 
 def get_user_input():
-    mode = get_input("Select mode", "choice", choices=["direct", "proxy", "ping", "ssl", "udp"])
+    mode = get_input("Select mode", "choice", 
+                    choices=["direct", "direct-no302", "proxy", "ping", "ssl", "udp"])
     
     input_handlers = {
         'direct': get_input_direct,
+        'direct-no302': get_input_direct_no302,
         'proxy': get_input_proxy,
         'ssl': get_input_ssl,
         'udp': get_input_udp,
