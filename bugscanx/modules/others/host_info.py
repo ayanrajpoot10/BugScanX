@@ -12,6 +12,31 @@ from bugscanx.utils import get_input
 
 HTTP_METHODS = ["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"]
 
+CDN_PROVIDERS = {
+    "Cloudflare": ["cf-ray", "cf-cache-status"],
+    "Akamai": ["x-akamai-transformed", "akamai-cache-status"],
+    "Fastly": ["fastly-debug", "x-served-by"],
+    "Amazon CloudFront": ["x-amz-cf-id"],
+    "Google Cloud CDN": ["x-goog-cache-status"],
+    "Microsoft Azure CDN": ["x-azure-ref"],
+    "StackPath": ["x-stackpath-xxid"],
+    "Sucuri": ["x-sucuri-id"]
+}
+
+def check_cdn(url):
+    try:
+        response = requests.get(url, timeout=5)
+        headers = response.headers
+        
+        detected_cdns = []
+        for provider, indicators in CDN_PROVIDERS.items():
+            if any(header.lower() in map(str.lower, headers.keys()) for header in indicators):
+                detected_cdns.append(provider)
+        
+        return detected_cdns, headers
+    except RequestException as e:
+        return None, str(e)
+
 def check_http_method(url, method):
     try:
         response = requests.request(method, url, timeout=5)
@@ -57,9 +82,9 @@ def get_host_ips(hostname):
     try:
         ips = socket.getaddrinfo(hostname, None)
         unique_ips = list(set(ip[4][0] for ip in ips))
-        return unique_ips
+        return unique_ips, None
     except socket.gaierror as e:
-        return [f"Error resolving hostname: {e}"]
+        return [], f"Error resolving hostname: {e}"
 
 def get_sni_info(hostname, port=443):
     try:
@@ -83,10 +108,27 @@ def osint_main():
     print(f"[bold white]Hostname:[/bold white] {host}")
     print(f"[bold white]Target URL:[/bold white] {url}\n")
     
-    ip_addresses = get_host_ips(host)
+    ip_addresses, dns_error = get_host_ips(host)
+    
+    if dns_error:
+        print(f"\n[bold red] Invalid host. Please check the hostname and try again.[/bold red]")
+        return
+    
     print("[bold white]IP Addresses:[/bold white]")
     for ip in ip_addresses:
         print(f"  → {ip}")
+    
+    print("\n[bold cyan]CDN Information[/bold cyan]")
+    detected_cdns, cdn_response = check_cdn(url)
+    if detected_cdns is None:
+        print(f"[bold red]Error checking CDN: {cdn_response}[/bold red]")
+    else:
+        if detected_cdns:
+            print("[bold white]CDN Providers Detected:[/bold white]")
+            for cdn in detected_cdns:
+                print(f"  → {cdn}")
+        else:
+            print("[bold white]No known CDN detected.[/bold white]")
 
     print("\n[bold cyan]HTTP Methods Information[/bold cyan]")
     check_http_methods(url)

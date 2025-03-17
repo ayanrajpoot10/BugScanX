@@ -20,7 +20,7 @@ def write_file_lines(file_path, lines):
     try:
         with open(file_path, "w", encoding="utf-8") as file:
             file.writelines(f"{line}\n" for line in lines)
-        print(f"[green]Successfully wrote to file[/green]")
+        print(f"[green] Successfully wrote to file[/green]")
         return True
     except Exception as e:
         print(f"[red] Error writing to file {file_path}: {e}[/red]")
@@ -57,7 +57,7 @@ def merge_txt_files():
         files_to_merge = [f.strip() for f in filenames.split(',') if f.strip()]
     
     if not files_to_merge:
-        print("[red]No files found to merge[/red]")
+        print("[red] No files found to merge[/red]")
         return
     
     output_file = get_input("Output filename")

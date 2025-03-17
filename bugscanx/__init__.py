@@ -24,9 +24,9 @@ def banner():
       Tᴇʟᴇɢʀᴀᴍ: @BᴜɢSᴄᴀɴX[/bold magenta]
     """)
 
-def text_ascii(text, color="white", shift=2):
+def text_ascii(text, color="white", indentation=2):
     ascii_banner = figlet.renderText(text)
-    shifted_banner = "\n".join((" " * shift) + line for line in ascii_banner.splitlines())
+    shifted_banner = "\n".join((" " * indentation) + line for line in ascii_banner.splitlines())
     print(f"[{color}]{shifted_banner}[/{color}]")
     print()
 
