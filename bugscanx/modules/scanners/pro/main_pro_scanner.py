@@ -1,10 +1,11 @@
 import os
 import json
 
-from bugscanx.utils import get_input
+from bugscanx.utils import get_input, get_confirm
 from .direct_scanner import DirectScanner
 from .custom_direct_scanner import CustomDirectScanner
 from .proxy_scanner import ProxyScanner
+from .proxy2_scanner import Proxy2Scanner
 from .ssl_scanner import SSLScanner
 from .ping_scanner import PingScanner
 from .udp_scanner import UdpScanner
@@ -75,6 +76,31 @@ def get_input_proxy():
     
     return scanner, output, threads
 
+def get_input_proxy2():
+    filename = get_input("Enter filename", "file")
+    port_list = get_input("Enter ports", "number", default="80").split(',')
+    output, threads = get_common_inputs(filename)
+    method_list = get_input("Select HTTP method", "choice", multiselect=True, 
+                           choices=["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"])
+    
+    proxy = get_input("Enter proxy (proxy:port)")
+    
+    use_auth = get_confirm(" Use proxy authentication?")
+    proxy_username = None
+    proxy_password = None
+    
+    if use_auth:
+        proxy_username = get_input("Enter proxy username")
+        proxy_password = get_input("Enter proxy password")
+    
+    scanner = Proxy2Scanner()
+    scanner.set_proxy(proxy, proxy_username, proxy_password)
+    scanner.method_list = method_list
+    scanner.host_list = read_hosts(filename)
+    scanner.port_list = port_list
+    
+    return scanner, output, threads
+
 def get_input_ssl():
     filename = get_input("Enter filename", "file")
     output, threads = get_common_inputs(filename)
@@ -108,12 +134,13 @@ def get_input_ping():
 
 def get_user_input():
     mode = get_input("Select mode", "choice", 
-                    choices=["direct", "direct-no302", "proxy", "ping", "ssl", "udp"])
+                    choices=["direct", "direct-no302", "proxy", "proxy-2", "ping", "ssl", "udp"])
     
     input_handlers = {
         'direct': get_input_direct,
         'direct-no302': get_input_direct_no302,
         'proxy': get_input_proxy,
+        'proxy-2': get_input_proxy2,
         'ssl': get_input_ssl,
         'udp': get_input_udp,
         'ping': get_input_ping
