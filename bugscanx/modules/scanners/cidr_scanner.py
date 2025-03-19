@@ -43,8 +43,8 @@ def check_http_response(host, port, method):
 def perform_ip_scan(hosts, ports, output_file, threads, method):
     clear_screen()
     print(f"[bold green]Scanning using HTTP method: {method}...\n[/bold green]")
-    headers = (f"[green]{'Code':<4}[/green] [cyan]{'Server':<15}[/cyan] [yellow]{'Port':<5}[/yellow] [magenta]{'IP Address':<15}[/magenta]")  
-    separator = (f"[green]{'----':<4}[/green] [cyan]{'------':<15}[/cyan] [yellow]{'----':<5}[/yellow] [magenta]{'---------':<15}[/magenta]")  
+    headers = (f"[green]{'Code':<4}[/green] [cyan]{'Server':<15}[/cyan] [yellow]{'Port':<5}[/yellow] [magenta]{'IP Address'}[/magenta]")  
+    separator = (f"[green]{'----':<4}[/green] [cyan]{'------':<15}[/cyan] [yellow]{'----':<5}[/yellow] [magenta]{'---------'}[/magenta]")  
     
     if output_file:
         output_path = Path(output_file)
@@ -70,7 +70,7 @@ def perform_ip_scan(hosts, ports, output_file, threads, method):
             if result:
                 responded += 1
                 code, server, port, ip_address = result
-                row = f"\033[32m{code:<4}\033[0m \033[36m{server:<15}\033[0m \033[33m{port:<5}\033[0m \033[35m{ip_address:<15}\033[0m"
+                row = f"\033[32m{code:<4}\033[0m \033[36m{server:<15}\033[0m \033[33m{port:<5}\033[0m \033[35m{ip_address}\033[0m"
                 pbar.write(row)
                 if output_file:
                     with file_write_lock:
