@@ -4,7 +4,6 @@ import time
 import subprocess
 from rich.console import Console
 from importlib.metadata import version
-from packaging.version import parse
 from bugscanx.utils import get_confirm
 
 PACKAGE_NAME = "bugscan-x"
@@ -13,7 +12,7 @@ console = Console()
 def check_and_update():
     try:
         with console.status("[yellow]Checking for updates...", spinner="dots") as status:
-            current_version = parse(version(PACKAGE_NAME))
+            current_version = version(PACKAGE_NAME)
             
             try:
                 result = subprocess.run(
@@ -21,7 +20,7 @@ def check_and_update():
                     capture_output=True, text=True, check=True, timeout=15
                 )
                 lines = result.stdout.splitlines()
-                latest_version = parse(lines[-1].split()[-1] if lines else "0.0.0")
+                latest_version = lines[-1].split()[-1] if lines else "0.0.0"
             except subprocess.TimeoutExpired:
                 console.print("[red] Update check timed out. Please check your internet connection.")
                 return

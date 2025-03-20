@@ -50,7 +50,6 @@ def split_txt_file():
         if write_file_lines(part_file, part_lines):
             created_files.append((part_file, len(part_lines)))
     
-    # Print detailed summary
     print(f"[green] Successfully split '{os.path.basename(file_path)}' ({len(lines)} lines) into {len(created_files)} parts:[/green]")
     for file_path, line_count in created_files:
         print(f"[green] - {os.path.basename(file_path)}: {line_count} lines[/green]")
@@ -272,7 +271,7 @@ def txt_toolkit_main():
         "2": ("Merge Files", merge_txt_files, "bold blue"),
         "3": ("Remove Duplicate", remove_duplicate_domains, "bold yellow"),
         "4": ("Subdomains to Domains", convert_subdomains_to_domains, "bold magenta"),
-        "5": ("TXT Cleaner", txt_cleaner, "bold cyan"),
+        "5": ("Domains and IP Extractor", txt_cleaner, "bold cyan"),
         "6": ("Filter by Extension", separate_domains_by_extension, "bold magenta"),
         "7": ("Filter by Keywords", filter_by_keywords, "bold yellow"),
         "8": ("CIDR to IP", cidr_to_ip, "bold green"),

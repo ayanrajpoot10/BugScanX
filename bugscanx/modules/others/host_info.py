@@ -2,12 +2,10 @@ import socket
 import ssl
 import queue
 import threading
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
 import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from requests.exceptions import RequestException
 from rich import print
-
 from bugscanx.utils import get_input
 
 HTTP_METHODS = ["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"]
