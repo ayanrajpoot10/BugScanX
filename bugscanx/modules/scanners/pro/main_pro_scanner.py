@@ -1,6 +1,5 @@
 import os
 import json
-
 from bugscanx.utils import get_input, get_confirm
 from .direct_scanner import DirectScanner
 from .custom_direct_scanner import CustomDirectScanner
@@ -8,7 +7,6 @@ from .proxy_scanner import ProxyScanner
 from .proxy2_scanner import Proxy2Scanner
 from .ssl_scanner import SSLScanner
 from .ping_scanner import PingScanner
-from .udp_scanner import UdpScanner
 
 def read_hosts(filename):
     with open(filename) as file:
@@ -48,7 +46,7 @@ def get_input_direct_no302():
     return scanner, output, threads
 
 def get_input_proxy():
-    filename = get_input("Enter filename", "file")
+    filename = get_input("Enter proxies filename", "file")
     target_url = get_input("Enter target url", default="in1.wstunnel.site")
     method = get_input("Enter HTTP method", default="GET")
     path = get_input("Enter path", default="/")
@@ -110,17 +108,6 @@ def get_input_ssl():
     
     return scanner, output, threads
 
-def get_input_udp():
-    filename = get_input("Enter filename", "file")
-    output, threads = get_common_inputs(filename)
-    
-    scanner = UdpScanner()
-    scanner.host_list = read_hosts(filename)
-    scanner.udp_server_host = 'bugscanner.tppreborn.my.id'
-    scanner.udp_server_port = '8853'
-    
-    return scanner, output, threads
-
 def get_input_ping():
     filename = get_input("Enter filename", "file")
     port_list = get_input("Enter ports", "number", default="443").split(',')
@@ -134,16 +121,15 @@ def get_input_ping():
 
 def get_user_input():
     mode = get_input("Select mode", "choice", 
-                    choices=["direct", "direct-no302", "proxy", "proxy-2", "ping", "ssl", "udp"])
+                    choices=["direct", "direct-no302", "proxy-check", "proxy-request", "ping", "ssl"])
     
     input_handlers = {
         'direct': get_input_direct,
         'direct-no302': get_input_direct_no302,
-        'proxy': get_input_proxy,
-        'proxy-2': get_input_proxy2,
-        'ssl': get_input_ssl,
-        'udp': get_input_udp,
-        'ping': get_input_ping
+        'proxy-check': get_input_proxy,
+        'proxy-request': get_input_proxy2,
+        'ping': get_input_ping,
+        'ssl': get_input_ssl
     }
     
     scanner, output, threads = input_handlers[mode]()

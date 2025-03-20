@@ -46,8 +46,6 @@ class PingScanner(BugScanner):
         if not host:
             return
         
-        self.log_replace(f"{host}:{port}")
-        
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 sock.settimeout(2)

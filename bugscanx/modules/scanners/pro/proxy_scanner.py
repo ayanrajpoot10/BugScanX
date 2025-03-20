@@ -44,8 +44,6 @@ class ProxyScanner(BugScanner):
         response_lines = []
         success = False
 
-        self.log_replace(f"{proxy_host}")
-
         formatted_payload = (
             self.payload
             .replace('[method]', self.method)

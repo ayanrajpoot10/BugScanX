@@ -32,8 +32,6 @@ class SSLScanner(BugScanner):
 		if not server_name_indication:
 			return
 
-		self.log_replace(server_name_indication)
-
 		response = {
 			'server_name_indication': server_name_indication,
 		}
@@ -41,7 +39,7 @@ class SSLScanner(BugScanner):
 		try:
 			socket_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			socket_client.settimeout(5)
-			socket_client.connect(("77.88.8.8", 443))
+			socket_client.connect((server_name_indication, 443))
 			socket_client = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2).wrap_socket(
 				socket_client, server_hostname=server_name_indication, do_handshake_on_connect=True
 			)
@@ -51,6 +49,8 @@ class SSLScanner(BugScanner):
 
 		except Exception:
 			pass
+
+		self.log_replace(server_name_indication)
 
 	def complete(self):
 		self.log_replace(self.colorize("Scan completed", "GREEN"))
