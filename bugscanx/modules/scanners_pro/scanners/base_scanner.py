@@ -1,7 +1,7 @@
-from .threading.multithread import MultiThread
-from .threading.logger import Logger
+from ..concurrency.multithread import MultiThread
+from ..concurrency.logger import Logger
 
-class BugScanner(MultiThread):
+class BaseScanner(MultiThread):
     threads: int
 
     @classmethod

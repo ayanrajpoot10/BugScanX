@@ -1,12 +1,11 @@
 import os
 import json
 from bugscanx.utils import get_input, get_confirm
-from .direct_scanner import DirectScanner
-from .custom_direct_scanner import CustomDirectScanner
-from .proxy_scanner import ProxyScanner
-from .proxy2_scanner import Proxy2Scanner
-from .ssl_scanner import SSLScanner
-from .ping_scanner import PingScanner
+from .scanners.direct_scanner import DirectScanner
+from .scanners.proxy_check import ProxyScanner
+from .scanners.proxy_request import Proxy2Scanner
+from .scanners.ssl_scanner import SSLScanner
+from .scanners.ping_scanner import PingScanner
 
 def read_hosts(filename):
     with open(filename) as file:
@@ -17,7 +16,7 @@ def get_common_inputs(filename):
     threads = get_input("Enter threads", "number", default="50")
     return output, threads
 
-def get_input_direct():
+def get_input_direct(no302=False):
     filename = get_input("Enter filename", "file")
     port_list = get_input("Enter ports", "number", default="80").split(',')
     output, threads = get_common_inputs(filename)
@@ -28,20 +27,7 @@ def get_input_direct():
     scanner.method_list = method_list
     scanner.host_list = read_hosts(filename)
     scanner.port_list = port_list
-    
-    return scanner, output, threads
-
-def get_input_direct_no302():
-    filename = get_input("Enter filename", "file")
-    port_list = get_input("Enter ports", "number", default="80").split(',')
-    output, threads = get_common_inputs(filename)
-    method_list = get_input("Select HTTP method", "choice", multiselect=True, 
-                           choices=["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"])
-    
-    scanner = CustomDirectScanner()
-    scanner.method_list = method_list
-    scanner.host_list = read_hosts(filename)
-    scanner.port_list = port_list
+    scanner.no302 = no302
     
     return scanner, output, threads
 
@@ -124,8 +110,8 @@ def get_user_input():
                     choices=["direct", "direct-no302", "proxy-check", "proxy-request", "ping", "ssl"])
     
     input_handlers = {
-        'direct': get_input_direct,
-        'direct-no302': get_input_direct_no302,
+        'direct': lambda: get_input_direct(no302=False),
+        'direct-no302': lambda: get_input_direct(no302=True),
         'proxy-check': get_input_proxy,
         'proxy-request': get_input_proxy2,
         'ping': get_input_ping,

@@ -1,7 +1,7 @@
 import socket
-from .bug_scanner import BugScanner
+from .base_scanner import BaseScanner
 
-class PingScanner(BugScanner):
+class PingScanner(BaseScanner):
     host_list = []
     port_list = []
 

@@ -1,7 +1,7 @@
 import socket
-from .bug_scanner import BugScanner
+from .base_scanner import BaseScanner
 
-class ProxyScanner(BugScanner):
+class ProxyScanner(BaseScanner):
     
     host_list = []
     port_list = []

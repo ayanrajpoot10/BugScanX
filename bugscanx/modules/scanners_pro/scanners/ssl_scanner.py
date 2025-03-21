@@ -1,8 +1,8 @@
 import ssl
 import socket
-from .bug_scanner import BugScanner
+from .base_scanner import BaseScanner
 
-class SSLScanner(BugScanner):
+class SSLScanner(BaseScanner):
 	host_list = []
 
 	def get_task_list(self):

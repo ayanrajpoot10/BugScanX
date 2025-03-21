@@ -1,6 +1,6 @@
 def run_1():
-    from bugscanx.modules.scanners.pro import main_pro_scanner
-    main_pro_scanner.pro_main()
+    from bugscanx.modules.scanners_pro import scanner_pro_main
+    scanner_pro_main.pro_main()
 
 def run_2():
     from bugscanx.modules.scanners import host_scanner

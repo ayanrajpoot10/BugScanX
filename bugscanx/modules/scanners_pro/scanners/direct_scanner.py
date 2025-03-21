@@ -2,18 +2,19 @@ import socket
 import requests
 import urllib3
 from itertools import product
-from .bug_scanner import BugScanner
+from .base_scanner import BaseScanner
 from bugscanx.utils import EXCLUDE_LOCATIONS
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-class DirectScanner(BugScanner):
+class DirectScanner(BaseScanner):
     method_list = []
     host_list = []
     port_list = []
     requests = requests
     DEFAULT_TIMEOUT = 3
     DEFAULT_RETRY = 1
+    no302 = False
 
     def request(self, method, url, **kwargs):
         method = method.upper()
@@ -79,10 +80,15 @@ class DirectScanner(BugScanner):
             self.task_failed(payload)
             return
 
-        location = response.headers.get('location', '')
-        if location and location in EXCLUDE_LOCATIONS:
+        if self.no302 and response.status_code == 302:
             self.task_failed(payload)
             return
+
+        if not self.no302:
+            location = response.headers.get('location', '')
+            if location and location in EXCLUDE_LOCATIONS:
+                self.task_failed(payload)
+                return
 
         try:
             ip = socket.gethostbyname(host)
@@ -95,9 +101,11 @@ class DirectScanner(BugScanner):
             'port': port,
             'status_code': response.status_code,
             'server': response.headers.get('server', ''),
-            'location': location,
             'ip': ip
         }
+
+        if not self.no302:
+            data['location'] = response.headers.get('location', '')
 
         self.task_success(data)
         self.log_info(**data)
