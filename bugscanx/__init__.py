@@ -6,8 +6,8 @@ from pyfiglet import Figlet
 def import_modules():
     def task():
         try:
-            from bugscanx.modules.scanners_pro import scanner_pro_main
-            from bugscanx.modules.scrappers.subfinder import sub_finder
+            from bugscanx.modules.scanners_pro import host_scanner_pro
+            from bugscanx.modules.scrapers.subfinder import subfinder
         except Exception:
             pass
     

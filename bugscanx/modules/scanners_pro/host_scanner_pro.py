@@ -1,6 +1,6 @@
 import os
 import json
-from bugscanx.utils import get_input, get_confirm
+from bugscanx.utils.utils import get_input, get_confirm
 from .scanners.direct_scanner import DirectScanner
 from .scanners.proxy_check import ProxyScanner
 from .scanners.proxy_request import Proxy2Scanner
@@ -121,7 +121,7 @@ def get_user_input():
     scanner, output, threads = input_handlers[mode]()
     return scanner, output, threads, mode
 
-def pro_main():
+def main():
     scanner, output, threads, mode = get_user_input()
     scanner.threads = int(threads)
     scanner.start()

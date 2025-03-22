@@ -79,28 +79,6 @@ class CertSpotterSource(SubdomainSource):
                 self.subdomains.update(cert.get('dns_names', []))
         return self.subdomains
 
-# Removed due to slowness will be added back later
-
-# class C99Source(SubdomainSource):
-#     def __init__(self):
-#         super().__init__("C99")
-#         self.recently_seen_subdomains = set()
-    
-#     def fetch(self, domain, session=None, days=1):
-#         base_url = "https://subdomainfinder.c99.nl/scans"
-#         dates = [(datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d') for i in range(days)]
-#         urls = [f"{base_url}/{date}/{domain}" for date in dates]
-
-#         for url in urls:
-#             response = make_request(url, session)
-#             if response:
-#                 soup = BeautifulSoup(response.text, 'html.parser')
-#                 new_subdomains = {link.get_text(strip=True) for link in soup.select('td a.link.sd')}
-#                 self.subdomains.update(new_subdomains - self.recently_seen_subdomains)
-#                 self.recently_seen_subdomains.update(new_subdomains)
-
-#         return self.subdomains
-
 def get_all_sources():
     return [
         CrtshSource(),
@@ -109,7 +87,6 @@ def get_all_sources():
         AnubisDbSource(),
         AlienVaultSource(),
         CertSpotterSource(),
-        # C99Source() very slow
     ]
 
 def get_bulk_sources():

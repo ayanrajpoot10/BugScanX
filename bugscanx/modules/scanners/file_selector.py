@@ -1,6 +1,6 @@
 from pathlib import Path
 from rich import print
-from bugscanx.utils import get_input
+from bugscanx.utils.utils import get_input
 
 def file_manager(start_dir):
     current_dir = Path(start_dir).resolve()
@@ -12,7 +12,7 @@ def file_manager(start_dir):
 
         short_dir = "\\".join(current_dir.parts[-3:])
 
-        print(f"\n[cyan] Current Folder: {short_dir}[/cyan]")
+        print(f"[cyan] Current Folder: {short_dir}[/cyan]")
 
         for idx, item in enumerate(directories + files, 1):
             color = "yellow" if item.is_dir() else "white"

@@ -1,8 +1,9 @@
 import concurrent.futures
-from bugscanx.utils import get_input, is_cidr
+from bugscanx.utils.utils import get_input
+from bugscanx.utils.validators import is_cidr
 
-from .scrapers import get_scrapers
-from .ip_utils import process_input, process_file
+from .iplookup_sources import get_scrapers
+from .iplookup_utils import process_input, process_file
 from .result_manager import ResultManager
 from .iplookup_console import IPLookupConsole, console
 
@@ -59,7 +60,7 @@ def get_input_interactively():
     output_file = get_input("Enter output filename")
     return ips, output_file
 
-def iplookup_main(ips=None, output_file=None):
+def main(ips=None, output_file=None):
     if ips is None or output_file is None:
         ips, output_file = get_input_interactively()
     process_ips(ips, output_file)

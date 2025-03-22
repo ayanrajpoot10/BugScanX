@@ -1,20 +1,14 @@
 import socket
-from pathlib import Path
-from threading import Lock
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
 import urllib3
 import requests
+from pathlib import Path
+from threading import Lock
 from tqdm import tqdm
 from rich import print
-
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from .file_selector import file_manager
-from bugscanx.utils import (
-    clear_screen,
-    get_input,
-    SUBSCAN_TIMEOUT,
-    EXCLUDE_LOCATIONS,
-)
+from bugscanx.utils.utils import clear_screen, get_input
+from bugscanx.utils.http_utils import SUBSCAN_TIMEOUT, EXCLUDE_LOCATIONS
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -91,7 +85,7 @@ def perform_scan(hosts, ports, output_file, threads):
     if output_file:
         print(f"[bold green] Results saved to {output_file}[/bold green]")
 
-def sub_main():
+def main():
     selected_file = file_manager(Path('.'))
     hosts = read_file(selected_file)
     ports = get_input("Enter port", "number", default="80")

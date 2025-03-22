@@ -17,7 +17,7 @@ menu_options = {
     '12': ("EXIT", "bold red")
 }
 
-def main_menu():
+def main():
     try:
         while True:
             clear_screen()
@@ -35,7 +35,7 @@ def main_menu():
             clear_screen()
             text_ascii(menu_options[choice][0], color="bold magenta")
             try:
-                module = __import__('bugscanx.utils.handler', fromlist=[f'run_{choice}'])
+                module = __import__('bugscanx.entrypoints.runner', fromlist=[f'run_{choice}'])
                 getattr(module, f'run_{choice}')()
             except KeyboardInterrupt:
                 print("\n\n[yellow] Operation cancelled by user.")
@@ -43,4 +43,3 @@ def main_menu():
             input()
     except KeyboardInterrupt:
         sys.exit()
-    

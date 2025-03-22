@@ -3,7 +3,7 @@ import requests
 import urllib3
 from itertools import product
 from .base_scanner import BaseScanner
-from bugscanx.utils import EXCLUDE_LOCATIONS
+from bugscanx.utils.http_utils import EXCLUDE_LOCATIONS
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 

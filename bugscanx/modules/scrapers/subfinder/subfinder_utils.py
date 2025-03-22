@@ -1,7 +1,8 @@
 import re
 import random
 import requests
-from bugscanx.utils import HEADERS, USER_AGENTS, SUBFINDER_TIMEOUT
+import threading
+from bugscanx.utils.http_utils import HEADERS, USER_AGENTS, SUBFINDER_TIMEOUT
 
 def make_request(url, session=None):
     try:
@@ -42,3 +43,26 @@ def filter_valid_subdomains(subdomains, domain):
             result.add(sub)
                 
     return result
+
+# Thread-safe counter implementation
+class Value:
+    def __init__(self, typecode, value):
+        self._value = value
+        self._lock = threading.RLock()
+    
+    @property
+    def value(self):
+        with self._lock:
+            return self._value
+    
+    @value.setter
+    def value(self, v):
+        with self._lock:
+            self._value = v
+    
+    def get_lock(self):
+        return self._lock
+
+# Add Value to threading module if it doesn't exist
+if not hasattr(threading, 'Value'):
+    threading.Value = Value

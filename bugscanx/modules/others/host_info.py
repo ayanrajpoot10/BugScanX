@@ -6,7 +6,7 @@ import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from requests.exceptions import RequestException
 from rich import print
-from bugscanx.utils import get_input
+from bugscanx.utils.utils import get_input
 
 HTTP_METHODS = ["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"]
 
@@ -97,7 +97,7 @@ def get_sni_info(hostname, port=443):
     except Exception as e:
         return f"Error getting SNI info: {e}"
 
-def osint_main():
+def main():
     host = get_input("Enter the host")
     protocol = get_input("Enter the protocol", "choice", choices=["http", "https"])
     url = f"{protocol}://{host}"

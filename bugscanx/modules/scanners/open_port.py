@@ -1,8 +1,8 @@
 import socket
-from rich.console import Console
-from bugscanx.utils import get_input
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
+from rich.console import Console
+from bugscanx.utils.utils import get_input
 
 console = Console()
 
@@ -16,7 +16,7 @@ def scan_port(ip, port):
     except:
         return None
 
-def open_port_main():
+def main():
     target = get_input("Enter target IP/hostname")
     try:
         ip = socket.gethostbyname(target)

@@ -27,7 +27,7 @@ classifiers = [
 Homepage = "https://github.com/Ayanrajpoot10/bugscan-x"
 
 [project.scripts]
-bugscanx = "bugscanx.main:main_menu"
+bugscanx = "bugscanx.main:main"
 
 [build-system]
 requires = ["setuptools", "wheel"]

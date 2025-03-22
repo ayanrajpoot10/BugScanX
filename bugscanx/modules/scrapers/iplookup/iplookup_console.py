@@ -23,7 +23,7 @@ class IPLookupConsole:
     
     def start_ip_scan(self, ip):
         self.logger.clear_line()
-        console.print(f"[cyan]→[/cyan] Searching domains for IP: {ip}")
+        console.print(f"[cyan] Processing: {ip}[/cyan]")
     
     def update_ip_stats(self, ip, count):
         self.ip_stats[ip] = count
@@ -31,11 +31,11 @@ class IPLookupConsole:
     
     def print_ip_complete(self, ip, domains_count):
         self.logger.clear_line()
-        console.print(f"[green]✓[/green] {ip}: {domains_count} domains found")
+        console.print(f"[green] {ip}: {domains_count} domains found[/green]")
     
     def print_final_summary(self, output_file):
-        console.print(f"\n[green]✓[/green] All IPs processed! Total domains found: [bold]{self.total_domains}[/bold]")
-        console.print(f"[green]✓[/green] Results saved to {output_file}")
+        console.print(f"\n[green] Total [bold]{self.total_domains}[/bold] domains found[/green]")
+        console.print(f"[green] Results saved to {output_file}[/green]")
         
     def print_error(self, message):
         console.print(f"[bold red]✗ ERROR: {message}[/bold red]")

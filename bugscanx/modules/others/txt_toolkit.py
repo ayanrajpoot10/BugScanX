@@ -6,7 +6,7 @@ from rich import print
 from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from collections import defaultdict
-from bugscanx.utils import get_input, get_confirm
+from bugscanx.utils.utils import get_input, get_confirm
 
 def read_file_lines(file_path):
     try:
@@ -265,7 +265,7 @@ def domains_to_ip():
     else:
         print("[red] No domains could be resolved or there was an error writing to the output file[/red]")
 
-def txt_toolkit_main():
+def main():
     options = {
         "1": ("Split File", split_txt_file, "bold cyan"),
         "2": ("Merge Files", merge_txt_files, "bold blue"),

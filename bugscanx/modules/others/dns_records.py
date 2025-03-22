@@ -1,7 +1,7 @@
 import os
 from dns import resolver as dns_resolver
 from rich import print
-from bugscanx.utils import get_input, get_confirm
+from bugscanx.utils.utils import get_input, get_confirm
 
 def configure_resolver(custom_nameservers=None):
     dns_obj = dns_resolver.Resolver()
@@ -69,7 +69,7 @@ def nslookup(domain, custom_nameservers=None):
     for record_type in record_types:
         resolve_and_print(domain, record_type, custom_nameservers)
 
-def dns_main():
+def main():
     domain = get_input("Enter the domain to lookup")
     if not domain:
         print("[red] Please enter a valid domain.[/red]")

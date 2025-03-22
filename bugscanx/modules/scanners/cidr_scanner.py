@@ -1,19 +1,13 @@
 import ipaddress
 import threading
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
 import requests
 from tqdm import tqdm
 from rich import print
 from pathlib import Path
-
-from bugscanx.utils import (
-    SUBSCAN_TIMEOUT,
-    EXCLUDE_LOCATIONS,
-    get_input,
-    clear_screen,
-    is_cidr
-)
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from bugscanx.utils.utils import get_input, clear_screen
+from bugscanx.utils.http_utils import SUBSCAN_TIMEOUT, EXCLUDE_LOCATIONS
+from bugscanx.utils.validators import is_cidr
 
 file_write_lock = threading.Lock()
 
@@ -82,7 +76,7 @@ def perform_ip_scan(hosts, ports, output_file, threads, method):
     if output_file:
         print(f"[bold green] Results saved to {output_file}.[/bold green]")
 
-def cidr_main():
+def main():
     hosts = get_cidrs_from_input()
     ports_input = get_input("Enter port list", "number", default="80")
     ports = ports_input.split(',')
