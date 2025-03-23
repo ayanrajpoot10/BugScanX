@@ -1,4 +1,3 @@
-import os
 import threading
 from rich import print
 from pyfiglet import Figlet
@@ -31,6 +30,7 @@ def text_ascii(text, color="white", indentation=2):
     print()
 
 def clear_screen():
+    import os
     os.system('cls' if os.name == 'nt' else 'clear')
 
 import_modules()

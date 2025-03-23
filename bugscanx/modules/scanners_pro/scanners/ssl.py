@@ -1,6 +1,6 @@
 import ssl
 import socket
-from .base_scanner import BaseScanner
+from .base import BaseScanner
 
 class SSLScanner(BaseScanner):
 	host_list = []

@@ -2,8 +2,8 @@ import socket
 import requests
 import urllib3
 from itertools import product
-from .base_scanner import BaseScanner
-from bugscanx.utils.http_utils import EXCLUDE_LOCATIONS
+from .base import BaseScanner
+from bugscanx.utils.config import EXCLUDE_LOCATIONS
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 

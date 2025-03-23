@@ -1,5 +1,5 @@
 from threading import Lock
-from .iplookup_console import console, IPLookupConsole
+from .logger import console, IPLookupConsole
 
 class ResultManager:
     def __init__(self, output_file: str, ip_console: IPLookupConsole):

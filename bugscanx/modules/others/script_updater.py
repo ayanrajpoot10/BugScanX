@@ -4,7 +4,7 @@ import time
 import subprocess
 from rich.console import Console
 from importlib.metadata import version
-from bugscanx.utils.utils import get_confirm
+from bugscanx.utils.common import get_confirm
 
 PACKAGE_NAME = "bugscan-x"
 console = Console()

@@ -1,5 +1,5 @@
 import socket
-from .base_scanner import BaseScanner
+from .base import BaseScanner
 
 class ProxyScanner(BaseScanner):
     

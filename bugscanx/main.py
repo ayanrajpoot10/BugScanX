@@ -38,7 +38,7 @@ def main():
                 module = __import__('bugscanx.entrypoints.runner', fromlist=[f'run_{choice}'])
                 getattr(module, f'run_{choice}')()
             except KeyboardInterrupt:
-                print("\n\n[yellow] Operation cancelled by user.")
+                print("\n[yellow] Operation cancelled by user.")
             print("\n[yellow] Press Enter to continue...", end="")
             input()
     except KeyboardInterrupt:

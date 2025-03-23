@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 
-from .subfinder_utils import make_request
+from .utils import make_request
 
 class SubdomainSource:
     def __init__(self, name):

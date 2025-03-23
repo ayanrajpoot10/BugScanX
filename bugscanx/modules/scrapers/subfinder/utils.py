@@ -2,7 +2,9 @@ import re
 import random
 import requests
 import threading
-from bugscanx.utils.http_utils import HEADERS, USER_AGENTS, SUBFINDER_TIMEOUT
+from bugscanx.utils.http import HEADERS, USER_AGENTS
+
+SUBFINDER_TIMEOUT = 10
 
 def make_request(url, session=None):
     try:

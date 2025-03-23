@@ -6,7 +6,7 @@ import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from requests.exceptions import RequestException
 from rich import print
-from bugscanx.utils.utils import get_input
+from bugscanx.utils.common import get_input
 
 HTTP_METHODS = ["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"]
 

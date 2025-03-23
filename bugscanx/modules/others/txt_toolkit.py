@@ -6,7 +6,7 @@ from rich import print
 from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from collections import defaultdict
-from bugscanx.utils.utils import get_input, get_confirm
+from bugscanx.utils.common import get_input, get_confirm
 
 def read_file_lines(file_path):
     try:

@@ -1,11 +1,11 @@
 import concurrent.futures
-from bugscanx.utils.utils import get_input
+from bugscanx.utils.common import get_input
 from bugscanx.utils.validators import is_cidr
 
-from .iplookup_sources import get_scrapers
-from .iplookup_utils import process_input, process_file
+from .sources import get_scrapers
+from .utils import process_input, process_file
 from .result_manager import ResultManager
-from .iplookup_console import IPLookupConsole, console
+from .logger import IPLookupConsole, console
 
 def extract_domains(ip, scrapers, ip_console):
     ip_console.start_ip_scan(ip)

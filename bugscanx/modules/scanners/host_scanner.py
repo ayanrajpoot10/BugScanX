@@ -7,8 +7,8 @@ from tqdm import tqdm
 from rich import print
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from .file_selector import file_manager
-from bugscanx.utils.utils import clear_screen, get_input
-from bugscanx.utils.http_utils import SUBSCAN_TIMEOUT, EXCLUDE_LOCATIONS
+from bugscanx.utils.common import clear_screen, get_input
+from bugscanx.utils.config import SUBSCAN_TIMEOUT, EXCLUDE_LOCATIONS
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 

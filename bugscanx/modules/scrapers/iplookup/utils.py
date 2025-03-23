@@ -1,7 +1,7 @@
 import time
 import ipaddress
 from threading import Lock
-from .iplookup_console import console
+from .logger import console
 
 class RateLimiter:
     def __init__(self, requests_per_second: float):

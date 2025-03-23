@@ -1,7 +1,7 @@
 import os
 from dns import resolver as dns_resolver
 from rich import print
-from bugscanx.utils.utils import get_input, get_confirm
+from bugscanx.utils.common import get_input, get_confirm
 
 def configure_resolver(custom_nameservers=None):
     dns_obj = dns_resolver.Resolver()

@@ -1,11 +1,11 @@
 import os
 import json
-from bugscanx.utils.utils import get_input, get_confirm
-from .scanners.direct_scanner import DirectScanner
+from bugscanx.utils.common import get_input, get_confirm
+from .scanners.direct import DirectScanner
 from .scanners.proxy_check import ProxyScanner
 from .scanners.proxy_request import Proxy2Scanner
-from .scanners.ssl_scanner import SSLScanner
-from .scanners.ping_scanner import PingScanner
+from .scanners.ssl import SSLScanner
+from .scanners.ping import PingScanner
 
 def read_hosts(filename):
     with open(filename) as file:

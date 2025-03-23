@@ -1,8 +1,8 @@
 import random
 import requests
 from bs4 import BeautifulSoup
-from bugscanx.utils.http_utils import USER_AGENTS, EXTRA_HEADERS
-from .iplookup_utils import RateLimiter
+from bugscanx.utils.http import USER_AGENTS, EXTRA_HEADERS
+from .utils import RateLimiter
 
 class DomainScraper:
     def __init__(self, rate_limit=1.0):

@@ -1,6 +1,6 @@
 import requests
 from urllib.parse import urlparse, urlunparse
-from .direct_scanner import DirectScanner
+from .direct import DirectScanner
 
 class Proxy2Scanner(DirectScanner):
     def __init__(self, proxy=None, auth=None):
