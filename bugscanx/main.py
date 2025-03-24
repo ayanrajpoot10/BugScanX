@@ -30,7 +30,7 @@ def main():
                 continue
                 
             if choice == '12':
-                sys.exit()
+                return
                 
             clear_screen()
             text_ascii(menu_options[choice][0], color="bold magenta")
@@ -42,4 +42,4 @@ def main():
             print("\n[yellow] Press Enter to continue...", end="")
             input()
     except KeyboardInterrupt:
-        sys.exit()
+        return
