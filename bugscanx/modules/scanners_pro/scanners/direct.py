@@ -77,17 +77,14 @@ class DirectScanner(BaseScanner):
         response = self.request(method, self.get_url(host, port), verify=False, allow_redirects=False)
 
         if response is None:
-            self.task_failed(payload)
             return
 
         if self.no302 and response.status_code == 302:
-            self.task_failed(payload)
             return
 
         if not self.no302:
             location = response.headers.get('location', '')
             if location and location in EXCLUDE_LOCATIONS:
-                self.task_failed(payload)
                 return
 
         try:

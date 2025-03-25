@@ -16,7 +16,6 @@ class MultiThread:
         self._task_list_total = 0
         self._task_list_scanned_total = 0
         self._task_list_success = []
-        self._task_list_failed = []
 
         self._threads = threads or 50
 
@@ -38,7 +37,7 @@ class MultiThread:
             self.start_threads()
             self.join()
         except KeyboardInterrupt:
-            self.task_complete()
+            pass
 
     def start_threads(self):
         for _ in range(min(self._threads, self._queue_task_list.qsize()) or self._threads):
@@ -79,14 +78,8 @@ class MultiThread:
     def success_list(self):
         return self._task_list_success
 
-    def failed_list(self):
-        return self._task_list_failed
-
     def task_success(self, data):
         self._task_list_success.append(data)
-
-    def task_failed(self, data):
-        self._task_list_failed.append(data)
 
     def task_complete(self):
         self._loop = False
