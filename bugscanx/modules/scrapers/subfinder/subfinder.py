@@ -22,7 +22,7 @@ class SubFinder:
         
         with requests.Session() as session:
             results = []
-            with ThreadPoolExecutor(max_workers=5) as executor:
+            with ThreadPoolExecutor(max_workers=6) as executor:
                 future_to_source = {
                     executor.submit(source.fetch, domain, session): source.name
                     for source in sources
