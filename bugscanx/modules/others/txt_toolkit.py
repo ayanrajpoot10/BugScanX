@@ -144,13 +144,13 @@ class IPProcessor:
 class MenuManager:
     def __init__(self):
         self.options = {
-            "1": ("Split File", self.split_txt_file, "bold cyan"),
-            "2": ("Merge Files", self.merge_txt_files, "bold blue"),
-            "3": ("Remove Duplicate", self.remove_duplicate_domains, "bold yellow"),
-            "4": ("Subdomains to Domains", self.convert_subdomains_to_domains, "bold magenta"),
-            "5": ("Domains and IP Extractor", self.txt_cleaner, "bold cyan"),
-            "6": ("Filter by Extension", self.separate_domains_by_extension, "bold magenta"),
-            "7": ("Filter by Keywords", self.filter_by_keywords, "bold yellow"),
+            "1": ("Split file", self.split_txt_file, "bold cyan"),
+            "2": ("Merge files", self.merge_txt_files, "bold blue"),
+            "3": ("Remove duplicates", self.remove_duplicate_domains, "bold yellow"),
+            "4": ("Subdomains to domains", self.convert_subdomains_to_domains, "bold magenta"),
+            "5": ("Domains and IP extractor", self.txt_cleaner, "bold cyan"),
+            "6": ("Filter by extension", self.separate_domains_by_extension, "bold magenta"),
+            "7": ("Filter by keywords", self.filter_by_keywords, "bold yellow"),
             "8": ("CIDR to IP", self.cidr_to_ip, "bold green"),
             "9": ("Domains to IP", self.domains_to_ip, "bold blue"),
             "0": ("Back", lambda: None, "bold red")
@@ -319,10 +319,23 @@ class MenuManager:
 
 def main():
     menu = MenuManager()
-    print("\n".join(f"[{color}] [{key}] {desc}" for key, (desc, _, color) in menu.options.items()))
+    options = {
+        "1": ("Split file", menu.split_txt_file, "bold cyan"),
+        "2": ("Merge files", menu.merge_txt_files, "bold blue"),
+        "3": ("Remove duplicates", menu.remove_duplicate_domains, "bold yellow"),
+        "4": ("Subdomains to domains", menu.convert_subdomains_to_domains, "bold magenta"),
+        "5": ("Domains and IP extractor", menu.txt_cleaner, "bold cyan"),
+        "6": ("Filter by extension", menu.separate_domains_by_extension, "bold magenta"),
+        "7": ("Filter by keywords", menu.filter_by_keywords, "bold yellow"),
+        "8": ("CIDR to IP", menu.cidr_to_ip, "bold green"),
+        "9": ("Domains to IP", menu.domains_to_ip, "bold blue"),
+        "0": ("Back", lambda: None, "bold red")
+    }
+    
+    print("\n".join(f"[{color}] [{key}] {desc}" for key, (desc, _, color) in options.items()))
     choice = input("\n \033[36m[-]  Your Choice: \033[0m")
     
-    if choice in menu.options:
-        menu.options[choice][1]()
+    if choice in options:
+        options[choice][1]()
         if choice == '0':
             return

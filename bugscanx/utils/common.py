@@ -8,7 +8,14 @@ from InquirerPy.prompts import (
 )
 from .validators import create_validator, required, is_file, is_digit
 
-DEFAULT_STYLE = get_style({"question": "#87CEEB", "answer": "#00FF7F", "answered_question": "#808080"}, style_override=False)
+DEFAULT_STYLE = get_style(
+    {
+        "question": "#87CEEB",
+        "answer": "#00FF7F",
+        "answered_question": "#808080"
+    },
+    style_override=False
+)
 
 def get_input(
     message,
