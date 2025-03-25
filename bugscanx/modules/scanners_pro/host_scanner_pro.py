@@ -128,7 +128,7 @@ def main():
 
     if output:
         with open(output, 'a+') as file:
-            if mode == 'proxy':
+            if mode == 'proxy-check':
                 json.dump(scanner.success_list(), file, indent=2)
             else:
                 file.write('\n'.join([str(x) for x in scanner.success_list()]) + '\n')

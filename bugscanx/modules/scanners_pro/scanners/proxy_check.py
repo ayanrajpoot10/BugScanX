@@ -12,12 +12,11 @@ class ProxyScanner(BaseScanner):
     payload = ''
     bug = ''
 
-    def log_info(self, proxy_host_port, response_lines, color):
-        status_code = response_lines[0].split(' ')[1] if response_lines and len(response_lines[0].split(' ')) > 1 else 'N/A'
-        if status_code == 'N/A' or status_code == '302':
-             return
+    def log_info(self, proxy_host_port, response_lines, status_code):
+        if not response_lines or status_code in ['N/A', '302']:
+            return
         
-        color_name = 'GREEN' if color == 'G1' else 'GRAY'
+        color_name = 'GREEN' if status_code == '101' else 'GRAY'
         formatted_response = '\n    '.join(response_lines)
         message = f"{self.colorize(proxy_host_port.ljust(32) + ' ' + status_code, color_name)}\n"
         message += f"{self.colorize('    ' + formatted_response, color_name)}\n"
@@ -42,7 +41,6 @@ class ProxyScanner(BaseScanner):
         port = payload['port']
         proxy_host_port = f"{proxy_host}:{port}"
         response_lines = []
-        success = False
 
         formatted_payload = (
             self.payload
@@ -72,8 +70,16 @@ class ProxyScanner(BaseScanner):
                 response = data.decode(errors='ignore').split('\r\n\r\n')[0]
                 response_lines = [line.strip() for line in response.split('\r\n') if line.strip()]
                 
-                if response_lines and ' 101 ' in response_lines[0]:
-                    success = True
+                status_code = response_lines[0].split(' ')[1] if response_lines and len(response_lines[0].split(' ')) > 1 else 'N/A'
+                if status_code not in ['N/A', '302']:
+                    self.log_info(proxy_host_port, response_lines, status_code)
+                    self.task_success({
+                        'proxy_host': proxy_host,
+                        'proxy_port': port,
+                        'response_lines': response_lines,
+                        'target': self.target,
+                        'status_code': status_code
+                    })
 
         except Exception:
              pass
@@ -81,17 +87,7 @@ class ProxyScanner(BaseScanner):
             if 'conn' in locals():
                 conn.close()
 
-        color = 'G1' if success else 'W2'
-        self.log_info(proxy_host_port, response_lines, color)
         self.log_replace(f"{proxy_host}")
-        
-        if success:
-            self.task_success({
-                'proxy_host': proxy_host,
-                'proxy_port': port,
-                'response_lines': response_lines,
-                'target': self.target
-            })
 
     def complete(self):
         self.log_replace(self.colorize("Scan completed", "green"))
