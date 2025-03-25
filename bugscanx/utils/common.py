@@ -17,6 +17,19 @@ DEFAULT_STYLE = get_style(
     style_override=False
 )
 
+INPUT_VALIDATORS = {
+    "file": [required, is_file],
+    "number": [required, is_digit],
+    "text": [required]
+}
+
+INPUT_HANDLERS = {
+    "choice": lambda params: select(**params).execute(),
+    "file": lambda params: filepath(**params).execute(),
+    "number": lambda params: text(**params).execute(),
+    "text": lambda params: text(**params).execute()
+}
+
 def get_input(
     message,
     input_type="text",
@@ -30,49 +43,48 @@ def get_input(
     instruction="",
     **kwargs
 ):
-    message = f" {message}:"
     common_params = {
-        "message": message,
+        "message": f" {message}:",
         "default": "" if default is None else str(default),
         "qmark": kwargs.pop("qmark", ""),
         "amark": kwargs.pop("amark", ""),
         "style": style,
-        "instruction": instruction,
+        "instruction": instruction
     }
     
     if validators is None and validate_input:
-        validators = {
-            "file": [required, is_file],
-            "number": [required, is_digit],
-            "text": [required]
-        }.get(input_type)
+        validators = INPUT_VALIDATORS.get(input_type, [])
     
-    validator = create_validator(validators) if validators and validate_input else None
+    if validate_input and validators:
+        common_params["validate"] = create_validator(validators)
     
-    if input_type == "choice":
-        return select(
-            choices=choices,
-            multiselect=multiselect,
-            transformer=transformer,
-            show_cursor=kwargs.pop("show_cursor", False),
-            **common_params,
-            **kwargs
-        ).execute()
+    input_type_params = {
+        "choice": {
+            "choices": choices,
+            "multiselect": multiselect,
+            "transformer": transformer,
+            "show_cursor": kwargs.pop("show_cursor", False)
+        },
+        "file": {
+            "only_files": kwargs.pop("only_files", True)
+        }
+    }
     
-    if input_type == "file":
-        return filepath(
-            validate=validator,
-            only_files=kwargs.pop("only_files", True),
-            **common_params,
-            **kwargs
-        ).execute()
+    common_params.update(input_type_params.get(input_type, {}))
+    common_params.update(kwargs)
     
-    if input_type in ["number", "text"]:
-        return text(validate=validator, **common_params, **kwargs).execute()
+    handler = INPUT_HANDLERS.get(input_type)
+    if not handler:
+        raise ValueError(f"Unsupported input_type: {input_type}")
     
-    raise ValueError(f"Unsupported input_type: {input_type}")
+    return handler(common_params)
 
-def get_confirm(message, default=True, style=DEFAULT_STYLE, **kwargs):
+def get_confirm(
+    message,
+    default=True,
+    style=DEFAULT_STYLE,
+    **kwargs
+):
     return confirm(
         message=message,
         default=default,
