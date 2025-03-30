@@ -6,7 +6,7 @@ from threading import Lock
 from tqdm import tqdm
 from rich import print
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from .file_selector import file_manager
+from bugscanx.utils.file_selector import file_manager
 from bugscanx.utils.common import clear_screen, get_input
 from bugscanx.utils.config import SUBSCAN_TIMEOUT, EXCLUDE_LOCATIONS
 
