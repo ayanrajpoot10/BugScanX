@@ -14,7 +14,12 @@ def import_modules():
 
 figlet = Figlet(font="calvin_s")
 
+def clear_screen():
+    import os
+    os.system('cls' if os.name == 'nt' else 'clear')
+
 def banner():
+    clear_screen()
     print("""
     [bold red]╔╗[/bold red] [turquoise2]╦ ╦╔═╗╔═╗╔═╗╔═╗╔╗╔═╗ ╦[/turquoise2]
     [bold red]╠╩╗[/bold red][turquoise2]║ ║║ ╦╚═╗║  ╠═╣║║║╔╩╦╝[/turquoise2]
@@ -28,9 +33,5 @@ def text_ascii(text, color="white", indentation=2):
     shifted_banner = "\n".join((" " * indentation) + line for line in ascii_banner.splitlines())
     print(f"[{color}]{shifted_banner}[/{color}]")
     print()
-
-def clear_screen():
-    import os
-    os.system('cls' if os.name == 'nt' else 'clear')
 
 import_modules()

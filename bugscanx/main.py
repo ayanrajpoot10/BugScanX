@@ -18,7 +18,6 @@ MENU_OPTIONS = {
 }
 
 def display_menu():
-    clear_screen()
     banner()
     for key, (desc, color) in MENU_OPTIONS.items():
         padding = ' ' if len(key) == 1 else ''
@@ -45,7 +44,7 @@ def main():
     try:
         while True:
             display_menu()
-            choice = input("\n \033[36m[-]  Your Choice: \033[0m")
+            choice = input("\n\033[36m [-]  Your Choice: \033[0m")
             
             if choice not in MENU_OPTIONS:
                 continue
