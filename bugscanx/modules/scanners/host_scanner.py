@@ -44,7 +44,7 @@ def check_http_response(host, port, timeout=SUBSCAN_TIMEOUT, exclude_locations=E
 
 def perform_scan(hosts, ports, output_file, threads):
     clear_screen()
-    print(f"[bold green]Scanning using HTTP method: HEAD on ports {', '.join(ports)}...\n[/bold green]")
+    print(f"[bold green]Scanning using HEAD method on port(s) {', '.join(ports)}...\n[/bold green]")
 
     headers = (f"[green]{'Code':<4}[/green] [cyan]{'Server':<15}[/cyan] [yellow]{'Port':<5}[/yellow] [magenta]{'IP Address':<15}[/magenta] [blue]{'Host'}[/blue]")  
     separator = (f"[green]{'----':<4}[/green] [cyan]{'------':<15}[/cyan] [yellow]{'----':<5}[/yellow] [magenta]{'---------':<15}[/magenta] [blue]{'----'}[/blue]")  
@@ -88,7 +88,7 @@ def perform_scan(hosts, ports, output_file, threads):
 def main():
     selected_file = file_manager(Path('.'))
     hosts = read_file(selected_file)
-    ports = get_input("Enter port", "number", default="80")
+    ports = get_input("Enter port(s)", "number", default="80")
     port_list = [port.strip() for port in ports.split(',') if port.strip().isdigit()]
     default_output = f"result_{selected_file.stem}.txt"
     output_file = get_input("Enter output filename", default=default_output, validate_input=False)
