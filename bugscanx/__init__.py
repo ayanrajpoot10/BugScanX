@@ -25,7 +25,7 @@ def banner():
     [bold red]╠╩╗[/bold red][turquoise2]║ ║║ ╦╚═╗║  ╠═╣║║║╔╩╦╝[/turquoise2]
     [bold red]╚═╝[/bold red][turquoise2]╚═╝╚═╝╚═╝╚═╝╩ ╩╝╚╝╩ ╚═[/turquoise2]
     [bold magenta] Dᴇᴠᴇʟᴏᴘᴇʀ: Aʏᴀɴ Rᴀᴊᴘᴏᴏᴛ[/bold magenta]
-    [bold magenta]  Tᴇʟᴇɢʀᴀᴍ: @BᴜɢSᴄᴀɴX[/bold magenta]
+    [bold magenta]  Tᴇʟᴇɢʀᴀᴍ: @BᴜɢSᴄᴀɴX   [/bold magenta]
     """)
 
 def text_ascii(text, color="white", indentation=2):
