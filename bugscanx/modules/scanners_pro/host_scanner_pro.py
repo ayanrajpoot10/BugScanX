@@ -1,5 +1,7 @@
 import os
 import json
+from bugscanx.utils.validators import is_cidr
+from bugscanx.utils.cidr import get_hosts_from_cidr
 from bugscanx.utils.common import get_input, get_confirm
 from .scanners.direct import DirectScanner
 from .scanners.proxy_check import ProxyScanner
@@ -7,32 +9,44 @@ from .scanners.proxy_request import Proxy2Scanner
 from .scanners.ssl import SSLScanner
 from .scanners.ping import PingScanner
 
-def read_hosts(filename):
-    with open(filename) as file:
-        return [line.strip() for line in file]
+def read_hosts(filename=None, cidr=None):
+    if filename:
+        with open(filename) as file:
+            return [line.strip() for line in file]
+    elif cidr:
+        return get_hosts_from_cidr(cidr)
+    return []
 
-def get_common_inputs(filename):
-    output = get_input("Enter output filename", default=f"result_{os.path.basename(filename)}", validate_input=False)
+def get_common_inputs(input_source):
+    output = get_input("Enter output filename", default=f"result_{os.path.basename(str(input_source))}", validate_input=False)
     threads = get_input("Enter threads", "number", default="50")
     return output, threads
 
+def get_host_input():
+    filename = get_input("Enter filename", "file", mandatory=False)
+    if not filename:
+        cidr = get_input("Enter CIDR range(s)", validators=[is_cidr])
+        return None, cidr
+    return filename, None
+
 def get_input_direct(no302=False):
-    filename = get_input("Enter filename", "file")
-    port_list = get_input("Enter ports", "number", default="80").split(',')
-    output, threads = get_common_inputs(filename)
-    method_list = get_input("Select HTTP method", "choice", multiselect=True, 
+    filename, cidr = get_host_input()
+    port_list = get_input("Enter port(s)", "number", default="80").split(',')
+    output, threads = get_common_inputs(filename or cidr)
+    method_list = get_input("Select HTTP method(s)", "choice", multiselect=True, 
                            choices=["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"])
     
     scanner = DirectScanner()
     scanner.method_list = method_list
-    scanner.host_list = read_hosts(filename)
+    scanner.host_list = read_hosts(filename, cidr)
     scanner.port_list = port_list
     scanner.no302 = no302
+    scanner.is_cidr_input = cidr is not None
     
     return scanner, output, threads
 
 def get_input_proxy():
-    filename = get_input("Enter proxies filename", "file")
+    filename, cidr = get_host_input()
     target_url = get_input("Enter target url", default="in1.wstunnel.site")
     method = get_input("Enter HTTP method", default="GET")
     path = get_input("Enter path", default="/")
@@ -44,12 +58,12 @@ def get_input_proxy():
         "Upgrade: websocket[crlf][crlf]"
     )
     payload = get_input("Enter payload", default=default_payload)
-    port_list = get_input("Enter ports", "number", default="80").split(',')
-    output, threads = get_common_inputs(filename)
+    port_list = get_input("Enter port(s)", "number", default="80").split(',')
+    output, threads = get_common_inputs(filename or cidr)
     bug = get_input("Enter bug (optional)", default="", validate_input=False)
     
     scanner = ProxyScanner()
-    scanner.host_list = read_hosts(filename)
+    scanner.host_list = read_hosts(filename, cidr)
     scanner.target = target_url
     scanner.method = method
     scanner.path = path
@@ -61,9 +75,9 @@ def get_input_proxy():
     return scanner, output, threads
 
 def get_input_proxy2():
-    filename = get_input("Enter filename", "file")
-    port_list = get_input("Enter ports", "number", default="80").split(',')
-    output, threads = get_common_inputs(filename)
+    filename, cidr = get_host_input()
+    port_list = get_input("Enter port(s)", "number", default="80").split(',')
+    output, threads = get_common_inputs(filename or cidr)
     method_list = get_input("Select HTTP method", "choice", multiselect=True, 
                            choices=["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"])
     
@@ -80,28 +94,30 @@ def get_input_proxy2():
     scanner = Proxy2Scanner()
     scanner.set_proxy(proxy, proxy_username, proxy_password)
     scanner.method_list = method_list
-    scanner.host_list = read_hosts(filename)
+    scanner.host_list = read_hosts(filename, cidr)
     scanner.port_list = port_list
+    scanner.is_cidr_input = cidr is not None
     
     return scanner, output, threads
 
 def get_input_ssl():
-    filename = get_input("Enter filename", "file")
-    output, threads = get_common_inputs(filename)
+    filename, cidr = get_host_input()
+    output, threads = get_common_inputs(filename or cidr)
     
     scanner = SSLScanner()
-    scanner.host_list = read_hosts(filename)
+    scanner.host_list = read_hosts(filename, cidr)
     
     return scanner, output, threads
 
 def get_input_ping():
-    filename = get_input("Enter filename", "file")
-    port_list = get_input("Enter ports", "number", default="443").split(',')
-    output, threads = get_common_inputs(filename)
+    filename, cidr = get_host_input()
+    port_list = get_input("Enter port(s)", "number", default="443").split(',')
+    output, threads = get_common_inputs(filename or cidr)
     
     scanner = PingScanner()
-    scanner.host_list = read_hosts(filename)
+    scanner.host_list = read_hosts(filename, cidr)
     scanner.port_list = port_list
+    scanner.is_cidr_input = cidr is not None
     
     return scanner, output, threads
 

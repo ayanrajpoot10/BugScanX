@@ -15,6 +15,7 @@ class DirectScanner(BaseScanner):
     DEFAULT_TIMEOUT = 3
     DEFAULT_RETRY = 1
     no302 = False
+    is_cidr_input = False
 
     def request(self, method, url, **kwargs):
         method = method.upper()
@@ -44,14 +45,23 @@ class DirectScanner(BaseScanner):
         kwargs.setdefault('port', '')
         kwargs.setdefault('host', '')
 
-        messages = [
-            self.colorize(f"{{method:<6}}", "CYAN"),
-            self.colorize(f"{{status_code:<4}}", "GREEN"),
-            self.colorize(f"{{server:<15}}", "MAGENTA"),
-            self.colorize(f"{{port:<4}}", "ORANGE"),
-            self.colorize(f"{{ip:<16}}", "BLUE"),
-            self.colorize(f"{{host}}", "LGRAY")
-        ]
+        if self.is_cidr_input:
+            messages = [
+                self.colorize(f"{{method:<6}}", "CYAN"),
+                self.colorize(f"{{status_code:<4}}", "GREEN"),
+                self.colorize(f"{{server:<15}}", "MAGENTA"),
+                self.colorize(f"{{port:<4}}", "ORANGE"),
+                self.colorize(f"{{host}}", "LGRAY")
+            ]
+        else:
+            messages = [
+                self.colorize(f"{{method:<6}}", "CYAN"),
+                self.colorize(f"{{status_code:<4}}", "GREEN"),
+                self.colorize(f"{{server:<15}}", "MAGENTA"),
+                self.colorize(f"{{port:<4}}", "ORANGE"),
+                self.colorize(f"{{ip:<16}}", "BLUE"),
+                self.colorize(f"{{host}}", "LGRAY")
+            ]
 
         super().log('  '.join(messages).format(**kwargs))
 
@@ -66,8 +76,12 @@ class DirectScanner(BaseScanner):
 
     def init(self):
         super().init()
-        self.log_info(method='Method', status_code='Code', server='Server', port='Port', ip='IP', host='Host')
-        self.log_info(method='------', status_code='----', server='------', port='----', ip='--', host='----')
+        if self.is_cidr_input:
+            self.log_info(method='Method', status_code='Code', server='Server', port='Port', host='Host')
+            self.log_info(method='------', status_code='----', server='------', port='----', host='----')
+        else:
+            self.log_info(method='Method', status_code='Code', server='Server', port='Port', ip='IP', host='Host')
+            self.log_info(method='------', status_code='----', server='------', port='----', ip='--', host='----')
 
     def task(self, payload):
         method = payload['method']

@@ -4,6 +4,7 @@ from .base import BaseScanner
 class PingScanner(BaseScanner):
     host_list = []
     port_list = []
+    is_cidr_input = False
 
     def log_info(self, **kwargs):
         kwargs.setdefault('color', '')
@@ -11,12 +12,19 @@ class PingScanner(BaseScanner):
         kwargs.setdefault('host', '')
         kwargs.setdefault('ip', '')
 
-        messages = [
-            self.colorize('{status:<8}', 'GREEN'),
-            self.colorize('{port:<6}', 'CYAN'),
-            self.colorize('{ip:<15}', 'YELLOW'),
-            self.colorize('{host}', 'LGRAY'),
-        ]
+        if self.is_cidr_input:
+            messages = [
+                self.colorize('{status:<8}', 'GREEN'),
+                self.colorize('{port:<6}', 'CYAN'),
+                self.colorize('{host}', 'LGRAY'),
+            ]
+        else:
+            messages = [
+                self.colorize('{status:<8}', 'GREEN'),
+                self.colorize('{port:<6}', 'CYAN'),
+                self.colorize('{ip:<15}', 'YELLOW'),
+                self.colorize('{host}', 'LGRAY'),
+            ]
 
         super().log('  '.join(messages).format(**kwargs))
 
@@ -30,8 +38,12 @@ class PingScanner(BaseScanner):
 
     def init(self):
         super().init()
-        self.log_info(status='Status', port='Port', ip='IP', host='Host')
-        self.log_info(status='------', port='----', ip='--', host='----')
+        if self.is_cidr_input:
+            self.log_info(status='Status', port='Port', host='Host')
+            self.log_info(status='------', port='----', host='----')
+        else:
+            self.log_info(status='Status', port='Port', ip='IP', host='Host')
+            self.log_info(status='------', port='----', ip='--', host='----')
 
     def resolve_ip(self, host):
         try:
