@@ -11,15 +11,56 @@ from bugscanx.utils.validators import is_cidr
 
 file_write_lock = threading.Lock()
 
+def validate_cidr(cidr):
+    try:
+        ipaddress.ip_network(cidr, strict=False)
+        return True
+    except ValueError:
+        return False
+
+def read_cidrs_from_file(filepath):
+    valid_cidrs = []
+    try:
+        with open(filepath, 'r') as file:
+            for line in file:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    ipaddress.ip_network(line, strict=False)
+                    valid_cidrs.append(line)
+                except ValueError:
+                    pass
+            
+        if valid_cidrs:
+            print(f"[green] Successfully loaded {len(valid_cidrs)} valid CIDR ranges[/green]")
+            
+        return valid_cidrs
+    except Exception as e:
+        print(f"[bold red]Error reading file: {e}[/bold red]")
+        return []
+
 def get_cidrs_from_input():
-    cidr_input = get_input(" Enter cidr", "text", validators=[is_cidr])
-    cidr_list = [cidr.strip() for cidr in cidr_input.split(',')]
+    input_type = get_input("Select input type", "choice", choices=["manual input", "file input"])
+    
+    if input_type == "file input":
+        filepath = get_input("Enter path to CIDR list file", "file")
+        cidr_list = read_cidrs_from_file(filepath)
+        if not cidr_list:
+            print("[bold red] No valid CIDR ranges found in file. Please check the file content.[/bold red]")
+            return []
+    else:
+        cidr_input = get_input("Enter CIDR range(s)", validators=[is_cidr])
+        cidr_list = [cidr.strip() for cidr in cidr_input.split(',')]
+    
     ip_list = []
     for cidr in cidr_list:
         network = ipaddress.ip_network(cidr, strict=False)
         ip_list.extend([str(ip) for ip in network.hosts()])
+    
+    if ip_list:
+        print(f"[green] Found {len(ip_list)} valid IP addresses to scan[/green]")
     return ip_list
-
 
 def check_http_response(host, port, method):
     protocol = "https" if port in ['443', '8443'] else "http"
@@ -78,10 +119,12 @@ def perform_ip_scan(hosts, ports, output_file, threads, method):
 
 def main():
     hosts = get_cidrs_from_input()
-    ports_input = get_input("Enter port list", "number", default="80")
+    if not hosts:
+        return
+    ports_input = get_input("Enter port(s)", "number", default="80")
     ports = ports_input.split(',')
-    output_file = get_input("Enter output file name", default="scan_results.txt", validate_input=False)
-    threads = int(get_input("Enter number of threads", "number", default="50"))
+    output_file = get_input("Enter output filename", default="scan_results.txt", validate_input=False)
+    threads = int(get_input("Enter threads", "number", default="50"))
     http_method = get_input("Select the http method", "choice", choices=["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"])
 
     perform_ip_scan(hosts, ports, output_file, threads, http_method)
