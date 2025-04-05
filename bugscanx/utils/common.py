@@ -41,6 +41,7 @@ def get_input(
     style=DEFAULT_STYLE,
     validate_input=True,
     instruction="",
+    mandatory=True,
     **kwargs
 ):
     common_params = {
@@ -49,7 +50,8 @@ def get_input(
         "qmark": kwargs.pop("qmark", ""),
         "amark": kwargs.pop("amark", ""),
         "style": style,
-        "instruction": instruction
+        "instruction": instruction,
+        "mandatory": mandatory,
     }
     
     if validators is None and validate_input:
