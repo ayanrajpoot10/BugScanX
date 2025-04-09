@@ -1,7 +1,7 @@
 [project]
 name = "bugscan-x"
 dynamic = ["version"]
-description = "Multifunctional tool for bug host hunting"
+description = "All-in-one tool for finding SNI bug hosts"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.7"

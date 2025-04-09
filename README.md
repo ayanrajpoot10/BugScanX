@@ -4,7 +4,7 @@
 </div>
 
 <p align="center">
-    <img src="https://img.shields.io/github/stars/Ayanrajpoot10/Bugscan-x?color=e57474&labelColor=1e2528&style=for-the-badge"/>
+    <img src="https://img.shields.io/github/stars/Ayanrajpoot10/bugscan-x?color=e57474&labelColor=1e2528&style=for-the-badge"/>
     <img src="https://img.shields.io/pypi/dm/bugscan-x?color=67b0e8&labelColor=1e2528&style=for-the-badge"/>
     <img src="https://img.shields.io/pypi/v/bugscan-x?color=8ccf7e&labelColor=1e2528&style=for-the-badge"/>
 </p>
