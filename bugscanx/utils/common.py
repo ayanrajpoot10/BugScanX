@@ -6,7 +6,7 @@ from InquirerPy.prompts import (
     InputPrompt as text,
     ConfirmPrompt as confirm
 )
-from .validators import create_validator, required, is_file, is_digit
+from .validators import create_validator, required, is_file, is_digit, is_cidr
 
 DEFAULT_STYLE = get_style(
     {

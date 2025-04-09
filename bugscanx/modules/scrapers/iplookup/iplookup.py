@@ -1,7 +1,5 @@
 import concurrent.futures
-from bugscanx.utils.common import get_input
-from bugscanx.utils.validators import is_cidr
-
+from bugscanx.utils.common import get_input, is_cidr
 from .sources import get_scrapers
 from .utils import process_input, process_file
 from .result_manager import ResultManager

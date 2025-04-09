@@ -1,8 +1,7 @@
 import os
 import json
-from bugscanx.utils.validators import is_cidr
 from bugscanx.utils.cidr import get_hosts_from_cidr
-from bugscanx.utils.common import get_input, get_confirm
+from bugscanx.utils.common import get_input, get_confirm, is_cidr
 from .scanners.direct import DirectScanner
 from .scanners.proxy_check import ProxyScanner
 from .scanners.proxy_request import Proxy2Scanner

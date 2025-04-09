@@ -1,62 +1,28 @@
-import ipaddress
 import threading
 import requests
 from tqdm import tqdm
 from rich import print
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from bugscanx.utils.common import get_input, clear_screen
+from bugscanx.utils.common import get_input, clear_screen, is_cidr
 from bugscanx.utils.config import SUBSCAN_TIMEOUT, EXCLUDE_LOCATIONS
-from bugscanx.utils.validators import is_cidr
+from bugscanx.utils.cidr import get_hosts_from_cidr, read_cidrs_from_file
 
 file_write_lock = threading.Lock()
 
-def validate_cidr(cidr):
-    try:
-        ipaddress.ip_network(cidr, strict=False)
-        return True
-    except ValueError:
-        return False
-
-def read_cidrs_from_file(filepath):
-    valid_cidrs = []
-    try:
-        with open(filepath, 'r') as file:
-            for line in file:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    ipaddress.ip_network(line, strict=False)
-                    valid_cidrs.append(line)
-                except ValueError:
-                    pass
-            
-        if valid_cidrs:
-            print(f"[green] Successfully loaded {len(valid_cidrs)} valid CIDR ranges[/green]")
-            
-        return valid_cidrs
-    except Exception as e:
-        print(f"[bold red]Error reading file: {e}[/bold red]")
-        return []
-
-def get_cidrs_from_input():
+def get_cidrs_input():
     input_type = get_input("Select input type", "choice", choices=["manual input", "file input"])
     
     if input_type == "file input":
         filepath = get_input("Enter path to CIDR list file", "file")
         cidr_list = read_cidrs_from_file(filepath)
         if not cidr_list:
-            print("[bold red] No valid CIDR ranges found in file. Please check the file content.[/bold red]")
+            print("[bold red] No valid CIDR ranges found in file.[/bold red]")
             return []
+        ip_list = get_hosts_from_cidr(','.join(cidr_list))
     else:
         cidr_input = get_input("Enter CIDR range(s)", validators=[is_cidr])
-        cidr_list = [cidr.strip() for cidr in cidr_input.split(',')]
-    
-    ip_list = []
-    for cidr in cidr_list:
-        network = ipaddress.ip_network(cidr, strict=False)
-        ip_list.extend([str(ip) for ip in network.hosts()])
+        ip_list = get_hosts_from_cidr(cidr_input)
     
     if ip_list:
         print(f"[green] Found {len(ip_list)} valid IP addresses to scan[/green]")
@@ -75,7 +41,7 @@ def check_http_response(host, port, method):
     except requests.exceptions.RequestException:
         return None
 
-def perform_ip_scan(hosts, ports, output_file, threads, method):
+def perform_scan(hosts, ports, output_file, threads, method):
     clear_screen()
     print(f"[bold green]Scanning using HTTP method: {method}...\n[/bold green]")
     headers = (f"[green]{'Code':<4}[/green] [cyan]{'Server':<15}[/cyan] [yellow]{'Port':<5}[/yellow] [magenta]{'IP Address'}[/magenta]")  
@@ -118,7 +84,7 @@ def perform_ip_scan(hosts, ports, output_file, threads, method):
         print(f"[bold green] Results saved to {output_file}.[/bold green]")
 
 def main():
-    hosts = get_cidrs_from_input()
+    hosts = get_cidrs_input()
     if not hosts:
         return
     ports_input = get_input("Enter port(s)", "number", default="80")
@@ -127,4 +93,4 @@ def main():
     threads = int(get_input("Enter threads", "number", default="50"))
     http_method = get_input("Select the http method", "choice", choices=["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"])
 
-    perform_ip_scan(hosts, ports, output_file, threads, http_method)
+    perform_scan(hosts, ports, output_file, threads, http_method)
