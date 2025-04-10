@@ -1,6 +1,7 @@
 import os
 import requests
 import threading
+from rich import print
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from bugscanx.utils.common import get_input
 from .logger import SubFinderConsole
@@ -87,17 +88,14 @@ class SubFinder:
 def main():
     domains = []
     input_type = get_input("Select input type", "choice", 
-                        choices=["single domain", "bulk domains"])
+                        choices=["manual input", "file input"])
     
-    if input_type == "single domain":
-        domain = get_input("Enter domain")
-        if is_valid_domain(domain):
-            domains = [domain]
-            sources = get_all_sources()
-            default_output = f"{domain}_subdomains.txt"
-        else:
-            print(f"Invalid domain: {domain}")
-            return
+    if input_type == "manual input":
+        domain_input = get_input("Enter domain(s)")
+        domains = [d.strip() for d in domain_input.split(',') if is_valid_domain(d.strip())]
+        sources = get_all_sources()
+        default_output = f"{domains[0]}_subdomains.txt"
+
     else:
         file_path = get_input("Enter filename", "file")
         with open(file_path, 'r') as f:
@@ -106,7 +104,7 @@ def main():
         default_output = f"{file_path.rsplit('.', 1)[0]}_subdomains.txt"
 
     if not domains:
-        print("No valid domains provided")
+        print("[bold red] No valid domains provided")
         return
 
     output_file = get_input("Enter output filename", default=default_output)
