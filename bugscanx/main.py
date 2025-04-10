@@ -1,6 +1,6 @@
 import sys
 from rich import print
-from . import clear_screen, banner, text_ascii
+from bugscanx import clear_screen, banner, text_ascii
 
 MENU_OPTIONS = {
     '1':  ("HOST SCANNER PRO", "bold cyan"),

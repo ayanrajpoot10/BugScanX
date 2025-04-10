@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 from rich.console import Console
-from bugscanx.utils.common import get_input
+from .common import get_input
 
 def file_manager(start_dir):
     current_dir = Path(start_dir).resolve()
