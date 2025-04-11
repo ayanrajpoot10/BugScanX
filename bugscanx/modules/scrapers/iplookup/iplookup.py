@@ -45,10 +45,10 @@ def process_ips(ips, output_file):
 def get_input_interactively():
     ips = []
     
-    input_choice = get_input("Choose input type", "choice", 
-                           choices=["Manual IP/CIDR", "IP/CIDR from file"])
+    input_choice = get_input("Select input type", "choice", 
+                           choices=["manual input", "file input"])
     
-    if input_choice == "Manual IP/CIDR":
+    if input_choice == "manual input":
         cidr = get_input("Enter IP or CIDR", validators=[is_cidr])
         ips.extend(process_input(cidr))
     else:
