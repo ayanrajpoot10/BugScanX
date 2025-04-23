@@ -1,7 +1,7 @@
 [project]
 name = "bugscan-x"
 dynamic = ["version"]
-description = "All-in-one tool for finding SNI bug hosts"
+description = "All-in-one tool for SNI discovery"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.7"
@@ -27,7 +27,7 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Ayanrajpoot10/bugscan-x"
+Homepage = "https://github.com/Ayanrajpoot10/bugscanx"
 
 [project.scripts]
 bugscanx = "bugscanx.main:main"
