@@ -10,6 +10,15 @@ authors = [
     { name = "Ayan Rajpoot", email = "ayanrajpoot2004@gmail.com" }
 ]
 
+keywords = [
+    "sni",
+    "scanning-tool",
+    "subdomain-enumeration",
+    "bughost",
+    "cidr-scanning",
+    "reverse-ip-lookup"
+]
+
 dependencies = [
     "beautifulsoup4",
     "dnspython",
