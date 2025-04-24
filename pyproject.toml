@@ -31,6 +31,8 @@ Homepage = "https://github.com/Ayanrajpoot10/bugscanx"
 
 [project.scripts]
 bugscanx = "bugscanx.main:main"
+bugscan-x = "bugscanx.main:main"
+bx = "bugscanx.main:main"
 
 [build-system]
 requires = ["setuptools", "wheel"]
