@@ -1,4 +1,6 @@
 import sys
+from argparse import ArgumentParser
+from importlib import import_module, metadata
 from rich import print
 from bugscanx import clear_screen, banner, text_ascii
 
@@ -19,38 +21,44 @@ MENU_OPTIONS = {
 
 def display_menu():
     banner()
-    for key, (desc, color) in MENU_OPTIONS.items():
-        padding = ' ' if len(key) == 1 else ''
-        print(f"[{color}] [{key}]{padding} {desc}")
+    print("\n".join(f"[{color}] [{k}]{' ' if len(k)==1 else ''} {desc}" 
+          for k, (desc, color) in MENU_OPTIONS.items()))
 
-def run_menu_option(choice):
+def run_option(choice):
     if choice == '12':
         return False
+    if choice not in MENU_OPTIONS:
+        return True
         
     clear_screen()
     text_ascii(MENU_OPTIONS[choice][0], color="bold magenta")
     
     try:
-        module = __import__('bugscanx.entrypoints.runner', fromlist=[f'run_{choice}'])
-        getattr(module, f'run_{choice}')()
+        getattr(import_module('bugscanx.entrypoints.runner'), f'run_{choice}')()
+        print("\n[yellow] Press Enter to continue...", end="")
     except KeyboardInterrupt:
         print("\n[yellow] Operation cancelled by user.")
-    
-    print("\n[yellow] Press Enter to continue...", end="")
-    input()
     return True
 
 def main():
+    parser = ArgumentParser()
+    parser.add_argument('-v', '--version', action='store_true')
+    parser.add_argument('-u', '--update', action='store_true')
+    parser.add_argument('option', nargs='?')
+    args = parser.parse_args()
+
+    if args.version:
+        print(f"[bold cyan]BugScanX version {metadata.version('bugscan-x')}[/bold cyan]")
+        return
+    if args.update:
+        return run_option('11')
+    if args.option:
+        return 0 if run_option(args.option) else 1
+
     try:
         while True:
             display_menu()
-            choice = input("\n\033[36m [-]  Your Choice: \033[0m")
-            
-            if choice not in MENU_OPTIONS:
-                continue
-                
-            if not run_menu_option(choice):
+            if not run_option(input("\n\033[36m [-]  Your Choice: \033[0m")):
                 break
-                
     except KeyboardInterrupt:
-        sys.exit()
+        sys.exit(0)
