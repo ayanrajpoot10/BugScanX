@@ -1,11 +1,10 @@
 import sys
 from pathlib import Path
-from rich.console import Console
+from rich import print
 from .common import get_input
 
 def file_manager(start_dir):
     current_dir = Path(start_dir).resolve()
-    console = Console()
     previous_lines = 0
 
     while True:
@@ -23,18 +22,18 @@ def file_manager(start_dir):
 
         short_dir = "\\".join(current_dir.parts[-3:])
 
-        console.print(f"[cyan] Current Folder: {short_dir}[/cyan]")
+        print(f"[cyan] Current Dir: {short_dir}[/cyan]")
         lines_printed += 1
 
         for idx, item in enumerate(directories + files, 1):
             color = "yellow" if item.is_dir() else "white"
-            console.print(f"  {idx}. [{color}]{item.name}[/{color}]")
+            print(f"  {idx}. [{color}]{item.name}[/{color}]")
             lines_printed += 1
 
-        console.print("\n[blue] 0. Back to previous folder[/blue]")
+        print("\n[blue]  0. Previous folder[/blue]")
         lines_printed += 2
 
-        selection = get_input("Enter number or filename")
+        selection = get_input("Select number or filename")
         lines_printed += 1
         
         previous_lines = lines_printed
@@ -55,6 +54,3 @@ def file_manager(start_dir):
         file_path = current_dir / selection
         if file_path.is_file() and file_path.suffix == '.txt':
             return file_path
-
-        console.print("[bold red] Invalid selection. Please try again.[/bold red]")
-        previous_lines += 1
