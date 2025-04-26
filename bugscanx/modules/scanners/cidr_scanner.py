@@ -11,9 +11,9 @@ from bugscanx.utils.cidr import get_hosts_from_cidr, read_cidrs_from_file
 file_write_lock = threading.Lock()
 
 def get_cidrs_input():
-    input_type = get_input("Select input type", "choice", choices=["manual input", "file input"])
+    input_type = get_input("Select input mode", "choice", choices=["manual", "file"])
     
-    if input_type == "file input":
+    if input_type == "file":
         filepath = get_input("Enter path to CIDR list file", "file")
         cidr_list = read_cidrs_from_file(filepath)
         if not cidr_list:
