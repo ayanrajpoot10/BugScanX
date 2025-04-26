@@ -1,6 +1,6 @@
 import os
-from dns import resolver as dns_resolver
 from rich import print
+from dns import resolver as dns_resolver
 from bugscanx.utils.common import get_input, get_confirm
 
 def configure_resolver(custom_nameservers=None):
@@ -52,18 +52,18 @@ def nslookup(domain, custom_nameservers=None):
     print(f"[cyan]\n Performing NSLOOKUP for: {domain}[/cyan]")
     
     record_types = [
-        'A',        # IPv4 addresses
-        'AAAA',     # IPv6 addresses
-        'CNAME',    # Canonical name records
-        'MX',       # Mail exchange records
-        'NS',       # Name server records
-        'TXT',      # Text records
-        'SOA',      # Start of authority records
-        'PTR',      # Pointer records for reverse DNS
-        'SRV',      # Service locator
-        'CAA',      # Certification Authority Authorization
-        'DNSKEY',   # DNSSEC public key
-        'TLSA'      # TLS association
+        'A',
+        'AAAA',
+        'CNAME',
+        'MX',
+        'NS',
+        'TXT',
+        'SOA',
+        'PTR',
+        'SRV',
+        'CAA',
+        'DNSKEY',
+        'TLSA'
     ]
     
     for record_type in record_types:
