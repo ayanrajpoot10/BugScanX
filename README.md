@@ -2,7 +2,7 @@
 <div align="center">
     <img src="https://raw.githubusercontent.com/Ayanrajpoot10/bugscanx/refs/heads/main/assets/logo.png" width="128" height="128"/>
     <h1>BugScanX</h1>
-    <p>Powerful toolkit for HTTP bug detection, subdomain enumeration, and more.</p>
+    <p>All-in-one tool for SNI discovery</p>
 </div>
 
 <p align="center">
