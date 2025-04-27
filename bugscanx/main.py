@@ -2,7 +2,7 @@ import sys
 from argparse import ArgumentParser
 from importlib import import_module, metadata
 from rich import print
-from bugscanx import clear_screen, banner, text_ascii
+from bugscanx import banner, text_ascii
 
 MENU_OPTIONS = {
     '1':  ("HOST SCANNER PRO", "bold cyan"),
@@ -30,7 +30,6 @@ def run_option(choice, from_menu=True):
     if choice not in MENU_OPTIONS:
         return True
         
-    clear_screen()
     text_ascii(MENU_OPTIONS[choice][0], color="bold magenta")
     
     try:
