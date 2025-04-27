@@ -39,25 +39,26 @@ def run_option(choice, from_menu=True):
             print("\n[yellow] Press Enter to continue...", end="")
             input()
     except KeyboardInterrupt:
-        print("\n[yellow] Operation cancelled by user.")
+        if not from_menu:
+            print("\n[yellow] Operation cancelled by user.")
     return True
 
 def main():
-    parser = ArgumentParser()
-    parser.add_argument('-v', '--version', action='store_true')
-    parser.add_argument('-u', '--update', action='store_true')
-    parser.add_argument('option', nargs='?')
-    args = parser.parse_args()
-
-    if args.version:
-        print(f"[bold cyan]BugScanX version {metadata.version('bugscan-x')}[/bold cyan]")
-        return
-    if args.update:
-        return run_option('11', from_menu=False)
-    if args.option:
-        return 0 if run_option(args.option, from_menu=False) else 1
-
     try:
+        parser = ArgumentParser()
+        parser.add_argument('-v', '--version', action='store_true')
+        parser.add_argument('-u', '--update', action='store_true')
+        parser.add_argument('option', nargs='?')
+        args = parser.parse_args()
+
+        if args.version:
+            print(f"[bold cyan]BugScanX version {metadata.version('bugscan-x')}[/bold cyan]")
+            return
+        if args.update:
+            return run_option('11', from_menu=False)
+        if args.option and args.option in MENU_OPTIONS:
+            return 0 if run_option(args.option, from_menu=False) else 1
+
         while True:
             display_menu()
             if not run_option(input("\n\033[36m [-]  Your Choice: \033[0m"), from_menu=True):
