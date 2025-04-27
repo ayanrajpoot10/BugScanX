@@ -27,7 +27,7 @@ def display_menu():
 def run_option(choice, from_menu=True):
     if choice == '12':
         return False
-    if choice not in MENU_OPTIONS:
+    if not MENU_OPTIONS.get(choice):
         return True
         
     text_ascii(MENU_OPTIONS[choice][0], color="bold magenta")
