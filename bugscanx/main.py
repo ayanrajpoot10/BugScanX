@@ -11,7 +11,7 @@ MENU_OPTIONS = {
     '4':  ("SUBFINDER", "bold magenta"),
     '5':  ("IP LOOKUP", "bold cyan"),
     '6':  ("TXT TOOLKIT", "bold magenta"),
-    '7':  ("OPEN PORT", "bold white"),
+    '7':  ("OPEN PORTS", "bold white"),
     '8':  ("DNS RECORDS", "bold green"),
     '9':  ("HOST INFO", "bold blue"),
     '10': ("HELP", "bold yellow"),
@@ -51,7 +51,7 @@ def main():
         args = parser.parse_args()
 
         if args.version:
-            print(f"[bold cyan]BugScanX version {metadata.version('bugscan-x')}[/bold cyan]")
+            print(f"[bold cyan]v{metadata.version('bugscan-x')}[/bold cyan]")
             return
         if args.update:
             return run_option('11', from_menu=False)
@@ -60,7 +60,7 @@ def main():
 
         while True:
             display_menu()
-            if not run_option(input("\n\033[36m [-]  Your Choice: \033[0m"), from_menu=True):
+            if not run_option(input("\n\033[36m [-]  Your Choice: \033[0m").strip(), from_menu=True):
                 break
     except KeyboardInterrupt:
-        sys.exit(0)
+        sys.exit()
