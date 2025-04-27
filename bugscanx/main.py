@@ -24,7 +24,7 @@ def display_menu():
     print("\n".join(f"[{color}] [{k}]{' ' if len(k)==1 else ''} {desc}" 
           for k, (desc, color) in MENU_OPTIONS.items()))
 
-def run_option(choice):
+def run_option(choice, from_menu=True):
     if choice == '12':
         return False
     if choice not in MENU_OPTIONS:
@@ -35,7 +35,9 @@ def run_option(choice):
     
     try:
         getattr(import_module('bugscanx.entrypoints.runner'), f'run_{choice}')()
-        print("\n[yellow] Press Enter to continue...", end="")
+        if from_menu:
+            print("\n[yellow] Press Enter to continue...", end="")
+            input()
     except KeyboardInterrupt:
         print("\n[yellow] Operation cancelled by user.")
     return True
@@ -51,14 +53,14 @@ def main():
         print(f"[bold cyan]BugScanX version {metadata.version('bugscan-x')}[/bold cyan]")
         return
     if args.update:
-        return run_option('11')
+        return run_option('11', from_menu=False)
     if args.option:
-        return 0 if run_option(args.option) else 1
+        return 0 if run_option(args.option, from_menu=False) else 1
 
     try:
         while True:
             display_menu()
-            if not run_option(input("\n\033[36m [-]  Your Choice: \033[0m")):
+            if not run_option(input("\n\033[36m [-]  Your Choice: \033[0m"), from_menu=True):
                 break
     except KeyboardInterrupt:
         sys.exit(0)
