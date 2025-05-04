@@ -19,8 +19,8 @@ def run_5():
     iplookup.main()
 
 def run_6():
-    from bugscanx.modules.others import txt_toolkit
-    txt_toolkit.main()
+    from bugscanx.modules.others import file_toolkit
+    file_toolkit.main()
 
 def run_7():
     from bugscanx.modules.scanners import open_port

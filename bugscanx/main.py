@@ -10,7 +10,7 @@ MENU_OPTIONS = {
     '3':  ("CIDR SCANNER", "bold yellow"),
     '4':  ("SUBFINDER", "bold magenta"),
     '5':  ("IP LOOKUP", "bold cyan"),
-    '6':  ("TXT TOOLKIT", "bold magenta"),
+    '6':  ("FILE TOOLKIT", "bold magenta"),
     '7':  ("OPEN PORTS", "bold white"),
     '8':  ("DNS RECORDS", "bold green"),
     '9':  ("HOST INFO", "bold blue"),
@@ -40,6 +40,10 @@ def run_option(choice, from_menu=True):
     except KeyboardInterrupt:
         if not from_menu:
             print("\n[yellow] Operation cancelled by user.")
+        else:
+            print("\n[yellow] Operation cancelled by user.\n")
+            print("[yellow] Press Enter to continue...", end="")
+            input()
     return True
 
 def main():
