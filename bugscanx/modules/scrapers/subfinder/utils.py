@@ -46,7 +46,6 @@ def filter_valid_subdomains(subdomains, domain):
                 
     return result
 
-# Thread-safe counter implementation
 class Value:
     def __init__(self, typecode, value):
         self._value = value
@@ -65,6 +64,5 @@ class Value:
     def get_lock(self):
         return self._lock
 
-# Add Value to threading module if it doesn't exist
 if not hasattr(threading, 'Value'):
     threading.Value = Value
