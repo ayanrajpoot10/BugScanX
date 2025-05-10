@@ -34,21 +34,35 @@ def is_cidr(text):
     if not text.strip():
         return "CIDR input cannot be empty"
     
-    parts = [p.strip() for p in text.split(',') if p.strip()]
+    if text.endswith(',') or ',,' in text:
+        return "Empty value after comma"
+    
+    parts = [p.strip() for p in text.split(',')]
     for part in parts:
+        if not part:
+            return "Empty value between commas"
         try:
             ipaddress.ip_network(part, strict=False)
         except ValueError:
             return f"Invalid CIDR notation: {part}"
     return True
 
-def is_digit(text):
+def is_digit(text, allow_comma=True):
     if not text.strip():
-        return True
+        return "Input cannot be empty"
     
-    parts = text.split(',')
+    if not allow_comma and ',' in text:
+        return "Multi values are not allowed"
+        
+    parts = text.split(',') if allow_comma else [text]
+    
+    if text.endswith(',') or ',,' in text:
+        return "Empty value after comma"
+        
     for part in parts:
         part = part.strip()
-        if part and not part.isdigit():
+        if not part:
+            return "Empty value between commas"
+        if not part.isdigit():
             return f"Not a valid number: {part}"
     return True
