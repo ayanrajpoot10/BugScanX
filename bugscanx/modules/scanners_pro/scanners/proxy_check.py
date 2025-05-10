@@ -32,7 +32,6 @@ class ProxyScanner(BaseScanner):
 
     def init(self):
         super().init()
-        self.log("\n")
         self.log_info('Proxy:Port', ['Code'], 'G1')
         self.log_info('----------', ['----'], 'G1')
 
@@ -90,5 +89,5 @@ class ProxyScanner(BaseScanner):
         self.log_replace(f"{proxy_host}")
 
     def complete(self):
-        self.log_replace(self.colorize("Scan completed", "green"))
+        self.log_replace(self.colorize("Scan completed", "GREEN"))
         super().complete()
