@@ -27,9 +27,18 @@ class BaseScanner(MultiThread):
             filtered_data.append(item)
 
         return list(set(filtered_data))
+    
+    def hide_cursor(self):
+        print('\033[?25l', end='', flush=True)
+
+    def show_cursor(self):
+        print('\033[?25h', end='', flush=True)
 
     def init(self):
         self._threads = self.threads or self._threads
+        self.hide_cursor()
+        print()
 
     def complete(self):
-        pass
+        self.show_cursor()
+        print()
