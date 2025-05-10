@@ -3,55 +3,71 @@ import socket
 from .base import BaseScanner
 
 class SSLScanner(BaseScanner):
-	host_list = []
+    host_list = []
 
-	def get_task_list(self):
-		for host in self.filter_list(self.host_list):
-			yield {
-				'host': host,
-			}
+    def __init__(self):
+        super().__init__()
+        self.tls_version = ssl.PROTOCOL_TLS
 
-	def log_info(self, status, server_name_indication):
-		super().log(f'{status:<6}  {server_name_indication}')
+    TLS_VERSIONS = {
+        'TLS 1.0': ssl.PROTOCOL_TLSv1,
+        'TLS 1.1': ssl.PROTOCOL_TLSv1_1,
+        'TLS 1.2': ssl.PROTOCOL_TLSv1_2,
+        'TLS 1.3': ssl.PROTOCOL_TLS
+    }
 
-	def log_info_result(self, **kwargs):
-		status = kwargs.get('status', '')
-		if status:
-			status = 'True'
-			server_name_indication = kwargs.get('server_name_indication', '')
-			self.log_info(status, server_name_indication)
+    def get_task_list(self):
+        for host in self.filter_list(self.host_list):
+            yield {
+                'host': host,
+            }
 
-	def init(self):
-		super().init()
-		self.log_info('Status', 'Server Name Indication')
-		self.log_info('------', '----------------------')
+    def log_info(self, **kwargs):
+        kwargs.setdefault('color', '')
+        kwargs.setdefault('sni', '')
+        kwargs.setdefault('tls_version', '')
+        
+        messages = [
+            self.colorize('{tls_version:<8}', 'CYAN'),
+            self.colorize('{sni}', 'LGRAY'),
+        ]
+        super().log('  '.join(messages).format(**kwargs))
 
-	def task(self, payload):
-		server_name_indication = payload['host']
+    def log_info_result(self, **kwargs):
+        self.log_info(**kwargs)
 
-		if not server_name_indication:
-			return
+    def init(self):
+        super().init()
+        self.log_info(tls_version='TLS', sni='SNI')
+        self.log_info(tls_version='---', sni='---')
 
-		response = {
-			'server_name_indication': server_name_indication,
-		}
+    def task(self, payload):
+        sni = payload['host']
 
-		try:
-			socket_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			socket_client.settimeout(5)
-			socket_client.connect((server_name_indication, 443))
-			socket_client = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2).wrap_socket(
-				socket_client, server_hostname=server_name_indication, do_handshake_on_connect=True
-			)
-			response['status'] = True
-			self.task_success(server_name_indication)
-			self.log_info_result(**response)
+        if not sni:
+            return
 
-		except Exception:
-			pass
+        response = {
+            'sni': sni,
+            'tls_version': 'Unknown'
+        }
 
-		self.log_replace(server_name_indication)
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socket_client:
+                socket_client.settimeout(5)
+                socket_client.connect((sni, 443))
+                context = ssl.SSLContext(self.tls_version)
+                with context.wrap_socket(
+                    socket_client, server_hostname=sni, do_handshake_on_connect=True
+                ) as ssl_socket:
+                    response['tls_version'] = ssl_socket.version()
+                    self.task_success(sni)
+                    self.log_info_result(**response)
+        except Exception:
+            pass
 
-	def complete(self):
-		self.log_replace(self.colorize("Scan completed", "GREEN"))
-		super().complete()
+        self.log_replace(sni)
+
+    def complete(self):
+        self.log_replace(self.colorize("Scan completed", "GREEN"))
+        super().complete()

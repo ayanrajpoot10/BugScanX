@@ -42,22 +42,25 @@ def get_input(
     validate_input=True,
     instruction="",
     mandatory=True,
+    allow_comma_separated=True,
     **kwargs
 ):
     common_params = {
-        "message": f" {message}:",
+        "message": f" {message.strip()}" + ("" if instruction else ":"),
         "default": "" if default is None else str(default),
         "qmark": kwargs.pop("qmark", ""),
         "amark": kwargs.pop("amark", ""),
         "style": style,
-        "instruction": instruction,
+        "instruction": instruction + (":" if instruction else ""),
         "mandatory": mandatory,
     }
     
     if validators is None and validate_input:
         validators = INPUT_VALIDATORS.get(input_type, [])
-    
+        
     if validate_input and validators:
+        if input_type == "number":
+            validators = [lambda x: is_digit(x, allow_comma_separated)]
         common_params["validate"] = create_validator(validators)
     
     input_type_params = {
