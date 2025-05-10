@@ -25,10 +25,12 @@ def write_lines(file_path, lines):
         print(f"[red] Error writing to file {file_path}: {e}[/red]")
         return False
 
-def split_file(file_path, parts):
+def split_file():
+    file_path = get_input("Enter filename", "file")
+    parts = int(get_input("Number of parts", "number"))
     lines = read_lines(file_path)
     if not lines:
-        return []
+        return
     
     lines_per_file = len(lines) // parts
     file_base = os.path.splitext(file_path)[0]
@@ -42,85 +44,12 @@ def split_file(file_path, parts):
         if write_lines(part_file, lines[start_idx:end_idx]):
             created_files.append((part_file, len(lines[start_idx:end_idx])))
     
-    return created_files
-
-def merge_files(directory, files_to_merge, output_file):
-    output_path = os.path.join(directory, output_file)
-    lines = []
-    for filename in files_to_merge:
-        file_path = os.path.join(directory, filename)
-        lines.extend(read_lines(file_path))
-    return write_lines(output_path, lines), len(lines)
-
-def extract_domains_and_ips(content):
-    domain_pattern = r'\b(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}\b'
-    ip_pattern = r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b'
-    
-    domains = set(re.findall(domain_pattern, '\n'.join(content)))
-    ips = set(re.findall(ip_pattern, '\n'.join(content)))
-    
-    return sorted(domains), sorted(ips)
-
-def get_root_domains(subdomains):
-    return sorted({'.'.join(d.split('.')[-2:]) for d in subdomains if len(d.split('.')) >= 2})
-
-def separate_by_extension(domains):
-    extensions_dict = defaultdict(list)
-    for domain in domains:
-        ext = domain.split('.')[-1].lower()
-        extensions_dict[ext].append(domain)
-    return extensions_dict
-
-def filter_by_keywords(domains, keywords):
-    return [d for d in domains if any(k in d.lower() for k in keywords)]
-
-def resolve_domain(domain):
-    try:
-        ip = socket.gethostbyname_ex(domain.strip())[2][0]
-        return domain, ip
-    except (socket.gaierror, socket.timeout):
-        return domain, None
-
-def convert_cidr_to_ips(cidr):
-    try:
-        network = ipaddress.ip_network(cidr.strip(), strict=False)
-        return [str(ip) for ip in network.hosts()]
-    except ValueError as e:
-        print(f"[red] Invalid CIDR range: {cidr} - {str(e)}[/red]")
-        return []
-
-def resolve_domains_to_ips(domains):
-    ip_addresses = set()
-    resolved_count = failed_count = 0
-    socket.setdefaulttimeout(1)
-    
-    with Progress(SpinnerColumn(), *Progress.get_default_columns(), TimeElapsedColumn()) as progress:
-        task = progress.add_task("[yellow]Resolving", total=len(domains))
-        
-        with ThreadPoolExecutor(max_workers=100) as executor:
-            futures = [executor.submit(resolve_domain, domain) for domain in domains]
-            for future in as_completed(futures):
-                domain, ip = future.result()
-                if ip:
-                    ip_addresses.add(ip)
-                    resolved_count += 1
-                else:
-                    failed_count += 1
-                progress.update(task, advance=1)
-    
-    return sorted(ip_addresses), resolved_count, failed_count
-
-def handle_split_file():
-    file_path = get_input("Enter filename", "file")
-    parts = int(get_input("Number of parts", "number"))
-    created_files = split_file(file_path, parts)
-    
     if created_files:
         print(f"[green] Split '{os.path.basename(file_path)}' into {len(created_files)} parts:[/green]")
         for file_path, line_count in created_files:
             print(f"[green] - {os.path.basename(file_path)}: {line_count} lines[/green]")
 
-def handle_merge_files():
+def merge_files():
     directory = get_input("Enter directory path", default=os.getcwd())
     
     if get_confirm(" Merge all txt files?"):
@@ -134,17 +63,45 @@ def handle_merge_files():
         return
     
     output_file = get_input("Enter output filename")
-    success, total_lines = merge_files(directory, files_to_merge, output_file)
+    output_path = os.path.join(directory, output_file)
+    lines = []
+    for filename in files_to_merge:
+        file_path = os.path.join(directory, filename)
+        lines.extend(read_lines(file_path))
     
-    if success:
+    if write_lines(output_path, lines):
         print(f"[green] Successfully merged {len(files_to_merge)} files into '{output_file}'[/green]")
-        print(f"[green] - Total lines: {total_lines}[/green]")
+        print(f"[green] - Total lines: {len(lines)}[/green]")
         print(f"[green] - Output location: {directory}[/green]")
 
-def handle_remove_duplicate_domains():
+def clean_file():
+    input_file = get_input("Enter filename", "file")
+    domain_output_file = get_input("Enter domains output filename")
+    ip_output_file = get_input("Enter IP output filename")
+    
+    content = read_lines(input_file)
+    if not content:
+        return
+    
+    domain_pattern = r'\b(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}\b'
+    ip_pattern = r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b'
+    
+    domains = sorted(set(re.findall(domain_pattern, '\n'.join(content))))
+    ips = sorted(set(re.findall(ip_pattern, '\n'.join(content))))
+    
+    domains_success = write_lines(domain_output_file, domains)
+    ips_success = write_lines(ip_output_file, ips)
+    
+    if domains_success or ips_success:
+        print(f"[green] TXT Cleaner results for '{os.path.basename(input_file)}':[/green]")
+        if domains_success:
+            print(f"[green] - Extracted {len(domains)} unique domains to '{os.path.basename(domain_output_file)}'[/green]")
+        if ips_success:
+            print(f"[green] - Extracted {len(ips)} unique IP addresses to '{os.path.basename(ip_output_file)}'[/green]")
+
+def remove_duplicates():
     file_path = get_input("Enter filename", "file")
     lines = read_lines(file_path)
-    
     if not lines:
         return
     
@@ -157,28 +114,7 @@ def handle_remove_duplicate_domains():
         print(f"[green] - Unique count: {len(unique_lines)} lines[/green]")
         print(f"[green] - Duplicates removed: {duplicates_removed} lines[/green]")
 
-def handle_txt_cleaner():
-    input_file = get_input("Enter filename", "file")
-    domain_output_file = get_input("Enter domains output filename")
-    ip_output_file = get_input("Enter IP output filename")
-    
-    content = read_lines(input_file)
-    if not content:
-        return
-    
-    domains, ips = extract_domains_and_ips(content)
-    
-    domains_success = write_lines(domain_output_file, domains)
-    ips_success = write_lines(ip_output_file, ips)
-    
-    if domains_success or ips_success:
-        print(f"[green] TXT Cleaner results for '{os.path.basename(input_file)}':[/green]")
-        if domains_success:
-            print(f"[green] - Extracted {len(domains)} unique domains to '{os.path.basename(domain_output_file)}'[/green]")
-        if ips_success:
-            print(f"[green] - Extracted {len(ips)} unique IP addresses to '{os.path.basename(ip_output_file)}'[/green]")
-
-def handle_convert_subdomains_to_domains():
+def convert_subdomains_to_domains():
     file_path = get_input("Enter filename", "file")
     output_file = get_input("Enter output filename")
     
@@ -186,7 +122,7 @@ def handle_convert_subdomains_to_domains():
     if not subdomains:
         return
 
-    root_domains = get_root_domains(subdomains)
+    root_domains = sorted({'.'.join(d.split('.')[-2:]) for d in subdomains if len(d.split('.')) >= 2})
     
     if write_lines(output_file, root_domains):
         print(f"[green] Successfully converted subdomains to root domains:[/green]")
@@ -194,56 +130,64 @@ def handle_convert_subdomains_to_domains():
         print(f"[green] - Unique root domains: {len(root_domains)}[/green]")
         print(f"[green] - Output file: '{os.path.basename(output_file)}'[/green]")
 
-def handle_separate_domains_by_extension():
+def filter_by_tlds():
     file_path = get_input("Enter filename", "file")
-    extensions_input = get_input("Enter extensions (comma-separated) or 'all'")
+    tlds_input = get_input("Enter TLDs ", instruction="(e.g. com, org)")
     
     domains = read_lines(file_path)
     if not domains:
         return
     
-    extensions_dict = separate_by_extension(domains)
+    tld_dict = defaultdict(list)
+    for domain in domains:
+        parts = domain.split('.')
+        if len(parts) > 1:
+            tld = parts[-1].lower()
+            tld_dict[tld].append(domain)
+    
     base_name = os.path.splitext(file_path)[0]
-    target_extensions = [ext.strip() for ext in extensions_input.lower().split(',')] if extensions_input.lower() != 'all' else list(extensions_dict.keys())
+    target_tlds = [tld.strip().lstrip('.').lower() for tld in tlds_input.split(',')] if tlds_input.lower() != 'all' else list(tld_dict.keys())
     
     success_count = 0
-    print(f"[green] Separating domains by extension from '{os.path.basename(file_path)}':[/green]")
+    print(f"[green]Filtering domains by TLDs from '{os.path.basename(file_path)}':[/green]")
     
-    for ext in target_extensions:
-        if ext in extensions_dict:
-            ext_file = f"{base_name}_{ext}.txt"
-            if write_lines(ext_file, sorted(extensions_dict[ext])):
+    for tld in target_tlds:
+        if (tld in tld_dict):
+            tld_file = f"{base_name}_{tld}.txt"
+            if write_lines(tld_file, sorted(tld_dict[tld])):
                 success_count += 1
-                print(f"[green] - Created '{os.path.basename(ext_file)}' with {len(extensions_dict[ext])} domains[/green]")
+                print(f"[green]- Created '{os.path.basename(tld_file)}' with {len(tld_dict[tld])} domains[/green]")
         else:
-            print(f"[yellow] - No domains found with .{ext} extension[/yellow]")
-    
-    if success_count > 0:
-        print(f"[green] Successfully created {success_count} files based on domain extensions[/green]")
+            print(f"[yellow]- No domains found with .{tld} TLD[/yellow]")
 
-def handle_filter_by_keywords():
+def filter_by_keywords():
     file_path = get_input("Enter filename", "file")
-    keywords = [k.strip().lower() for k in get_input("Enter keywords (comma-separated)").split(',')]
+    keywords = [k.strip().lower() for k in get_input("Enter keyword(s)").split(',')]
     output_file = get_input("Enter output filename")
     
     lines = read_lines(file_path)
     if not lines:
         return
     
-    filtered_domains = filter_by_keywords(lines, keywords)
+    filtered_lines = [line for line in lines if any(k in line.lower() for k in keywords)]
     
-    if write_lines(output_file, filtered_domains):
-        print(f"[green] Successfully filtered domains by keywords:[/green]")
-        print(f"[green] - Input domains: {len(lines)}[/green]")
-        print(f"[green] - Matched domains: {len(filtered_domains)}[/green]")
+    if write_lines(output_file, filtered_lines):
+        print(f"[green] Successfully filtered content by keywords:[/green]")
+        print(f"[green] - Input lines: {len(lines)}[/green]")
+        print(f"[green] - Matched lines: {len(filtered_lines)}[/green]")
         print(f"[green] - Keywords used: {', '.join(keywords)}[/green]")
         print(f"[green] - Output file: '{os.path.basename(output_file)}'[/green]")
 
-def handle_cidr_to_ip():
+def cidr_to_ip():
     cidr_input = get_input("Enter CIDR range")
     output_file = get_input("Enter output filename")
     
-    ip_addresses = convert_cidr_to_ips(cidr_input)
+    try:
+        network = ipaddress.ip_network(cidr_input.strip(), strict=False)
+        ip_addresses = [str(ip) for ip in network.hosts()]
+    except ValueError as e:
+        print(f"[red] Invalid CIDR range: {cidr_input} - {str(e)}[/red]")
+        return
     
     if ip_addresses and write_lines(output_file, ip_addresses):
         print(f"[green] Successfully converted CIDR to IP addresses:[/green]")
@@ -251,17 +195,40 @@ def handle_cidr_to_ip():
         print(f"[green] - Total IPs: {len(ip_addresses)}[/green]")
         print(f"[green] - Output file: '{os.path.basename(output_file)}'[/green]")
 
-def handle_domains_to_ip():
+def domains_to_ip():
     file_path = get_input("Enter filename", "file")
     output_file = get_input("Enter output filename")
     
     domains = read_lines(file_path)
     if not domains:
         return
-        
-    ip_addresses, resolved_count, failed_count = resolve_domains_to_ips(domains)
+
+    ip_addresses = set()
+    resolved_count = failed_count = 0
+    socket.setdefaulttimeout(1)
     
-    if ip_addresses and write_lines(output_file, ip_addresses):
+    with Progress(SpinnerColumn(), *Progress.get_default_columns(), TimeElapsedColumn()) as progress:
+        task = progress.add_task("[yellow]Resolving", total=len(domains))
+        
+        with ThreadPoolExecutor(max_workers=100) as executor:
+            def resolve_domain(domain):
+                try:
+                    ip = socket.gethostbyname_ex(domain.strip())[2][0]
+                    return domain, ip
+                except (socket.gaierror, socket.timeout):
+                    return domain, None
+
+            futures = [executor.submit(resolve_domain, domain) for domain in domains]
+            for future in as_completed(futures):
+                domain, ip = future.result()
+                if ip:
+                    ip_addresses.add(ip)
+                    resolved_count += 1
+                else:
+                    failed_count += 1
+                progress.update(task, advance=1)
+    
+    if ip_addresses and write_lines(output_file, sorted(ip_addresses)):
         print(f"[green] Successfully resolved domains to IP addresses:[/green]")
         print(f"[green] - Input domains: {len(domains)}[/green]")
         print(f"[green] - Successfully resolved: {resolved_count}[/green]")
@@ -273,22 +240,27 @@ def handle_domains_to_ip():
 
 def main():
     options = {
-        "1": ("SPLIT FILE", handle_split_file, "bold cyan"),
-        "2": ("MERGE FILES", handle_merge_files, "bold blue"),
-        "3": ("CLEAN FILE", handle_txt_cleaner, "bold cyan"),
-        "4": ("REMOVE DUPLICATES", handle_remove_duplicate_domains, "bold yellow"),
-        "5": ("EXTRACT ROOT DOMAINS", handle_convert_subdomains_to_domains, "bold magenta"),
-        "6": ("FILTER BY EXTENSIONS", handle_separate_domains_by_extension, "bold magenta"),
-        "7": ("FILTER BY KEYWORDS", handle_filter_by_keywords, "bold yellow"),
-        "8": ("CIDR TO IP", handle_cidr_to_ip, "bold green"),
-        "9": ("DOMAINS TO IP", handle_domains_to_ip, "bold blue"),
+        "1": ("SPLIT FILE", split_file, "bold cyan"),
+        "2": ("MERGE FILES", merge_files, "bold blue"),
+        "3": ("CLEAN FILE", clean_file, "bold cyan"),
+        "4": ("REMOVE DUPLICATES", remove_duplicates, "bold yellow"),
+        "5": ("SUBDOMAIN TO DOMAINS", convert_subdomains_to_domains, "bold magenta"),
+        "6": ("FILTER BY TLD", filter_by_tlds, "bold magenta"),
+        "7": ("FILTER BY KEYWORD", filter_by_keywords, "bold yellow"),
+        "8": ("CIDR TO IP", cidr_to_ip, "bold green"),
+        "9": ("DOMAIN TO IP", domains_to_ip, "bold blue"),
         "0": ("BACK", lambda: None, "bold red")
     }
     
-    print("\n".join(f"[{color}] [{key}] {desc}" for key, (desc, _, color) in options.items()))
-    choice = input("\n \033[36m[-]  Your Choice: \033[0m")
-    
-    if choice in options:
-        options[choice][1]()
-        if choice == '0':
-            return
+    while True:
+        print("\n".join(f"[{color}] [{key}] {desc}" for key, (desc, _, color) in options.items()))
+        choice = input("\n \033[36m[-]  Your Choice: \033[0m").strip()
+        
+        if not choice or choice not in options:
+            from bugscanx import text_ascii
+            text_ascii("FILE TOOLKIT")
+            continue
+            
+        if choice in options:
+            options[choice][1]()
+            break
