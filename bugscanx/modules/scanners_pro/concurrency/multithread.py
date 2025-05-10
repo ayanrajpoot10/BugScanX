@@ -5,12 +5,11 @@ from threading import Thread, RLock
 from .logger import Logger
 
 class MultiThread:
-    logger = Logger(level='DEBUG')
-
-    def __init__(self, task_list=None, threads=None):
+    def __init__(self, logger=None, task_list=None, threads=None):
         self._lock = RLock()
         self._loop = True
         self._queue_task_list = Queue()
+        self.logger = logger or Logger()
 
         self._task_list = task_list or []
         self._task_list_total = 0
@@ -93,14 +92,13 @@ class MultiThread:
 
     def log_replace(self, *messages):
         default_messages = [
-			' ',
-			f'{self.percentage_scanned():.3f}%',
-			f'{self._task_list_scanned_total} of {self._task_list_total}',
-			f'{len(self.success_list())}',
-		]
+            f'{self.percentage_scanned():.3f}%',
+            f'{self._task_list_scanned_total} of {self._task_list_total}',
+            f'{len(self.success_list())}',
+        ]
 
         messages = [str(x) for x in messages if x is not None and str(x)]
-
+        
         self.logger.replace(' - '.join(default_messages + messages))
 
     def sleep(self, seconds):
