@@ -33,7 +33,7 @@ def main():
                 
             text_ascii(MENU_OPTIONS[choice][0])
             try:
-                module = __import__('bugscanx.entrypoints.runner', fromlist=[f'run_{choice}'])
+                module = __import__('bugscanx.handler.runner', fromlist=[f'run_{choice}'])
                 getattr(module, f'run_{choice}')()
                 print("\n[yellow] Press Enter to continue...", end="")
                 input()
