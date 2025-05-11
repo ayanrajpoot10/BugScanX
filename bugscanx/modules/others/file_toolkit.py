@@ -255,6 +255,9 @@ def main():
     while True:
         print("\n".join(f"[{color}] [{key}] {desc}" for key, (desc, _, color) in options.items()))
         choice = input("\n \033[36m[-]  Your Choice: \033[0m").strip()
+
+        if choice == '0':
+            raise KeyboardInterrupt
         
         if not choice or choice not in options:
             from bugscanx import text_ascii
