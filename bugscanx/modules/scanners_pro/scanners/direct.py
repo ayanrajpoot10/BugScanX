@@ -69,10 +69,8 @@ class DirectScanner(BaseScanner):
         methods = self.filter_list(self.method_list)
         hosts = self.filter_list(self.host_list)
         ports = self.filter_list(self.port_list)
-        return (
-            {'method': m.upper(), 'host': h, 'port': p}
-            for m, h, p in product(methods, hosts, ports)
-        )
+        for m, h, p in product(methods, hosts, ports):
+            yield {'method': m.upper(), 'host': h, 'port': p}
 
     def init(self):
         super().init()
