@@ -17,7 +17,7 @@ def scan_port(ip, port):
         return None
 
 def main():
-    target = get_input("Enter target IP/hostname")
+    target = get_input("Enter target")
     try:
         ip = socket.gethostbyname(target)
         console.print(f" Scanning target: {ip} ({target})", style="bold green")

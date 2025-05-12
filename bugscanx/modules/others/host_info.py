@@ -98,8 +98,8 @@ def get_sni_info(hostname, port=443):
         return f"Error getting SNI info: {e}"
 
 def main():
-    host = get_input("Enter the host")
-    protocol = get_input("Enter the protocol", "choice", choices=["http", "https"])
+    host = get_input("Enter host")
+    protocol = get_input("Select protocol", "choice", choices=["http", "https"])
     url = f"{protocol}://{host}"
 
     print("\n[bold cyan]Target Information[/bold cyan]")
