@@ -259,7 +259,7 @@ def main():
         if choice == '0':
             raise KeyboardInterrupt
         
-        if not choice or choice not in options:
+        if choice not in options:
             from bugscanx import text_ascii
             text_ascii("FILE TOOLKIT")
             continue
