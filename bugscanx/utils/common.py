@@ -41,6 +41,7 @@ def get_input(
     style=DEFAULT_STYLE,
     validate_input=True,
     instruction="",
+    long_instruction="",
     mandatory=True,
     allow_comma_separated=True,
     **kwargs
@@ -68,7 +69,8 @@ def get_input(
             "choices": choices,
             "multiselect": multiselect,
             "transformer": transformer,
-            "show_cursor": kwargs.pop("show_cursor", False)
+            "show_cursor": kwargs.pop("show_cursor", False),
+            "long_instruction": long_instruction or "Use ↑ ↓ to navigate, Enter to select."
         },
         "file": {
             "only_files": kwargs.pop("only_files", True)
