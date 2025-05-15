@@ -2,7 +2,6 @@ from ..concurrency.multithread import MultiThread
 from ..concurrency.logger import Logger
 
 class BaseScanner(MultiThread):
-    threads: int
 
     @classmethod
     def colorize(cls, text, color):
