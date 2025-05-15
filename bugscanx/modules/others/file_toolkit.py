@@ -114,22 +114,6 @@ def remove_duplicates():
         print(f"[green] - Unique count: {len(unique_lines)} lines[/green]")
         print(f"[green] - Duplicates removed: {duplicates_removed} lines[/green]")
 
-def convert_subdomains_to_domains():
-    file_path = get_input("Enter filename", "file")
-    output_file = get_input("Enter output filename")
-    
-    subdomains = read_lines(file_path)
-    if not subdomains:
-        return
-
-    root_domains = sorted({'.'.join(d.split('.')[-2:]) for d in subdomains if len(d.split('.')) >= 2})
-    
-    if write_lines(output_file, root_domains):
-        print(f"[green] Successfully converted subdomains to root domains:[/green]")
-        print(f"[green] - Input subdomains: {len(subdomains)}[/green]")
-        print(f"[green] - Unique root domains: {len(root_domains)}[/green]")
-        print(f"[green] - Output file: '{os.path.basename(output_file)}'[/green]")
-
 def filter_by_tlds():
     file_path = get_input("Enter filename", "file")
     tlds_input = get_input("Enter TLDs ", instruction="(e.g. com, org)")
@@ -243,12 +227,11 @@ def main():
         "1": ("SPLIT FILE", split_file, "bold cyan"),
         "2": ("MERGE FILES", merge_files, "bold blue"),
         "3": ("CLEAN FILE", clean_file, "bold cyan"),
-        "4": ("REMOVE DUPLICATES", remove_duplicates, "bold yellow"),
-        "5": ("SUBDOMAIN TO DOMAINS", convert_subdomains_to_domains, "bold magenta"),
-        "6": ("FILTER BY TLD", filter_by_tlds, "bold magenta"),
-        "7": ("FILTER BY KEYWORD", filter_by_keywords, "bold yellow"),
-        "8": ("CIDR TO IP", cidr_to_ip, "bold green"),
-        "9": ("DOMAIN TO IP", domains_to_ip, "bold blue"),
+        "4": ("DEDUPLICATE", remove_duplicates, "bold yellow"),
+        "5": ("FILTER BY TLD", filter_by_tlds, "bold magenta"),
+        "6": ("FILTER BY KEYWORD", filter_by_keywords, "bold yellow"),
+        "7": ("CIDR TO IP", cidr_to_ip, "bold green"),
+        "8": ("DOMAIN TO IP", domains_to_ip, "bold blue"),
         "0": ("BACK", lambda: None, "bold red")
     }
     
