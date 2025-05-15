@@ -17,7 +17,12 @@ def read_hosts(filename=None, cidr=None):
     return []
 
 def get_common_inputs(input_source):
-    output = get_input("Enter output filename", default=f"result_{os.path.basename(str(input_source))}", validate_input=False)
+    if isinstance(input_source, str) and '/' in input_source:
+        first_cidr = input_source.split(',')[0].strip()
+        default_filename = f"result_{first_cidr.replace('/', '-')}.txt"
+    else:
+        default_filename = f"result_{os.path.basename(str(input_source))}"
+    output = get_input("Enter output filename", default=default_filename, validate_input=False)
     threads = get_input("Enter threads", "number", default="50", allow_comma_separated=False)
     return output, threads
 
