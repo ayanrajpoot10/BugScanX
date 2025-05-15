@@ -39,7 +39,7 @@ def check_for_updates():
 
 def install_update():
     try:
-        with console.status("[yellow] Installing update...", spinner="point"):
+        with console.status("[yellow]Installing update...", spinner="point"):
             try:
                 subprocess.run(
                     [sys.executable, '-m', 'pip', 'install', '--upgrade', PACKAGE_NAME],
