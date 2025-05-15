@@ -23,17 +23,19 @@ def file_manager(start_dir):
         short_dir = "\\".join(current_dir.parts[-3:])
 
         print(f"[cyan] Current Dir: {short_dir}[/cyan]")
-        lines_printed += 1
+        print()
+        lines_printed += 2
 
         for idx, item in enumerate(directories + files, 1):
             color = "yellow" if item.is_dir() else "white"
             print(f"  {idx}. [{color}]{item.name}[/{color}]")
             lines_printed += 1
 
-        print("\n[blue]  0. Previous folder[/blue]")
+        print("[blue]  0. cd ..[/blue]")
+        print()
         lines_printed += 2
 
-        selection = get_input("Select number or filename")
+        selection = get_input("Enter number or filename")
         lines_printed += 1
         
         previous_lines = lines_printed
