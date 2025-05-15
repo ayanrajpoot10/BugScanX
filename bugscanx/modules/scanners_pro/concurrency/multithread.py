@@ -9,7 +9,7 @@ class MultiThread:
         self._lock = RLock()
         self._loop = True
         self._queue_task_list = Queue()
-        self.logger = logger or Logger()
+        self._logger = logger or Logger()
 
         self._task_list = task_list or []
         self._task_list_total = 0
@@ -88,7 +88,7 @@ class MultiThread:
             self._queue_task_list.queue.clear()
 
     def log(self, *args, **kwargs):
-        self.logger.log(*args, **kwargs)
+        self._logger.log(*args, **kwargs)
 
     def log_replace(self, *messages):
         default_messages = [
@@ -99,7 +99,7 @@ class MultiThread:
 
         messages = [str(x) for x in messages if x is not None and str(x)]
         
-        self.logger.replace(' - '.join(default_messages + messages))
+        self._logger.replace(' - '.join(default_messages + messages))
 
     def sleep(self, seconds):
         while seconds > 0:
