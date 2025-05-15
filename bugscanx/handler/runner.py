@@ -36,8 +36,8 @@ def run_9():
 
 def run_10():
     from bugscanx.modules.others import script_help
-    script_help.show_help()
+    script_help.main()
 
 def run_11():
     from bugscanx.modules.others import script_updater
-    script_updater.check_and_update()
+    script_updater.main()

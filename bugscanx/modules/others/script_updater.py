@@ -62,7 +62,7 @@ def restart_application():
     time.sleep(1)
     os.execv(sys.executable, [sys.executable] + sys.argv)
 
-def check_and_update():
+def main():
     try:
         has_update, current_version, latest_version = check_for_updates()
         if not has_update:

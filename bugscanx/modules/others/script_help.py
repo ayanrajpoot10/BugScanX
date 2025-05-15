@@ -5,7 +5,7 @@ from rich.markdown import Markdown
 
 console = Console()
 
-def show_help():
+def main():
 
     help_text = """
 
