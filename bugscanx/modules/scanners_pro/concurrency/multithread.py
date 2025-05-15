@@ -5,11 +5,11 @@ from threading import Thread, RLock
 from .logger import Logger
 
 class MultiThread:
-    def __init__(self, logger=None, task_list=None, threads=None):
+    def __init__(self, task_list=None, threads=None):
         self._lock = RLock()
         self._loop = True
         self._queue_task_list = Queue()
-        self._logger = logger or Logger()
+        self._logger = Logger()
 
         self._task_list = task_list or []
         self._task_list_total = 0
@@ -17,9 +17,6 @@ class MultiThread:
         self._task_list_success = []
 
         self._threads = threads or 50
-
-    def set_threads(self, threads):
-        self._threads = threads or self._threads
 
     def add_task(self, data):
         self._queue_task_list.put(data)
