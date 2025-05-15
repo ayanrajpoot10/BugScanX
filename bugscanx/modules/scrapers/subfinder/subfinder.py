@@ -88,9 +88,9 @@ class SubFinder:
 def main():
     domains = []
     input_type = get_input("Select input mode", "choice", 
-                        choices=["manual", "file"])
+                        choices=["Manual", "File"])
     
-    if input_type == "manual":
+    if input_type == "Manual":
         domain_input = get_input("Enter domain(s)")
         domains = [d.strip() for d in domain_input.split(',') if is_valid_domain(d.strip())]
         sources = get_all_sources()

@@ -46,9 +46,9 @@ def get_input_interactively():
     ips = []
     
     input_choice = get_input("Select input mode", "choice", 
-                           choices=["manual", "file"])
+                           choices=["Manual", "File"])
     
-    if input_choice == "manual":
+    if input_choice == "Manual":
         cidr = get_input("Enter IP or CIDR", validators=[is_cidr])
         ips.extend(process_input(cidr))
     else:
