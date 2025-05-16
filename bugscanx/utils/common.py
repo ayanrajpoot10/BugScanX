@@ -23,6 +23,14 @@ INPUT_VALIDATORS = {
     "text": [required]
 }
 
+def strip_handler(handler, strip_input):
+    def wrapped(params):
+        result = handler(params)
+        if strip_input and isinstance(result, str):
+            return result.strip()
+        return result
+    return wrapped
+
 INPUT_HANDLERS = {
     "choice": lambda params: select(**params).execute(),
     "file": lambda params: filepath(**params).execute(),
@@ -43,6 +51,7 @@ def get_input(
     instruction="",
     mandatory=True,
     allow_comma_separated=True,
+    strip_input=True,
     **kwargs
 ):
     common_params = {
@@ -53,6 +62,7 @@ def get_input(
         "style": style,
         "instruction": instruction + (":" if instruction else ""),
         "mandatory": mandatory,
+        "transformer": transformer
     }
     
     if validators is None and validate_input:
@@ -82,7 +92,7 @@ def get_input(
     if not handler:
         raise ValueError(f"Unsupported input_type: {input_type}")
     
-    return handler(common_params)
+    return strip_handler(handler, strip_input)(common_params)
 
 def get_confirm(
     message,
