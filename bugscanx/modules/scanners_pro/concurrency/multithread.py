@@ -33,6 +33,7 @@ class MultiThread(ABC):
             self.init()
             self.start_threads()
             self.join()
+            self.complete()
         except KeyboardInterrupt:
             pass
 
