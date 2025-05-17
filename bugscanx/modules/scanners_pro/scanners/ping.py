@@ -2,10 +2,13 @@ import socket
 from .base import BaseScanner
 
 class PingScanner(BaseScanner):
-    host_list = []
-    port_list = []
-    is_cidr_input = False
 
+    def __init__(self, host_list=None, port_list=None, is_cidr_input=False ,task_list=None, threads=None):
+        super().__init__(task_list, threads)
+        self.host_list = host_list or []
+        self.port_list = port_list or []
+        self.is_cidr_input = is_cidr_input
+    
     def log_info(self, **kwargs):
         kwargs.setdefault('color', '')
         kwargs.setdefault('host', '')

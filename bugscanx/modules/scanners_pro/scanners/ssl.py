@@ -3,11 +3,11 @@ import socket
 from .base import BaseScanner
 
 class SSLScanner(BaseScanner):
-    host_list = []
 
-    def __init__(self):
-        super().__init__()
-        self.tls_version = ssl.PROTOCOL_TLS
+    def __init__(self, host_list=None, tls_version=None, task_list=None, threads=None):
+        super().__init__(task_list, threads)
+        self.host_list = host_list or []
+        self.tls_version = tls_version or ssl.PROTOCOL_TLS
 
     TLS_VERSIONS = {
         'TLS 1.0': ssl.PROTOCOL_TLSv1,

@@ -44,12 +44,13 @@ def get_input_direct(no302=False):
                            choices=["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"],
                            transformer=list_to_comma_separated)
     
-    scanner = DirectScanner()
-    scanner.method_list = method_list
-    scanner.host_list = read_hosts(filename, cidr)
-    scanner.port_list = port_list
-    scanner.no302 = no302
-    scanner.is_cidr_input = cidr is not None
+    scanner = DirectScanner(
+        method_list=method_list,
+        host_list=read_hosts(filename, cidr),
+        port_list=port_list,
+        no302=no302,
+        is_cidr_input=cidr is not None
+    )
     
     return scanner, output, threads
 
@@ -70,15 +71,16 @@ def get_input_proxy():
     output, threads = get_common_inputs(filename or cidr)
     bug = get_input("Enter bug", default="", validate_input=False, instruction="(optional)")
     
-    scanner = ProxyScanner()
-    scanner.host_list = read_hosts(filename, cidr)
-    scanner.target = target_url
-    scanner.method = method
-    scanner.path = path
-    scanner.protocol = protocol
-    scanner.bug = bug
-    scanner.payload = payload
-    scanner.port_list = port_list
+    scanner = ProxyScanner(
+        host_list=read_hosts(filename, cidr),
+        target=target_url,
+        method=method,
+        path=path,
+        protocol=protocol,
+        bug=bug,
+        payload=payload,
+        port_list=port_list
+    )
     
     return scanner, output, threads
 
@@ -100,13 +102,13 @@ def get_input_proxy2():
         proxy_username = get_input("Enter proxy username")
         proxy_password = get_input("Enter proxy password")
     
-    scanner = Proxy2Scanner()
-    scanner.set_proxy(proxy, proxy_username, proxy_password)
-    scanner.method_list = method_list
-    scanner.host_list = read_hosts(filename, cidr)
-    scanner.port_list = port_list
-    scanner.is_cidr_input = cidr is not None
-    
+    scanner = Proxy2Scanner(
+        method_list=method_list,
+        host_list=read_hosts(filename, cidr),
+        port_list=port_list,
+        is_cidr_input=cidr is not None
+    ).set_proxy(proxy, proxy_username, proxy_password)
+
     return scanner, output, threads
 
 def get_input_ssl():
@@ -116,9 +118,10 @@ def get_input_ssl():
                            default="TLS 1.2")
     output, threads = get_common_inputs(filename or cidr)
     
-    scanner = SSLScanner()
-    scanner.host_list = read_hosts(filename, cidr)
-    scanner.tls_version = SSLScanner.TLS_VERSIONS[tls_version]
+    scanner = SSLScanner(
+        host_list=read_hosts(filename, cidr),
+        tls_version=SSLScanner.TLS_VERSIONS[tls_version]
+    )
     
     return scanner, output, threads
 
@@ -127,10 +130,11 @@ def get_input_ping():
     port_list = get_input("Enter port(s)", "number", default="443").split(',')
     output, threads = get_common_inputs(filename or cidr)
     
-    scanner = PingScanner()
-    scanner.host_list = read_hosts(filename, cidr)
-    scanner.port_list = port_list
-    scanner.is_cidr_input = cidr is not None
+    scanner = PingScanner(
+        host_list=read_hosts(filename, cidr),
+        port_list=port_list,
+        is_cidr_input=cidr is not None
+    )
     
     return scanner, output, threads
 

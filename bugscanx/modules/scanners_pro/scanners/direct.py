@@ -8,14 +8,18 @@ from bugscanx.utils.config import EXCLUDE_LOCATIONS
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class DirectScanner(BaseScanner):
-    method_list = []
-    host_list = []
-    port_list = []
     requests = requests
     DEFAULT_TIMEOUT = 3
     DEFAULT_RETRY = 1
-    no302 = False
-    is_cidr_input = False
+
+    def __init__(self, method_list=None, host_list=None, port_list=None,
+                no302=False, is_cidr_input=False, task_list=None, threads=None):
+        super().__init__(task_list, threads)
+        self.method_list = method_list or []
+        self.host_list = host_list or []
+        self.port_list = port_list or []
+        self.no302 = no302
+        self.is_cidr_input = is_cidr_input
 
     def request(self, method, url, **kwargs):
         method = method.upper()

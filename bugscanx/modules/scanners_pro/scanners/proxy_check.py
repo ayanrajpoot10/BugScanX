@@ -3,14 +3,17 @@ from .base import BaseScanner
 
 class ProxyScanner(BaseScanner):
     
-    host_list = []
-    port_list = []
-    target = ''
-    method = 'GET'
-    path = '/'
-    protocol = 'HTTP/1.1'
-    payload = ''
-    bug = ''
+    def __init__(self, host_list=None, port_list=None, task_list=None, threads=None, 
+                 target='', method='GET', path='/', protocol='HTTP/1.1', payload='', bug=''):
+        super().__init__(task_list, threads)
+        self.host_list = host_list or []
+        self.port_list = port_list or []
+        self.target = target
+        self.method = method
+        self.path = path
+        self.protocol = protocol
+        self.payload = payload
+        self.bug = bug
 
     def log_info(self, proxy_host_port, response_lines, status_code):
         if not response_lines or status_code in ['N/A', '302']:

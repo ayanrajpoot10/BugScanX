@@ -3,8 +3,22 @@ from urllib.parse import urlparse, urlunparse
 from .direct import DirectScanner
 
 class Proxy2Scanner(DirectScanner):
-    def __init__(self, proxy=None, auth=None):
-        super().__init__()
+
+    # def __init__(self, proxy=None, auth=None):
+    #     super().__init__()
+    #     self.proxy = proxy or {}
+    #     self.auth = auth
+    #     self.session = requests.Session()
+        # if self.proxy:
+        #     self.session.proxies.update(self.proxy)
+        # if self.auth:
+        #     self.session.auth = self.auth
+        # self.requests = self.session
+
+    def __init__(self, proxy=None, auth=None, method_list=None, host_list=None, port_list=None, no302=False, is_cidr_input=False, task_list=None, threads=None):
+        super().__init__(method_list=method_list, host_list=host_list, port_list=port_list,
+                     no302=no302, is_cidr_input=is_cidr_input,
+                     task_list=task_list, threads=threads)
         self.proxy = proxy or {}
         self.auth = auth
         self.session = requests.Session()
@@ -13,6 +27,7 @@ class Proxy2Scanner(DirectScanner):
         if self.auth:
             self.session.auth = self.auth
         self.requests = self.session
+
 
     def set_proxy(self, proxy, username=None, password=None):
 
@@ -32,6 +47,8 @@ class Proxy2Scanner(DirectScanner):
             from requests.auth import HTTPProxyAuth
             self.auth = HTTPProxyAuth(username, password)
             self.session.auth = self.auth
+
+        return self
 
     def request(self, method, url, **kwargs):
         method = method.upper()
