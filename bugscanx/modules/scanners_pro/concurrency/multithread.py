@@ -1,10 +1,11 @@
 import time
 from queue import Queue
+from abc import ABC, abstractmethod
 from threading import Thread, RLock
 
 from .logger import Logger
 
-class MultiThread:
+class MultiThread(ABC):
     def __init__(self, task_list=None, threads=None):
         self._lock = RLock()
         self._loop = True
@@ -48,17 +49,19 @@ class MultiThread:
             self._task_list_scanned_total += 1
             self._queue_task_list.task_done()
 
+    @abstractmethod
     def init(self):
         pass
-
+    
+    @abstractmethod
     def task(self, *_):
         pass
 
     def join(self):
         self._queue_task_list.join()
         self.task_complete()
-        self.complete()
-
+        
+    @abstractmethod
     def complete(self):
         pass
 
