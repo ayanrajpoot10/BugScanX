@@ -1,12 +1,16 @@
 import os
 import json
+
 from bugscanx.utils.cidr import get_hosts_from_cidr
 from bugscanx.utils.common import get_input, get_confirm, is_cidr
-from .scanners.direct import DirectScanner
-from .scanners.proxy_check import ProxyScanner
-from .scanners.proxy_request import Proxy2Scanner
-from .scanners.ssl import SSLScanner
-from .scanners.ping import PingScanner
+from .scanners import (
+    DirectScanner,
+    ProxyScanner,
+    Proxy2Scanner,
+    SSLScanner,
+    PingScanner,
+)
+
 
 def read_hosts(filename=None, cidr=None):
     if filename:
@@ -16,15 +20,26 @@ def read_hosts(filename=None, cidr=None):
         return get_hosts_from_cidr(cidr)
     return []
 
+
 def get_common_inputs(input_source):
     if isinstance(input_source, str) and '/' in input_source:
         first_cidr = input_source.split(',')[0].strip()
         default_filename = f"result_{first_cidr.replace('/', '-')}.txt"
     else:
         default_filename = f"result_{os.path.basename(str(input_source))}"
-    output = get_input("Enter output filename", default=default_filename, validate_input=False)
-    threads = get_input("Enter threads", "number", default="50", allow_comma_separated=False)
+    output = get_input(
+        "Enter output filename",
+        default=default_filename,
+        validate_input=False
+    )
+    threads = get_input(
+        "Enter threads",
+        "number",
+        default="50",
+        allow_comma_separated=False
+    )
     return output, threads
+
 
 def get_host_input():
     filename = get_input("Enter filename", "file", mandatory=False)
@@ -33,26 +48,36 @@ def get_host_input():
         return None, cidr
     return filename, None
 
+
 def list_to_comma_separated(result):
     return ', '.join(result) if isinstance(result, list) else result
+
 
 def get_input_direct(no302=False):
     filename, cidr = get_host_input()
     port_list = get_input("Enter port(s)", "number", default="80").split(',')
     output, threads = get_common_inputs(filename or cidr)
-    method_list = get_input("Select HTTP method(s)", "choice", multiselect=True, 
-                           choices=["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"],
-                           transformer=list_to_comma_separated)
+    method_list = get_input(
+        "Select HTTP method(s)",
+        "choice",
+        multiselect=True, 
+        choices=[
+            "GET", "HEAD", "POST", "PUT",
+            "DELETE", "OPTIONS", "TRACE", "PATCH"
+        ],
+        transformer=list_to_comma_separated
+    )
     
     scanner = DirectScanner(
-        method_list=method_list,
         host_list=read_hosts(filename, cidr),
         port_list=port_list,
-        no302=no302,
-        is_cidr_input=cidr is not None
+        method_list=method_list,
+        is_cidr_input=cidr is not None,
+        no302=no302
     )
     
     return scanner, output, threads
+
 
 def get_input_proxy():
     filename, cidr = get_host_input()
@@ -73,24 +98,32 @@ def get_input_proxy():
     
     scanner = ProxyScanner(
         host_list=read_hosts(filename, cidr),
+        port_list=port_list,
         target=target_url,
         method=method,
         path=path,
         protocol=protocol,
         bug=bug,
-        payload=payload,
-        port_list=port_list
+        payload=payload
     )
     
     return scanner, output, threads
+
 
 def get_input_proxy2():
     filename, cidr = get_host_input()
     port_list = get_input("Enter port(s)", "number", default="80").split(',')
     output, threads = get_common_inputs(filename or cidr)
-    method_list = get_input("Select HTTP method(s)", "choice", multiselect=True, 
-                           choices=["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"],
-                           transformer=list_to_comma_separated)
+    method_list = get_input(
+        "Select HTTP method(s)",
+        "choice",
+        multiselect=True, 
+        choices=[
+            "GET", "HEAD", "POST", "PUT",
+            "DELETE", "OPTIONS", "TRACE", "PATCH"
+        ],
+        transformer=list_to_comma_separated
+    )
     
     proxy = get_input("Enter proxy", instruction="(proxy:port)")
     
@@ -111,11 +144,15 @@ def get_input_proxy2():
 
     return scanner, output, threads
 
+
 def get_input_ssl():
     filename, cidr = get_host_input()
-    tls_version = get_input("Select TLS version", "choice", 
-                           choices=list(SSLScanner.TLS_VERSIONS.keys()),
-                           default="TLS 1.2")
+    tls_version = get_input(
+        "Select TLS version",
+        "choice", 
+        choices=list(SSLScanner.TLS_VERSIONS.keys()),
+        default="TLS 1.2"
+    )
     output, threads = get_common_inputs(filename or cidr)
     
     scanner = SSLScanner(
@@ -124,6 +161,7 @@ def get_input_ssl():
     )
     
     return scanner, output, threads
+
 
 def get_input_ping():
     filename, cidr = get_host_input()
@@ -138,9 +176,16 @@ def get_input_ping():
     
     return scanner, output, threads
 
+
 def get_user_input():
-    mode = get_input("Select scanning mode", "choice", 
-                    choices=["Direct", "Direct-no302", "Proxy-check", "Proxy-request", "Ping", "SSL"])
+    mode = get_input(
+        "Select scanning mode",
+        "choice", 
+        choices=[
+            "Direct", "Direct-no302", "Proxy-check",
+            "Proxy-request", "Ping", "SSL"
+        ]
+    )
     
     input_handlers = {
         'Direct': lambda: get_input_direct(no302=False),
@@ -153,6 +198,7 @@ def get_user_input():
     
     scanner, output, threads = input_handlers[mode]()
     return scanner, output, threads, mode
+
 
 def main():
     scanner, output, threads, mode = get_user_input()
