@@ -1,14 +1,28 @@
+"""Module for gathering and displaying host information."""
+
+import queue
 import socket
 import ssl
-import queue
 import threading
-import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+import requests
 from requests.exceptions import RequestException
 from rich import print
+
 from bugscanx.utils.common import get_input
 
-HTTP_METHODS = ["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"]
+
+HTTP_METHODS = [
+    "GET",
+    "HEAD",
+    "POST",
+    "PUT",
+    "DELETE",
+    "OPTIONS",
+    "TRACE",
+    "PATCH"
+]
 
 CDN_PROVIDERS = {
     "Cloudflare": ["cf-ray", "cf-cache-status"],
@@ -21,6 +35,7 @@ CDN_PROVIDERS = {
     "Sucuri": ["x-sucuri-id"]
 }
 
+
 def check_cdn(url):
     try:
         response = requests.get(url, timeout=5)
@@ -28,12 +43,14 @@ def check_cdn(url):
         
         detected_cdns = []
         for provider, indicators in CDN_PROVIDERS.items():
-            if any(header.lower() in map(str.lower, headers.keys()) for header in indicators):
+            if any(header.lower() in map(str.lower, headers.keys())
+                  for header in indicators):
                 detected_cdns.append(provider)
         
         return detected_cdns, headers
     except RequestException as e:
         return None, str(e)
+
 
 def check_http_method(url, method):
     try:
@@ -42,8 +59,9 @@ def check_http_method(url, method):
     except RequestException as e:
         return method, None, str(e)
 
+
 def print_result(method, status_code, headers):
-    print(f"\n[bold yellow]{'='*50}[/bold yellow]")
+    print(f"\n[bold yellow]{'=' * 50}[/bold yellow]")
     print(f"[bold cyan]HTTP Method:[/bold cyan] {method}")
     print(f"[bold magenta]Status Code:[/bold magenta] {status_code}")
     
@@ -54,6 +72,7 @@ def print_result(method, status_code, headers):
     else:
         print(f"[bold red]Error:[/bold red] {headers}")
 
+
 def result_printer(result_queue):
     while True:
         result = result_queue.get()
@@ -63,18 +82,26 @@ def result_printer(result_queue):
         print_result(method, status_code, headers)
         result_queue.task_done()
 
+
 def check_http_methods(url):
     result_queue = queue.Queue()
-    printer_thread = threading.Thread(target=result_printer, args=(result_queue,))
+    printer_thread = threading.Thread(
+        target=result_printer,
+        args=(result_queue,)
+    )
     printer_thread.start()
 
     with ThreadPoolExecutor(max_workers=4) as executor:
-        futures = [executor.submit(check_http_method, url, method) for method in HTTP_METHODS]
+        futures = [
+            executor.submit(check_http_method, url, method)
+            for method in HTTP_METHODS
+        ]
         for future in as_completed(futures):
             result_queue.put(future.result())
     
     result_queue.put(None)
     printer_thread.join()
+
 
 def get_host_ips(hostname):
     try:
@@ -83,6 +110,7 @@ def get_host_ips(hostname):
         return unique_ips, None
     except socket.gaierror as e:
         return [], f"Error resolving hostname: {e}"
+
 
 def get_sni_info(hostname, port=443):
     try:
@@ -97,6 +125,7 @@ def get_sni_info(hostname, port=443):
     except Exception as e:
         return f"Error getting SNI info: {e}"
 
+
 def main():
     host = get_input("Enter host")
     protocol = get_input("Select protocol", "choice", choices=["http", "https"])
@@ -109,7 +138,10 @@ def main():
     ip_addresses, dns_error = get_host_ips(host)
     
     if dns_error:
-        print(f"\n[bold red] Invalid host. Please check the hostname and try again.[/bold red]")
+        print(
+            "\n[bold red] Invalid host. "
+            "Please check the hostname and try again.[/bold red]"
+        )
         return
     
     print("[bold white]IP Addresses:[/bold white]")
@@ -136,8 +168,12 @@ def main():
         sni_info = get_sni_info(host)
         if isinstance(sni_info, dict):
             print(f"\n[bold white]SSL Version:[/bold white] {sni_info['version']}")
-            print(f"[bold white]Cipher Suite:[/bold white] {sni_info['cipher'][0]}")
-            print(f"[bold white]Cipher Bits:[/bold white] {sni_info['cipher'][1]}")
+            print(
+                f"[bold white]Cipher Suite:[/bold white] {sni_info['cipher'][0]}"
+            )
+            print(
+                f"[bold white]Cipher Bits:[/bold white] {sni_info['cipher'][1]}"
+            )
             
             cert = sni_info['cert']
             print("\n[bold white]Certificate Details:[/bold white]")

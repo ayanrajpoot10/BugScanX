@@ -2,12 +2,29 @@ import requests
 from urllib.parse import urlparse, urlunparse
 from .direct import DirectScanner
 
-class Proxy2Scanner(DirectScanner):
 
-    def __init__(self, proxy=None, auth=None, method_list=None, host_list=None, port_list=None, no302=False, is_cidr_input=False, task_list=None, threads=None):
-        super().__init__(method_list=method_list, host_list=host_list, port_list=port_list,
-                     no302=no302, is_cidr_input=is_cidr_input,
-                     task_list=task_list, threads=threads)
+class Proxy2Scanner(DirectScanner):
+    def __init__(
+        self,
+        proxy=None,
+        auth=None,
+        method_list=None,
+        host_list=None,
+        port_list=None,
+        no302=False,
+        is_cidr_input=False,
+        task_list=None,
+        threads=None
+    ):
+        super().__init__(
+            method_list=method_list,
+            host_list=host_list,
+            port_list=port_list,
+            no302=no302,
+            is_cidr_input=is_cidr_input,
+            task_list=task_list,
+            threads=threads
+        )
         self.proxy = proxy or {}
         self.auth = auth
         self.session = requests.Session()
@@ -18,19 +35,18 @@ class Proxy2Scanner(DirectScanner):
         self.requests = self.session
 
     def set_proxy(self, proxy, username=None, password=None):
-
         if not proxy.startswith(('http://', 'https://')):
             proxy = f'http://{proxy}'
-        
+
         parsed = urlparse(proxy)
         proxy_url = urlunparse(parsed)
-        
+
         self.proxy = {
             'http': proxy_url,
             'https': proxy_url
         }
         self.session.proxies.update(self.proxy)
-        
+
         if username and password:
             from requests.auth import HTTPProxyAuth
             self.auth = HTTPProxyAuth(username, password)
@@ -42,15 +58,17 @@ class Proxy2Scanner(DirectScanner):
         method = method.upper()
         kwargs['timeout'] = self.DEFAULT_TIMEOUT
         max_attempts = self.DEFAULT_RETRY
-        
+
         for attempt in range(max_attempts):
             self.log_replace(f"{method} (via proxy) {url}")
             try:
                 return self.session.request(method, url, **kwargs)
-            except (requests.exceptions.ConnectionError, 
-                    requests.exceptions.ReadTimeout,
-                    requests.exceptions.Timeout,
-                    requests.exceptions.ProxyError) as e:
+            except (
+                requests.exceptions.ConnectionError,
+                requests.exceptions.ReadTimeout,
+                requests.exceptions.Timeout,
+                requests.exceptions.ProxyError
+            ) as e:
                 wait_time = 1 if isinstance(e, requests.exceptions.ConnectionError) else 5
                 for _ in self.sleep(wait_time):
                     self.log_replace(f"{method} (via proxy) {url}")

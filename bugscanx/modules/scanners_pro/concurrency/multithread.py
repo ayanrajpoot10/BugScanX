@@ -5,6 +5,7 @@ from threading import Thread, RLock
 
 from .logger import Logger
 
+
 class MultiThread(ABC):
     def __init__(self, task_list=None, threads=None):
         self._lock = RLock()
@@ -95,7 +96,7 @@ class MultiThread(ABC):
         default_messages = [
             f'{self.percentage_scanned():.3f}%',
             f'{self._task_list_scanned_total} of {self._task_list_total}',
-            f'{len(self.success_list())}',
+            f'{len(self._task_list_success)}',
         ]
 
         messages = [str(x) for x in messages if x is not None and str(x)]

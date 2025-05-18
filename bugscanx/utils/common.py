@@ -1,27 +1,31 @@
 import os
+
 from InquirerPy import get_style
 from InquirerPy.prompts import (
     ListPrompt as select,
     FilePathPrompt as filepath,
     InputPrompt as text,
-    ConfirmPrompt as confirm
+    ConfirmPrompt as confirm,
 )
 from .validators import create_validator, required, is_file, is_digit, is_cidr
+
 
 DEFAULT_STYLE = get_style(
     {
         "question": "#87CEEB",
         "answer": "#00FF7F",
-        "answered_question": "#808080"
+        "answered_question": "#808080",
     },
-    style_override=False
+    style_override=False,
 )
+
 
 INPUT_VALIDATORS = {
     "file": [required, is_file],
     "number": [required, is_digit],
-    "text": [required]
+    "text": [required],
 }
+
 
 def strip_handler(handler, strip_input):
     def wrapped(params):
@@ -31,12 +35,14 @@ def strip_handler(handler, strip_input):
         return result
     return wrapped
 
+
 INPUT_HANDLERS = {
     "choice": lambda params: select(**params).execute(),
     "file": lambda params: filepath(**params).execute(),
     "number": lambda params: text(**params).execute(),
-    "text": lambda params: text(**params).execute()
+    "text": lambda params: text(**params).execute(),
 }
+
 
 def get_input(
     message,
@@ -62,7 +68,7 @@ def get_input(
         "style": style,
         "instruction": instruction + (":" if instruction else ""),
         "mandatory": mandatory,
-        "transformer": transformer
+        "transformer": transformer,
     }
     
     if validators is None and validate_input:
@@ -78,11 +84,11 @@ def get_input(
             "choices": choices,
             "multiselect": multiselect,
             "transformer": transformer,
-            "show_cursor": kwargs.pop("show_cursor", False)
+            "show_cursor": kwargs.pop("show_cursor", False),
         },
         "file": {
-            "only_files": kwargs.pop("only_files", True)
-        }
+            "only_files": kwargs.pop("only_files", True),
+        },
     }
     
     common_params.update(input_type_params.get(input_type, {}))
@@ -93,6 +99,7 @@ def get_input(
         raise ValueError(f"Unsupported input_type: {input_type}")
     
     return strip_handler(handler, strip_input)(common_params)
+
 
 def get_confirm(
     message,
@@ -108,6 +115,7 @@ def get_confirm(
         style=style,
         **kwargs
     ).execute()
+
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')

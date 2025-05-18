@@ -14,26 +14,33 @@ MENU_OPTIONS = {
     '9': ("HOST INFO", "bold blue"),
     '10': ("HELP", "bold yellow"),
     '11': ("UPDATE", "bold magenta"),
-    '12': ("EXIT", "bold red")
+    '12': ("EXIT", "bold red"),
 }
+
 
 def main():
     try:
         while True:
             banner()
-            print('\n'.join(f"[{color}] [{k}]{' ' if len(k)==1 else ''} {desc}" 
-                        for k, (desc, color) in MENU_OPTIONS.items()))
+            menu_items = (
+                f"[{color}] [{k}]{' ' if len(k)==1 else ''} {desc}"
+                for k, (desc, color) in MENU_OPTIONS.items()
+            )
+            print('\n'.join(menu_items))
 
             choice = input("\n \033[36m[-]  Your Choice: \033[0m")
             if choice not in MENU_OPTIONS:
                 continue
-                
+
             if choice == '12':
                 return
-                
+
             text_ascii(MENU_OPTIONS[choice][0])
             try:
-                module = __import__('bugscanx.handler.runner', fromlist=[f'run_{choice}'])
+                module = __import__(
+                    'bugscanx.handler.runner',
+                    fromlist=[f'run_{choice}']
+                )
                 getattr(module, f'run_{choice}')()
                 print("\n[yellow] Press Enter to continue...", end="")
                 input()

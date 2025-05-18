@@ -2,11 +2,14 @@ import os
 import re
 import socket
 import ipaddress
+from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 from rich import print
 from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from collections import defaultdict
+
 from bugscanx.utils.common import get_input, get_confirm
+
 
 def read_lines(file_path):
     try:
@@ -16,6 +19,7 @@ def read_lines(file_path):
         print(f"[red] Error reading file {file_path}: {e}[/red]")
         return []
 
+
 def write_lines(file_path, lines):
     try:
         with open(file_path, "w", encoding="utf-8") as file:
@@ -24,6 +28,7 @@ def write_lines(file_path, lines):
     except Exception as e:
         print(f"[red] Error writing to file {file_path}: {e}[/red]")
         return False
+
 
 def split_file():
     file_path = get_input("Enter filename", "file")
@@ -45,9 +50,16 @@ def split_file():
             created_files.append((part_file, len(lines[start_idx:end_idx])))
     
     if created_files:
-        print(f"[green] Split '{os.path.basename(file_path)}' into {len(created_files)} parts:[/green]")
+        print(
+            f"[green] Split '{os.path.basename(file_path)}' into "
+            f"{len(created_files)} parts:[/green]"
+        )
         for file_path, line_count in created_files:
-            print(f"[green] - {os.path.basename(file_path)}: {line_count} lines[/green]")
+            print(
+                f"[green] - {os.path.basename(file_path)}: "
+                f"{line_count} lines[/green]"
+            )
+
 
 def merge_files():
     directory = get_input("Enter directory path", default=os.getcwd())
@@ -70,9 +82,13 @@ def merge_files():
         lines.extend(read_lines(file_path))
     
     if write_lines(output_path, lines):
-        print(f"[green] Successfully merged {len(files_to_merge)} files into '{output_file}'[/green]")
+        print(
+            f"[green] Successfully merged {len(files_to_merge)} files into "
+            f"'{output_file}'[/green]"
+        )
         print(f"[green] - Total lines: {len(lines)}[/green]")
         print(f"[green] - Output location: {directory}[/green]")
+
 
 def clean_file():
     input_file = get_input("Enter filename", "file")
@@ -93,11 +109,21 @@ def clean_file():
     ips_success = write_lines(ip_output_file, ips)
     
     if domains_success or ips_success:
-        print(f"[green] TXT Cleaner results for '{os.path.basename(input_file)}':[/green]")
+        print(
+            f"[green] TXT Cleaner results for "
+            f"'{os.path.basename(input_file)}':[/green]"
+        )
         if domains_success:
-            print(f"[green] - Extracted {len(domains)} unique domains to '{os.path.basename(domain_output_file)}'[/green]")
+            print(
+                f"[green] - Extracted {len(domains)} unique domains to "
+                f"'{os.path.basename(domain_output_file)}'[/green]"
+            )
         if ips_success:
-            print(f"[green] - Extracted {len(ips)} unique IP addresses to '{os.path.basename(ip_output_file)}'[/green]")
+            print(
+                f"[green] - Extracted {len(ips)} unique IP addresses to "
+                f"'{os.path.basename(ip_output_file)}'[/green]"
+            )
+
 
 def remove_duplicates():
     file_path = get_input("Enter filename", "file")
@@ -109,10 +135,14 @@ def remove_duplicates():
     duplicates_removed = len(lines) - len(unique_lines)
     
     if write_lines(file_path, unique_lines):
-        print(f"[green] Successfully removed duplicates from '{os.path.basename(file_path)}':[/green]")
+        print(
+            f"[green] Successfully removed duplicates from "
+            f"'{os.path.basename(file_path)}':[/green]"
+        )
         print(f"[green] - Original count: {len(lines)} lines[/green]")
         print(f"[green] - Unique count: {len(unique_lines)} lines[/green]")
         print(f"[green] - Duplicates removed: {duplicates_removed} lines[/green]")
+
 
 def filter_by_tlds():
     file_path = get_input("Enter filename", "file")
@@ -130,19 +160,30 @@ def filter_by_tlds():
             tld_dict[tld].append(domain)
     
     base_name = os.path.splitext(file_path)[0]
-    target_tlds = [tld.strip().lstrip('.').lower() for tld in tlds_input.split(',')] if tlds_input.lower() != 'all' else list(tld_dict.keys())
+    if tlds_input.lower() != 'all':
+        target_tlds = [tld.strip().lstrip('.').lower() 
+                      for tld in tlds_input.split(',')]
+    else:
+        target_tlds = list(tld_dict.keys())
     
     success_count = 0
-    print(f"[green]Filtering domains by TLDs from '{os.path.basename(file_path)}':[/green]")
+    print(
+        f"[green]Filtering domains by TLDs from "
+        f"'{os.path.basename(file_path)}':[/green]"
+    )
     
     for tld in target_tlds:
-        if (tld in tld_dict):
+        if tld in tld_dict:
             tld_file = f"{base_name}_{tld}.txt"
             if write_lines(tld_file, sorted(tld_dict[tld])):
                 success_count += 1
-                print(f"[green]- Created '{os.path.basename(tld_file)}' with {len(tld_dict[tld])} domains[/green]")
+                print(
+                    f"[green]- Created '{os.path.basename(tld_file)}' with "
+                    f"{len(tld_dict[tld])} domains[/green]"
+                )
         else:
             print(f"[yellow]- No domains found with .{tld} TLD[/yellow]")
+
 
 def filter_by_keywords():
     file_path = get_input("Enter filename", "file")
@@ -153,7 +194,9 @@ def filter_by_keywords():
     if not lines:
         return
     
-    filtered_lines = [line for line in lines if any(k in line.lower() for k in keywords)]
+    filtered_lines = [
+        line for line in lines if any(k in line.lower() for k in keywords)
+    ]
     
     if write_lines(output_file, filtered_lines):
         print(f"[green] Successfully filtered content by keywords:[/green]")
@@ -161,6 +204,7 @@ def filter_by_keywords():
         print(f"[green] - Matched lines: {len(filtered_lines)}[/green]")
         print(f"[green] - Keywords used: {', '.join(keywords)}[/green]")
         print(f"[green] - Output file: '{os.path.basename(output_file)}'[/green]")
+
 
 def cidr_to_ip():
     cidr_input = get_input("Enter CIDR range")
@@ -179,6 +223,7 @@ def cidr_to_ip():
         print(f"[green] - Total IPs: {len(ip_addresses)}[/green]")
         print(f"[green] - Output file: '{os.path.basename(output_file)}'[/green]")
 
+
 def domains_to_ip():
     file_path = get_input("Enter filename", "file")
     output_file = get_input("Enter output filename")
@@ -191,7 +236,9 @@ def domains_to_ip():
     resolved_count = failed_count = 0
     socket.setdefaulttimeout(1)
     
-    with Progress(SpinnerColumn(), *Progress.get_default_columns(), TimeElapsedColumn()) as progress:
+    with Progress(
+        SpinnerColumn(), *Progress.get_default_columns(), TimeElapsedColumn()
+    ) as progress:
         task = progress.add_task("[yellow]Resolving", total=len(domains))
         
         with ThreadPoolExecutor(max_workers=100) as executor:
@@ -202,7 +249,9 @@ def domains_to_ip():
                 except (socket.gaierror, socket.timeout):
                     return domain, None
 
-            futures = [executor.submit(resolve_domain, domain) for domain in domains]
+            futures = [
+                executor.submit(resolve_domain, domain) for domain in domains
+            ]
             for future in as_completed(futures):
                 domain, ip = future.result()
                 if ip:
@@ -220,7 +269,11 @@ def domains_to_ip():
         print(f"[green] - Unique IP addresses: {len(ip_addresses)}[/green]")
         print(f"[green] - Output file: '{os.path.basename(output_file)}'[/green]")
     else:
-        print("[red] No domains could be resolved or there was an error writing to the output file[/red]")
+        print(
+            "[red] No domains could be resolved or there was an error writing "
+            "to the output file[/red]"
+        )
+
 
 def main():
     options = {
@@ -236,7 +289,9 @@ def main():
     }
     
     while True:
-        print("\n".join(f"[{color}] [{key}] {desc}" for key, (desc, _, color) in options.items()))
+        print("\n".join(
+            f"[{color}] [{key}] {desc}" for key, (desc, _, color) in options.items()
+        ))
         choice = input("\n \033[36m[-]  Your Choice: \033[0m").strip()
 
         if choice == '0':

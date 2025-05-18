@@ -3,6 +3,7 @@ from pathlib import Path
 from rich import print
 from .common import get_input
 
+
 def file_manager(start_dir):
     current_dir = Path(start_dir).resolve()
     previous_lines = 0
@@ -13,10 +14,14 @@ def file_manager(start_dir):
                 sys.stdout.write("\033[1A")
                 sys.stdout.write("\033[2K")
             sys.stdout.flush()
-        
+
         lines_printed = 0
-        
-        items = sorted([i for i in current_dir.iterdir() if not i.name.startswith('.')],key=lambda x: (x.is_file(), x.name))
+
+        items = sorted(
+            [item for item in current_dir.iterdir() 
+             if not item.name.startswith('.')],
+            key=lambda x: (x.is_file(), x.name)
+        )
         directories = [d for d in items if d.is_dir()]
         files = [f for f in items if f.suffix == '.txt']
 
@@ -37,7 +42,7 @@ def file_manager(start_dir):
 
         selection = get_input("Enter number or filename")
         lines_printed += 1
-        
+
         previous_lines = lines_printed
 
         if selection == '0':

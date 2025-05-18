@@ -3,8 +3,13 @@ import socket
 from .base import BaseScanner
 
 class SSLScanner(BaseScanner):
-
-    def __init__(self, host_list=None, tls_version=None, task_list=None, threads=None):
+    def __init__(
+        self,
+        host_list=None,
+        tls_version=None,
+        task_list=None,
+        threads=None
+    ):
         super().__init__(task_list, threads)
         self.host_list = host_list or []
         self.tls_version = tls_version or ssl.PROTOCOL_TLS
@@ -13,7 +18,7 @@ class SSLScanner(BaseScanner):
         'TLS 1.0': ssl.PROTOCOL_TLSv1,
         'TLS 1.1': ssl.PROTOCOL_TLSv1_1,
         'TLS 1.2': ssl.PROTOCOL_TLSv1_2,
-        'TLS 1.3': ssl.PROTOCOL_TLS
+        'TLS 1.3': ssl.PROTOCOL_TLS,
     }
 
     def get_task_list(self):
@@ -38,8 +43,14 @@ class SSLScanner(BaseScanner):
 
     def init(self):
         super().init()
-        self.log_info(tls_version='TLS', sni='SNI')
-        self.log_info(tls_version='---', sni='---')
+        self.log_info(
+            tls_version='TLS',
+            sni='SNI'
+        )
+        self.log_info(
+            tls_version='---',
+            sni='---'
+        )
 
     def task(self, payload):
         sni = payload['host']
@@ -49,7 +60,7 @@ class SSLScanner(BaseScanner):
 
         response = {
             'sni': sni,
-            'tls_version': 'Unknown'
+            'tls_version': 'Unknown',
         }
 
         try:
@@ -58,7 +69,9 @@ class SSLScanner(BaseScanner):
                 socket_client.connect((sni, 443))
                 context = ssl.SSLContext(self.tls_version)
                 with context.wrap_socket(
-                    socket_client, server_hostname=sni, do_handshake_on_connect=True
+                    socket_client,
+                    server_hostname=sni,
+                    do_handshake_on_connect=True,
                 ) as ssl_socket:
                     response['tls_version'] = ssl_socket.version()
                     self.task_success(sni)

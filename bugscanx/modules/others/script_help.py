@@ -1,12 +1,12 @@
-from rich.text import Text
-from rich.panel import Panel
 from rich.console import Console
 from rich.markdown import Markdown
+from rich.panel import Panel
+from rich.text import Text
 
 console = Console()
 
-def main():
 
+def main():
     help_text = """
 
 ## Features Overview
@@ -78,7 +78,11 @@ def main():
 
     console.print(
         Panel(
-            Text("Thank you for choosing BugScanX!\nStay updated with our latest releases and features by visiting: https://t.me/BugScanX"),
+            Text(
+                "Thank you for choosing BugScanX!\n"
+                "Stay updated with our latest releases and features by "
+                "visiting: https://t.me/BugScanX"
+            ),
             border_style="bold blue",
             expand=True,
         )

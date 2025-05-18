@@ -1,6 +1,8 @@
+import os
 import threading
-from rich import print
 from pyfiglet import Figlet
+from rich import print
+
 
 def import_modules():
     def task():
@@ -9,14 +11,16 @@ def import_modules():
             from bugscanx.modules.scrapers.subfinder import subfinder
         except Exception:
             pass
-    
+
     threading.Thread(target=task, daemon=True).start()
+
 
 figlet = Figlet(font="calvin_s")
 
+
 def clear_screen():
-    import os
     os.system('cls' if os.name == 'nt' else 'clear')
+
 
 def banner():
     clear_screen()
@@ -28,11 +32,14 @@ def banner():
     [bold magenta]  Tᴇʟᴇɢʀᴀᴍ: @BᴜɢSᴄᴀɴX   [/bold magenta]
     """)
 
+
 def text_ascii(text, color="bold magenta", indentation=2):
     clear_screen()
     ascii_banner = figlet.renderText(text)
-    shifted_banner = "\n".join((" " * indentation) + line for line in ascii_banner.splitlines())
+    shifted_banner = "\n".join((" " * indentation) + line 
+                              for line in ascii_banner.splitlines())
     print(f"[{color}]{shifted_banner}[/{color}]")
     print()
+
 
 import_modules()

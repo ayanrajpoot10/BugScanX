@@ -7,13 +7,15 @@ from bugscanx.utils.config import EXCLUDE_LOCATIONS
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+
 class DirectScanner(BaseScanner):
     requests = requests
     DEFAULT_TIMEOUT = 3
     DEFAULT_RETRY = 1
 
-    def __init__(self, method_list=None, host_list=None, port_list=None,
-                no302=False, is_cidr_input=False, task_list=None, threads=None):
+    def __init__(
+            self, method_list=None, host_list=None, port_list=None,
+            no302=False, is_cidr_input=False, task_list=None, threads=None):
         super().__init__(task_list, threads)
         self.method_list = method_list or []
         self.host_list = host_list or []
@@ -25,15 +27,18 @@ class DirectScanner(BaseScanner):
         method = method.upper()
         kwargs['timeout'] = self.DEFAULT_TIMEOUT
         max_attempts = self.DEFAULT_RETRY
-        
+
         for attempt in range(max_attempts):
             self.log_replace(method, url)
             try:
                 return self.requests.request(method, url, **kwargs)
-            except (requests.exceptions.ConnectionError, 
-                    requests.exceptions.ReadTimeout,
-                    requests.exceptions.Timeout) as e:
-                wait_time = 1 if isinstance(e, requests.exceptions.ConnectionError) else 5
+            except (
+                requests.exceptions.ConnectionError,
+                requests.exceptions.ReadTimeout,
+                requests.exceptions.Timeout
+            ) as e:
+                wait_time = (1 if isinstance(e, requests.exceptions.ConnectionError)
+                           else 5)
                 for _ in self.sleep(wait_time):
                     self.log_replace(method, url)
                 if attempt == max_attempts - 1:
@@ -44,7 +49,8 @@ class DirectScanner(BaseScanner):
         kwargs.setdefault('color', '')
         kwargs.setdefault('status_code', '')
         server = kwargs.get('server', '')
-        kwargs['server'] = (server[:12] + "...") if len(server) > 12 else f"{server:<12}"
+        kwargs['server'] = ((server[:12] + "...") if len(server) > 12 
+                          else f"{server:<12}")
         kwargs.setdefault('ip', '')
         kwargs.setdefault('port', '')
         kwargs.setdefault('host', '')

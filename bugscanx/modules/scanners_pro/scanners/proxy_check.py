@@ -1,10 +1,21 @@
 import socket
 from .base import BaseScanner
 
+
 class ProxyScanner(BaseScanner):
-    
-    def __init__(self, host_list=None, port_list=None, task_list=None, threads=None, 
-                 target='', method='GET', path='/', protocol='HTTP/1.1', payload='', bug=''):
+    def __init__(
+        self,
+        host_list=None,
+        port_list=None,
+        task_list=None,
+        threads=None,
+        target='',
+        method='GET',
+        path='/',
+        protocol='HTTP/1.1',
+        payload='',
+        bug=''
+    ):
         super().__init__(task_list, threads)
         self.host_list = host_list or []
         self.port_list = port_list or []
@@ -18,11 +29,13 @@ class ProxyScanner(BaseScanner):
     def log_info(self, proxy_host_port, response_lines, status_code):
         if not response_lines or status_code in ['N/A', '302']:
             return
-        
+
         color_name = 'GREEN' if status_code == '101' else 'GRAY'
         formatted_response = '\n    '.join(response_lines)
-        message = f"{self.colorize(proxy_host_port.ljust(32) + ' ' + status_code, color_name)}\n"
-        message += f"{self.colorize('    ' + formatted_response, color_name)}\n"
+        message = (
+            f"{self.colorize(proxy_host_port.ljust(32) + ' ' + status_code, color_name)}\n"
+            f"{self.colorize('    ' + formatted_response, color_name)}\n"
+        )
         super().log(message)
 
     def get_task_list(self):
@@ -68,10 +81,10 @@ class ProxyScanner(BaseScanner):
                     data += chunk
                     if b'\r\n\r\n' in data:
                         break
-                
+
                 response = data.decode(errors='ignore').split('\r\n\r\n')[0]
                 response_lines = [line.strip() for line in response.split('\r\n') if line.strip()]
-                
+
                 status_code = response_lines[0].split(' ')[1] if response_lines and len(response_lines[0].split(' ')) > 1 else 'N/A'
                 if status_code not in ['N/A', '302']:
                     self.log_info(proxy_host_port, response_lines, status_code)
@@ -84,7 +97,7 @@ class ProxyScanner(BaseScanner):
                     })
 
         except Exception:
-             pass
+            pass
         finally:
             if 'conn' in locals():
                 conn.close()

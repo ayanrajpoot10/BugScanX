@@ -2,6 +2,7 @@ import os
 import sys
 from threading import RLock
 
+
 class Logger:
     COLORS = {
         'ORANGE': '\033[33m',
@@ -17,15 +18,15 @@ class Logger:
     RESET = '\033[0m'
     CLEAR_LINE = '\033[2K'
 
+    def __init__(self):
+        self._lock = RLock()
+
     @staticmethod
     def colorize(text, color):
         return f"{Logger.COLORS.get(color, '')}{text}{Logger.RESET}"
 
-    def __init__(self):
-        self._lock = RLock()
-
     def replace(self, message):
-        cols = os.get_terminal_size()[0]
+        cols = os.get_terminal_size().columns
         msg = f"{message[:cols - 3]}..." if len(message) > cols else message
         with self._lock:
             sys.stdout.write(f'{self.CLEAR_LINE}{msg}{self.RESET}\r')
