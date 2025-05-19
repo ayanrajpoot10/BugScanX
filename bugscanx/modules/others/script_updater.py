@@ -76,12 +76,23 @@ class VersionManager:
                     return None
 
                 current_version = versions_info.get('installed') or version(self.package_name)
+                current_ver = parse_version(current_version)
                 stable_versions = [v for v in all_versions if not self._is_prerelease(v)]
 
                 latest_stable = stable_versions[0] if stable_versions else None
                 latest_prerelease = all_versions[0] if all_versions else None
 
-                if not latest_prerelease:
+                if not latest_prerelease or current_ver >= parse_version(latest_prerelease):
+                    self.console.print(f"[green] You're up to date: {current_version}")
+                    return None
+
+                if self._is_prerelease(latest_prerelease) and current_ver >= parse_version(latest_prerelease):
+                    latest_prerelease = None
+
+                if latest_stable and current_ver >= parse_version(latest_stable):
+                    latest_stable = None
+
+                if not latest_stable and not latest_prerelease:
                     self.console.print(f"[green] You're up to date: {current_version}")
                     return None
 
