@@ -67,9 +67,6 @@ class IPLookup:
                 except Exception as e:
                     self.console.print_error(f"Error processing IP: {str(e)}")
 
-        for scraper in scrapers:
-            scraper.close()
-
         self.console.print_final_summary(output_file)
         return all_domains
 

@@ -25,18 +25,20 @@ class RateLimiter:
 class RequestHandler:
     def __init__(self):
         self.session = requests.Session()
-        self._setup_session()
+        self.session.verify = False
+        requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
         self.rate_limiter = RateLimiter(1.0)
-
-    def _setup_session(self):
-        self.session.headers.update(HEADERS)
         self.session.timeout = 10
 
-    def get(self, url):
+    def _get_headers(self):
+        headers = HEADERS.copy()
+        headers["user-agent"] = random.choice(USER_AGENTS)
+        return headers
+
+    def get(self, url, timeout=10):
         self.rate_limiter.acquire()
         try:
-            self.session.headers["user-agent"] = random.choice(USER_AGENTS)
-            response = self.session.get(url)
+            response = self.session.get(url, timeout=timeout, headers=self._get_headers())
             if response.status_code == 200:
                 return response
         except requests.RequestException:
@@ -46,22 +48,18 @@ class RequestHandler:
     def post(self, url, data=None):
         self.rate_limiter.acquire()
         try:
-            self.session.headers["user-agent"] = random.choice(USER_AGENTS)
-            response = self.session.post(url, data=data)
+            response = self.session.post(url, data=data, headers=self._get_headers())
             if response.status_code == 200:
                 return response
         except requests.RequestException:
             pass
         return None
 
-    def close(self):
-        self.session.close()
-
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
+        self.session.close()
 
 
 def process_cidr(cidr):
