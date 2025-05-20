@@ -7,16 +7,17 @@ from bugscanx.utils.http import HEADERS, USER_AGENTS
 class RequestHandler:
     def __init__(self):
         self.session = requests.Session()
-        self._setup_session()
+        self.session.verify = False
+        requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
-    def _setup_session(self):
-        self.session.headers.update(HEADERS)
-        self.session.timeout = 10
+    def _get_headers(self):
+        headers = HEADERS.copy()
+        headers["user-agent"] = random.choice(USER_AGENTS)
+        return headers
 
-    def get(self, url):
+    def get(self, url, timeout=10):
         try:
-            self.session.headers["user-agent"] = random.choice(USER_AGENTS)
-            response = self.session.get(url)
+            response = self.session.get(url, timeout=timeout, headers=self._get_headers())
             if response.status_code == 200:
                 return response
         except requests.RequestException:
@@ -36,12 +37,12 @@ class DomainValidator:
         r'[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]$'
     )
 
-    @staticmethod
-    def is_valid_domain(domain):
+    @classmethod
+    def is_valid_domain(cls, domain):
         return bool(
             domain
             and isinstance(domain, str)
-            and DomainValidator.DOMAIN_REGEX.match(domain)
+            and cls.DOMAIN_REGEX.match(domain)
         )
 
     @staticmethod
