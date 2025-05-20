@@ -45,7 +45,7 @@ def main():
         "choice",
         choices=["Common ports", "All ports (1-65535)"]
     )
-    ports = COMMON_PORTS if scan_type == "Common ports" else range(1, 500)
+    ports = COMMON_PORTS if scan_type == "Common ports" else range(1, 65535)
     
     console.print(
         f"\n[bold green] Target Info:[/]\n"
