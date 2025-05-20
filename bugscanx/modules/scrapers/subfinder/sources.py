@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup
 from .utils import RequestHandler
 
+
 class SubdomainSource(RequestHandler, ABC):
     def __init__(self, name):
         super().__init__()
@@ -11,6 +12,7 @@ class SubdomainSource(RequestHandler, ABC):
     @abstractmethod
     def fetch(self, domain):
         pass
+
 
 class CrtshSource(SubdomainSource):
     def __init__(self):
@@ -23,6 +25,7 @@ class CrtshSource(SubdomainSource):
                 self.subdomains.update(entry['name_value'].splitlines())
         return self.subdomains
 
+
 class HackertargetSource(SubdomainSource):
     def __init__(self):
         super().__init__("Hackertarget")
@@ -34,6 +37,7 @@ class HackertargetSource(SubdomainSource):
                 [line.split(",")[0] for line in response.text.splitlines()]
             )
         return self.subdomains
+
 
 class RapidDnsSource(SubdomainSource):
     def __init__(self):
@@ -49,6 +53,7 @@ class RapidDnsSource(SubdomainSource):
                     self.subdomains.add(text)
         return self.subdomains
 
+
 class AnubisDbSource(SubdomainSource):
     def __init__(self):
         super().__init__("AnubisDB")
@@ -58,6 +63,7 @@ class AnubisDbSource(SubdomainSource):
         if response:
             self.subdomains.update(response.json())
         return self.subdomains
+
 
 class AlienVaultSource(SubdomainSource):
     def __init__(self):
@@ -72,6 +78,7 @@ class AlienVaultSource(SubdomainSource):
                     self.subdomains.add(hostname)
         return self.subdomains
 
+
 class CertSpotterSource(SubdomainSource):
     def __init__(self):
         super().__init__("CertSpotter")
@@ -82,6 +89,7 @@ class CertSpotterSource(SubdomainSource):
             for cert in response.json():
                 self.subdomains.update(cert.get('dns_names', []))
         return self.subdomains
+
 
 def get_sources():
     return [

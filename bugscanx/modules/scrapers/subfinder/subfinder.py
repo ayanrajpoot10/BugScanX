@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from bugscanx.utils.common import get_input
 from .logger import SubFinderConsole
 from .sources import get_sources
-from .utils import is_valid_domain, filter_valid_subdomains
+from .utils import DomainValidator
 
 class SubFinder:
     def __init__(self):
@@ -14,17 +14,18 @@ class SubFinder:
     def _fetch_from_source(self, source, domain):
         try:
             found = source.fetch(domain)
-            return filter_valid_subdomains(found, domain)
+            return DomainValidator.filter_valid_subdomains(found, domain)
         except Exception:
             return set()
 
-    def _save_subdomains(self, subdomains, output_file):
+    @staticmethod
+    def save_subdomains(subdomains, output_file):
         if subdomains:
             with open(output_file, "a", encoding="utf-8") as f:
                 f.write("\n".join(sorted(subdomains)) + "\n")
 
     def process_domain(self, domain, output_file, sources, total):
-        if not is_valid_domain(domain):
+        if not DomainValidator.is_valid_domain(domain):
             self.completed += 1
             return set()
 
@@ -42,7 +43,7 @@ class SubFinder:
 
         self.console.update_domain_stats(domain, len(subdomains))
         self.console.print_domain_complete(domain, len(subdomains))
-        self._save_subdomains(subdomains, output_file)
+        self.save_subdomains(subdomains, output_file)
 
         self.completed += 1
         self.console.print_progress(self.completed, total)
@@ -82,12 +83,12 @@ def main():
 
     if input_type == "Manual":
         domain_input = get_input("Enter domain(s)")
-        domains = [d.strip() for d in domain_input.split(',') if is_valid_domain(d.strip())]
-        default_output = f"{domains[0]}_subdomains.txt"
+        domains = [d.strip() for d in domain_input.split(',') if DomainValidator.is_valid_domain(d.strip())]
+        default_output = f"{domains[0]}_subdomains.txt" if domains else "subdomains.txt"
     else:
         file_path = get_input("Enter filename", "file")
         with open(file_path, 'r') as f:
-            domains = [d.strip() for d in f if is_valid_domain(d.strip())]
+            domains = [d.strip() for d in f if DomainValidator.is_valid_domain(d.strip())]
         default_output = f"{file_path.rsplit('.', 1)[0]}_subdomains.txt"
 
     output_file = get_input("Enter output filename", default=default_output)
