@@ -8,10 +8,10 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from rich import print
 from rich.panel import Panel
 from rich.padding import Padding
-from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn
+from rich.progress import Progress, TimeElapsedColumn
 
-from bugscanx.utils.common import get_input, get_confirm
-
+from bugscanx.utils.common import get_input, get_confirm, clear_screen
+from bugscanx import text_ascii
 
 def read_lines(file_path):
     try:
@@ -226,9 +226,9 @@ def domains_to_ip():
     socket.setdefaulttimeout(1)
     
     with Progress(
-        SpinnerColumn(), *Progress.get_default_columns(), TimeElapsedColumn()
+        *Progress.get_default_columns(), TimeElapsedColumn(), transient=True
     ) as progress:
-        task = progress.add_task("[yellow]Resolving", total=len(domains))
+        task = progress.add_task("[yellow] Resolving", total=len(domains))
         
         with ThreadPoolExecutor(max_workers=100) as executor:
             def resolve_domain(domain):
@@ -273,29 +273,36 @@ def main():
         "6": ("FILTER BY KEYWORD", filter_by_keywords, "bold yellow"),
         "7": ("CIDR TO IP", cidr_to_ip, "bold green"),
         "8": ("DOMAIN TO IP", domains_to_ip, "bold blue"),
-        "0": ("BACK", lambda: None, "bold red")
+        "0": ("BACK", lambda: None, "bold red"),
     }
-    
+
     while True:
         print("\n".join(
             f"[{color}] [{key}] {desc}" for key, (desc, _, color) in options.items()
         ))
+
         choice = input("\n\033[36m [-] Your Choice: \033[0m").strip()
 
         if choice == '0':
             raise KeyboardInterrupt
-        
-        if choice not in options:
-            from bugscanx import text_ascii
+
+        action = options.get(choice)
+        if not action:
             text_ascii("FILE TOOLKIT")
             continue
-            
-        if choice in options:
-            print()
+
+        desc, func, color = action
+
+        try:
+            clear_screen()
             print(Padding(Panel.fit(
-                f"[{options[choice][2]}]{options[choice][0]}[/{options[choice][2]}]",
-                border_style=options[choice][2]
-            ), (0, 0, 0, 2)))
-            print()
-            options[choice][1]()
-            break
+                f"[{color}]{desc}[/{color}]",
+                border_style=color
+            ), (0, 0, 1, 2)))
+            func()
+            print("\n[yellow] Press Enter to continue...", end="")
+            input()
+        except KeyboardInterrupt:
+            pass
+        finally:
+            text_ascii("FILE TOOLKIT")
