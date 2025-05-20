@@ -1,7 +1,12 @@
 import time
 import ipaddress
+import random
 from threading import Lock
-from .logger import console
+
+import requests
+
+from bugscanx.utils.http import HEADERS, USER_AGENTS
+
 
 class RateLimiter:
     def __init__(self, requests_per_second: float):
@@ -16,19 +21,63 @@ class RateLimiter:
                 time.sleep(self.delay - (now - self.last_request))
             self.last_request = time.time()
 
+
+class RequestHandler:
+    def __init__(self):
+        self.session = requests.Session()
+        self._setup_session()
+        self.rate_limiter = RateLimiter(1.0)
+
+    def _setup_session(self):
+        self.session.headers.update(HEADERS)
+        self.session.timeout = 10
+
+    def get(self, url):
+        self.rate_limiter.acquire()
+        try:
+            self.session.headers["user-agent"] = random.choice(USER_AGENTS)
+            response = self.session.get(url)
+            if response.status_code == 200:
+                return response
+        except requests.RequestException:
+            pass
+        return None
+
+    def post(self, url, data=None):
+        self.rate_limiter.acquire()
+        try:
+            self.session.headers["user-agent"] = random.choice(USER_AGENTS)
+            response = self.session.post(url, data=data)
+            if response.status_code == 200:
+                return response
+        except requests.RequestException:
+            pass
+        return None
+
+    def close(self):
+        self.session.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
+
 def process_cidr(cidr):
     try:
         network = ipaddress.ip_network(cidr, strict=False)
         return [str(ip) for ip in network.hosts()]
     except ValueError as e:
-        console.print(f"[bold red] Invalid CIDR block {cidr}: {e}[/bold red]")
         return []
+
 
 def process_input(input_str):
     if '/' in input_str:
         return process_cidr(input_str)
     else:
         return [input_str]
+
 
 def process_file(file_path):
     ips = []
@@ -38,5 +87,4 @@ def process_file(file_path):
                 ips.extend(process_input(line.strip()))
         return ips
     except Exception as e:
-        console.print(f"[bold red] Error reading file {file_path}: {e}[/bold red]")
         return []
