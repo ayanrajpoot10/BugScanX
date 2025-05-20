@@ -29,8 +29,8 @@ def run_6():
 
 
 def run_7():
-    from bugscanx.modules.scanners import open_port
-    open_port.main()
+    from bugscanx.modules.scanners import port_scanner
+    port_scanner.main()
 
 
 def run_8():

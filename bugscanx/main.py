@@ -9,7 +9,7 @@ MENU_OPTIONS = {
     '4': ("SUBFINDER", "bold magenta"),
     '5': ("IP LOOKUP", "bold cyan"),
     '6': ("FILE TOOLKIT", "bold magenta"),
-    '7': ("OPEN PORTS", "bold white"),
+    '7': ("PORT SCANNER", "bold white"),
     '8': ("DNS RECORD", "bold green"),
     '9': ("HOST INFO", "bold blue"),
     '10': ("HELP", "bold yellow"),

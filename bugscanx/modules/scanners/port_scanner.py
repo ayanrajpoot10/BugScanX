@@ -29,18 +29,14 @@ def scan_port(ip, port):
         return None
 
 
-def main():
+def main():    
     target = get_input("Enter target")
     try:
         ip = socket.gethostbyname(target)
-        console.print(
-            f" Scanning target: {ip} ({target})",
-            style="bold green"
-        )
     except socket.gaierror:
         console.print(
-            " Error resolving IP for the provided hostname.",
-            style="bold red"
+            "\n[bold red] Failed to resolve hostname",
+            "\n[bold red] Please check your target and try again.",
         )
         return
 
@@ -49,45 +45,44 @@ def main():
         "choice",
         choices=["Common ports", "All ports (1-65535)"]
     )
-    ports = COMMON_PORTS if scan_type == "Common ports" else range(1, 65536)
+    ports = COMMON_PORTS if scan_type == "Common ports" else range(1, 500)
+    
+    console.print(
+        f"\n[bold green] Target Info:[/]\n"
+        f" • Host: {target}\n"
+        f" • IP: {ip}\n"
+    )
+    console.print(f"[bold blue] Starting scan...[/]\n")
     
     open_ports = []
     with Progress(
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+        TextColumn("[bold blue]│[/] {task.description}"),
+        BarColumn(complete_style="green"),
+        TextColumn("{task.percentage:>3.0f}%"),
         TimeRemainingColumn(),
         console=console,
+        transient=True,
     ) as progress:
-        task = progress.add_task("Scanning ports", total=len(ports))
+        task = progress.add_task(" Scanning ports", total=len(ports))
         
         with ThreadPoolExecutor(max_workers=100) as executor:
-            futures = [
-                executor.submit(scan_port, ip, port)
-                for port in ports
-            ]
+            futures = [executor.submit(scan_port, ip, port) for port in ports]
             for future in as_completed(futures):
                 if result := future.result():
                     open_ports.append(result)
-                    console.print(
-                        f" Port {result} is open",
-                        style="bold green"
-                    )
+                    progress.console.print(f" [green]✓[/] Port {result} is open")
                 progress.advance(task)
 
-    console.print("\n Scan complete!", style="bold green")
+    open_ports = sorted(open_ports)
+    
+    console.print("\n[bold green] Scan Results:[/]\n")
     if open_ports:
-        console.print(" Open ports:", style="bold cyan")
-        console.print(
-            "\n".join(f"- Port {port}" for port in open_ports),
-            style="bold cyan"
-        )
+        console.print("[cyan] Open Ports:[/]\n")
+        for port in open_ports:
+            console.print(f" • Port {port}")
         
         with open(f"{target}_open_ports.txt", "w") as f:
             f.write("\n".join(f"Port {port} is open" for port in open_ports))
-        console.print(
-            f" Results saved to {target}_open_ports.txt",
-            style="bold green"
-        )
+        console.print(f"\n[dim] Results saved to {target}_open_ports.txt[/]\n")
     else:
-        console.print(" No open ports found.", style="bold red")
+        console.print("\n[yellow] No open ports found.[/]\n")
