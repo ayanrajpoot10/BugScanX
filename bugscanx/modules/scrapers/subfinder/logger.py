@@ -25,6 +25,7 @@ class SubFinderConsole(Console):
         self.print(f"[green]{domain}: {count} subdomains found[/green]")
     
     def print_final_summary(self, output_file):
+        print("\r\033[K", end="")
         self.print(f"\n[green]Total: [bold]{self.total_subdomains}[/bold] subdomains found")
         self.print(f"[green]Results saved to {output_file}[/green]")
         self.enable_cursor()

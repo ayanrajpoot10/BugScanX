@@ -25,6 +25,7 @@ class IPLookupConsole(Console):
         self.print(f"[green]{ip}: {count} domains found[/green]")
     
     def print_final_summary(self, output_file):
+        print("\r\033[K", end="")
         self.print(f"\n[green]Total: [bold]{self.total_domains}[/bold] domains found")
         self.print(f"[green]Results saved to {output_file}[/green]")
         self.enable_cursor()
