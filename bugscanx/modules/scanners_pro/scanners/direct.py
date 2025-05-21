@@ -98,6 +98,11 @@ class DirectScanner(BaseScanner):
         host = payload['host']
         port = payload['port']
 
+        try:
+            ip = socket.gethostbyname(host)
+        except socket.gaierror:
+            return
+
         response = self.request(method, self.get_url(host, port), verify=False, allow_redirects=False)
 
         if response is None:
@@ -110,11 +115,6 @@ class DirectScanner(BaseScanner):
             location = response.headers.get('location', '')
             if location and location in EXCLUDE_LOCATIONS:
                 return
-
-        try:
-            ip = socket.gethostbyname(host)
-        except socket.gaierror:
-            ip = 'N/A'
 
         data = {
             'method': method,
