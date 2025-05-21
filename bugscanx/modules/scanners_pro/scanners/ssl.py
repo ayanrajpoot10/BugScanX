@@ -41,7 +41,7 @@ class SSLScanner(BaseScanner):
 
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socket_client:
-                socket_client.settimeout(5)
+                socket_client.settimeout(2)
                 socket_client.connect((sni, 443))
                 context = ssl.SSLContext(self.tls_version)
                 with context.wrap_socket(
@@ -50,7 +50,7 @@ class SSLScanner(BaseScanner):
                     do_handshake_on_connect=True,
                 ) as ssl_socket:
                     response['tls_version'] = ssl_socket.version()
-                    self.task_success(sni)
+                    self.success(sni)
                     self.log_info(**response)
         except Exception:
             pass
