@@ -53,7 +53,7 @@ class MultiThread(ABC):
             try:
                 self.task(task)
             except Exception as e:
-                self.log(f"Error in task: {e}")
+                self.logger.log(f"Error in task: {e}")
             finally:
                 with self._lock:
                     self._scanned += 1
@@ -65,14 +65,11 @@ class MultiThread(ABC):
     def get_success(self):
         return self._success
 
-    def log(self, msg):
-        self.logger.log(msg)
-
     def log_progress(self, *extra):
         parts = [
             f"{self._scanned / max(1, self._total) * 100:.2f}%",
             f"{self._scanned} / {self._total}",
-            f"✓ {len(self._success)}"
+            f"{len(self._success)}"
         ] + [str(x) for x in extra if x]
         self.logger.replace(" - ".join(parts))
 
