@@ -7,8 +7,6 @@ class ProxyScanner(BaseScanner):
         self,
         host_list=None,
         port_list=None,
-        task_list=None,
-        threads=None,
         target='',
         method='GET',
         path='/',
@@ -16,7 +14,7 @@ class ProxyScanner(BaseScanner):
         payload='',
         bug=''
     ):
-        super().__init__(task_list, threads)
+        super().__init__()
         self.host_list = host_list or []
         self.port_list = port_list or []
         self.target = target
@@ -26,19 +24,23 @@ class ProxyScanner(BaseScanner):
         self.payload = payload
         self.bug = bug
 
-    def log_info(self, proxy_host_port, response_lines, status_code):
-        if not response_lines or status_code in ['N/A', '302']:
+    def log_info(self, proxy_host_port, status_code, response_lines=None):
+        if response_lines is None:
+            response_lines = []
+            
+        if not response_lines and status_code in ['N/A', '302']:
             return
 
         color_name = 'GREEN' if status_code == '101' else 'GRAY'
         formatted_response = '\n    '.join(response_lines)
         message = (
-            f"{self.colorize(proxy_host_port.ljust(32) + ' ' + status_code, color_name)}\n"
-            f"{self.colorize('    ' + formatted_response, color_name)}\n"
+            f"{self.logger.colorize(proxy_host_port.ljust(32) + ' ' + status_code, color_name)}\n"
         )
-        super().log(message)
+        if formatted_response:
+            message += f"{self.logger.colorize('    ' + formatted_response, color_name)}\n"
+        self.logger.log(message)
 
-    def get_task_list(self):
+    def generate_tasks(self):
         for proxy_host in self.filter_list(self.host_list):
             for port in self.filter_list(self.port_list):
                 yield {
@@ -47,9 +49,8 @@ class ProxyScanner(BaseScanner):
                 }
 
     def init(self):
-        super().init()
-        self.log_info('Proxy:Port', ['Code'], 'G1')
-        self.log_info('----------', ['----'], 'G1')
+        self.log_info(proxy_host_port='Proxy:Port', status_code='Code')
+        self.log_info(proxy_host_port='----------', status_code='----')
 
     def task(self, payload):
         proxy_host = payload['proxy_host']
@@ -87,8 +88,8 @@ class ProxyScanner(BaseScanner):
 
                 status_code = response_lines[0].split(' ')[1] if response_lines and len(response_lines[0].split(' ')) > 1 else 'N/A'
                 if status_code not in ['N/A', '302']:
-                    self.log_info(proxy_host_port, response_lines, status_code)
-                    self.task_success({
+                    self.log_info(proxy_host_port, status_code, response_lines)
+                    self.success({
                         'proxy_host': proxy_host,
                         'proxy_port': port,
                         'response_lines': response_lines,
@@ -102,8 +103,7 @@ class ProxyScanner(BaseScanner):
             if 'conn' in locals():
                 conn.close()
 
-        self.log_replace(f"{proxy_host}")
+        self.log_progress(f"{proxy_host}")
 
     def complete(self):
-        self.log_replace(self.colorize("Scan completed", "GREEN"))
-        super().complete()
+        self.log_progress(self.logger.colorize("Scan completed", "GREEN"))

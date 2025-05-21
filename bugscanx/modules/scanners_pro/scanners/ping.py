@@ -8,35 +8,28 @@ class PingScanner(BaseScanner):
         host_list=None,
         port_list=None,
         is_cidr_input=False,
-        task_list=None,
-        threads=None
     ):
-        super().__init__(task_list, threads)
+        super().__init__()
         self.host_list = host_list or []
         self.port_list = port_list or []
         self.is_cidr_input = is_cidr_input
 
     def log_info(self, **kwargs):
-        kwargs.setdefault('color', '')
-        kwargs.setdefault('host', '')
-        kwargs.setdefault('ip', '')
-        kwargs.setdefault('port', '')
-
         if self.is_cidr_input:
-            messages = [
+            log_parts = [
                 self.colorize('{port:<6}', 'CYAN'),
                 self.colorize('{host}', 'LGRAY'),
             ]
         else:
-            messages = [
-                self.colorize('{port:<6}', 'CYAN'),
-                self.colorize('{ip:<15}', 'YELLOW'),
-                self.colorize('{host}', 'LGRAY'),
+            log_parts = [
+                self.logger.colorize('{port:<6}', 'CYAN'),
+                self.logger.colorize('{ip:<15}', 'YELLOW'),
+                self.logger.colorize('{host}', 'LGRAY'),
             ]
 
-        super().log('  '.join(messages).format(**kwargs))
+        self.logger.log('  '.join(log_parts).format(**kwargs))
 
-    def get_task_list(self):
+    def generate_tasks(self):
         for host in self.filter_list(self.host_list):
             for port in self.filter_list(self.port_list):
                 yield {
@@ -45,7 +38,6 @@ class PingScanner(BaseScanner):
                 }
 
     def init(self):
-        super().init()
         if self.is_cidr_input:
             self.log_info(port='Port', host='Host')
             self.log_info(port='----', host='----')
@@ -78,14 +70,13 @@ class PingScanner(BaseScanner):
                     'port': port,
                     'ip': ip
                 }
-                self.task_success(data)
+                self.success(data)
                 self.log_info(**data)
 
         except Exception:
             pass
 
-        self.log_replace(f"{host}:{port}")
+        self.log_progress(f"{host}:{port}")
 
     def complete(self):
-        self.log_replace(self.colorize("Scan completed", "GREEN"))
-        super().complete()
+        self.log_progress(self.logger.colorize("Scan completed", "GREEN"))

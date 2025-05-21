@@ -49,10 +49,6 @@ def get_host_input():
     return filename, None
 
 
-def list_to_comma_separated(result):
-    return ', '.join(result) if isinstance(result, list) else result
-
-
 def get_input_direct(no302=False):
     filename, cidr = get_host_input()
     port_list = get_input("Enter port(s)", "number", default="80").split(',')
@@ -65,7 +61,7 @@ def get_input_direct(no302=False):
             "GET", "HEAD", "POST", "PUT",
             "DELETE", "OPTIONS", "TRACE", "PATCH"
         ],
-        transformer=list_to_comma_separated
+        transformer=lambda result: ', '.join(result) if isinstance(result, list) else result
     )
     
     scanner = DirectScanner(
@@ -122,7 +118,7 @@ def get_input_proxy2():
             "GET", "HEAD", "POST", "PUT",
             "DELETE", "OPTIONS", "TRACE", "PATCH"
         ],
-        transformer=list_to_comma_separated
+        transformer=lambda result: ', '.join(result) if isinstance(result, list) else result
     )
     
     proxy = get_input("Enter proxy", instruction="(proxy:port)")
@@ -147,17 +143,10 @@ def get_input_proxy2():
 
 def get_input_ssl():
     filename, cidr = get_host_input()
-    tls_version = get_input(
-        "Select TLS version",
-        "choice", 
-        choices=list(SSLScanner.TLS_VERSIONS.keys()),
-        default="TLS 1.2"
-    )
     output, threads = get_common_inputs(filename or cidr)
     
     scanner = SSLScanner(
-        host_list=read_hosts(filename, cidr),
-        tls_version=SSLScanner.TLS_VERSIONS[tls_version]
+        host_list=read_hosts(filename, cidr)
     )
     
     return scanner, output, threads
@@ -208,6 +197,6 @@ def main():
     if output:
         with open(output, 'a+') as file:
             if mode == 'Proxy-check':
-                json.dump(scanner.success_list(), file, indent=2)
+                json.dump(scanner.get_success(), file, indent=2)
             else:
-                file.write('\n'.join([str(x) for x in scanner.success_list()]) + '\n')
+                file.write('\n'.join([str(x) for x in scanner.get_success()]) + '\n')

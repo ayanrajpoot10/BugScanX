@@ -13,8 +13,6 @@ class Proxy2Scanner(DirectScanner):
         port_list=None,
         no302=False,
         is_cidr_input=False,
-        task_list=None,
-        threads=None
     ):
         super().__init__(
             method_list=method_list,
@@ -22,8 +20,6 @@ class Proxy2Scanner(DirectScanner):
             port_list=port_list,
             no302=no302,
             is_cidr_input=is_cidr_input,
-            task_list=task_list,
-            threads=threads
         )
         self.proxy = proxy or {}
         self.auth = auth
@@ -60,7 +56,7 @@ class Proxy2Scanner(DirectScanner):
         max_attempts = self.DEFAULT_RETRY
 
         for attempt in range(max_attempts):
-            self.log_replace(f"{method} (via proxy) {url}")
+            self.log_progress(f"{method} (via proxy) {url}")
             try:
                 return self.session.request(method, url, **kwargs)
             except (
@@ -71,7 +67,7 @@ class Proxy2Scanner(DirectScanner):
             ) as e:
                 wait_time = 1 if isinstance(e, requests.exceptions.ConnectionError) else 5
                 for _ in self.sleep(wait_time):
-                    self.log_replace(f"{method} (via proxy) {url}")
+                    self.log_progress(f"{method} (via proxy) {url}")
                 if attempt == max_attempts - 1:
                     return None
         return None

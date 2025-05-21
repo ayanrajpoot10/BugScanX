@@ -6,51 +6,27 @@ class SSLScanner(BaseScanner):
     def __init__(
         self,
         host_list=None,
-        tls_version=None,
-        task_list=None,
-        threads=None
     ):
-        super().__init__(task_list, threads)
+        super().__init__()
         self.host_list = host_list or []
-        self.tls_version = tls_version or ssl.PROTOCOL_TLS
+        self.tls_version = ssl.PROTOCOL_TLS
 
-    TLS_VERSIONS = {
-        'TLS 1.0': ssl.PROTOCOL_TLSv1,
-        'TLS 1.1': ssl.PROTOCOL_TLSv1_1,
-        'TLS 1.2': ssl.PROTOCOL_TLSv1_2,
-        'TLS 1.3': ssl.PROTOCOL_TLS,
-    }
+    def log_info(self, **kwargs):
+        messages = [
+            self.logger.colorize('{tls_version:<8}', 'CYAN'),
+            self.logger.colorize('{sni}', 'LGRAY'),
+        ]
+        self.logger.log('  '.join(messages).format(**kwargs))
 
-    def get_task_list(self):
+    def generate_tasks(self):
         for host in self.filter_list(self.host_list):
             yield {
                 'host': host,
             }
 
-    def log_info(self, **kwargs):
-        kwargs.setdefault('color', '')
-        kwargs.setdefault('sni', '')
-        kwargs.setdefault('tls_version', '')
-        
-        messages = [
-            self.colorize('{tls_version:<8}', 'CYAN'),
-            self.colorize('{sni}', 'LGRAY'),
-        ]
-        super().log('  '.join(messages).format(**kwargs))
-
-    def log_info_result(self, **kwargs):
-        self.log_info(**kwargs)
-
     def init(self):
-        super().init()
-        self.log_info(
-            tls_version='TLS',
-            sni='SNI'
-        )
-        self.log_info(
-            tls_version='---',
-            sni='---'
-        )
+        self.log_info(tls_version='TLS', sni='SNI')
+        self.log_info(tls_version='---',sni='---')
 
     def task(self, payload):
         sni = payload['host']
@@ -75,12 +51,11 @@ class SSLScanner(BaseScanner):
                 ) as ssl_socket:
                     response['tls_version'] = ssl_socket.version()
                     self.task_success(sni)
-                    self.log_info_result(**response)
+                    self.log_info(**response)
         except Exception:
             pass
 
-        self.log_replace(sni)
+        self.log_progress(sni)
 
     def complete(self):
-        self.log_replace(self.colorize("Scan completed", "GREEN"))
-        super().complete()
+        self.log_progress(self.logger.colorize("Scan completed", "GREEN"))

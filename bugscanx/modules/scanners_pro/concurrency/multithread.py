@@ -1,107 +1,80 @@
 import time
-from queue import Queue
 from abc import ABC, abstractmethod
 from threading import Thread, RLock
+from queue import Queue, Empty
 
 from .logger import Logger
-
+from .cursor import CursorManager
 
 class MultiThread(ABC):
-    def __init__(self, task_list=None, threads=None):
+    def __init__(self, threads=50):
         self._lock = RLock()
-        self._loop = True
-        self._queue_task_list = Queue()
-        self._logger = Logger()
+        self._queue = Queue()
 
-        self._task_list = task_list or []
-        self._task_list_total = 0
-        self._task_list_scanned_total = 0
-        self._task_list_success = []
+        self._total = 0
+        self._scanned = 0
+        self._success = []
 
-        self._threads = threads or 50
+        self.threads = threads
 
-    def add_task(self, data):
-        self._queue_task_list.put(data)
-        self._task_list_total += 1
+        self.logger = Logger()
 
-    def get_task_list(self):
-        return self._task_list
+    def _add_task(self, task):
+        self._queue.put(task)
+        self._total += 1
 
     def start(self):
-        try:
-            for task in self.get_task_list():
-                self.add_task(task)
-            self.init()
-            self.start_threads()
-            self.join()
-            self.complete()
-        except KeyboardInterrupt:
-            pass
+        print()
+        with CursorManager():
+            try:
+                for task in self.generate_tasks():
+                    self._add_task(task)
 
-    def start_threads(self):
-        for _ in range(min(self._threads, self._queue_task_list.qsize()) or self._threads):
-            Thread(target=self.thread, daemon=True).start()
+                self.init()
+                workers = [
+                    Thread(target=self._worker, daemon=True)
+                    for _ in range(min(self.threads, self._queue.qsize() or self.threads))
+                ]
+                for t in workers:
+                    t.start()
+                self._queue.join()
+                self.complete()
+            except KeyboardInterrupt:
+                pass
+        print()
 
-    def thread(self):
-        while self.loop():
-            task = self._queue_task_list.get()
-            if not self.loop():
-                break
-            self.task(task)
-            self._task_list_scanned_total += 1
-            self._queue_task_list.task_done()
+    def _worker(self):
+        while True:
+            try:
+                task = self._queue.get(timeout=1)
+            except Empty:
+                return
 
-    @abstractmethod
-    def init(self):
-        pass
-    
-    @abstractmethod
-    def task(self, *_):
-        pass
+            try:
+                self.task(task)
+            except Exception as e:
+                self.log(f"Error in task: {e}")
+            finally:
+                with self._lock:
+                    self._scanned += 1
+                self._queue.task_done()
 
-    def join(self):
-        self._queue_task_list.join()
-        self.task_complete()
-        
-    @abstractmethod
-    def complete(self):
-        pass
+    def success(self, item):
+        self._success.append(item)
 
-    def lock(self):
-        return self._lock
+    def get_success(self):
+        return self._success
 
-    def lock_queue(self):
-        return self._queue_task_list.mutex
+    def log(self, msg):
+        self.logger.log(msg)
 
-    def loop(self):
-        return self._loop
-
-    def success_list(self):
-        return self._task_list_success
-
-    def task_success(self, data):
-        self._task_list_success.append(data)
-
-    def task_complete(self):
-        self._loop = False
-
-        with self.lock_queue():
-            self._queue_task_list.unfinished_tasks -= len(self._queue_task_list.queue)
-            self._queue_task_list.queue.clear()
-
-    def log(self, *args, **kwargs):
-        self._logger.log(*args, **kwargs)
-
-    def log_replace(self, *messages):
-        default_messages = [
-            f'{self.percentage_scanned():.3f}%',
-            f'{self._task_list_scanned_total} of {self._task_list_total}',
-            f'{len(self._task_list_success)}',
-        ]
-
-        messages = [str(x) for x in messages if x is not None and str(x)]
-        
-        self._logger.replace(' - '.join(default_messages + messages))
+    def log_progress(self, *extra):
+        parts = [
+            f"{self._scanned / max(1, self._total) * 100:.2f}%",
+            f"{self._scanned} / {self._total}",
+            f"✓ {len(self._success)}"
+        ] + [str(x) for x in extra if x]
+        self.logger.replace(" - ".join(parts))
 
     def sleep(self, seconds):
         while seconds > 0:
@@ -109,8 +82,14 @@ class MultiThread(ABC):
             time.sleep(1)
             seconds -= 1
 
-    def percentage(self, data_count):
-        return (data_count / max(self._task_list_total, 1)) * 100
+    @abstractmethod
+    def generate_tasks(self): pass
 
-    def percentage_scanned(self):
-        return self.percentage(self._task_list_scanned_total)
+    @abstractmethod
+    def init(self): pass
+
+    @abstractmethod
+    def task(self, task): pass
+
+    @abstractmethod
+    def complete(self): pass

@@ -21,9 +21,9 @@ class Logger:
     def __init__(self):
         self._lock = RLock()
 
-    @staticmethod
-    def colorize(text, color):
-        return f"{Logger.COLORS.get(color, '')}{text}{Logger.RESET}"
+    @classmethod
+    def colorize(cls, text, color):
+        return f"{cls.COLORS.get(color, '')}{text}{cls.RESET}"
 
     def replace(self, message):
         cols = os.get_terminal_size().columns
