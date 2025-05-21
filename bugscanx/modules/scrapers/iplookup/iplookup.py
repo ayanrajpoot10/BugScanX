@@ -3,13 +3,14 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from bugscanx.utils.common import get_input, is_cidr
 from .sources import get_scrapers
-from .utils import process_input, process_file
+from .utils import CursorManager, process_input, process_file
 from .logger import IPLookupConsole
 
 
 class IPLookup:
     def __init__(self):
         self.console = IPLookupConsole()
+        self.cursor_manager = CursorManager()
         self.completed = 0
 
     def _fetch_from_source(self, source, ip):
@@ -54,21 +55,22 @@ class IPLookup:
         all_domains = set()
         total = len(ips)
         scrapers = scrapers or get_scrapers()
+        
+        with self.cursor_manager:
+            with ThreadPoolExecutor(max_workers=5) as executor:
+                futures = [
+                    executor.submit(self.process_ip, ip, output_file, scrapers, total)
+                    for ip in ips
+                ]
+                for future in as_completed(futures):
+                    try:
+                        result = future.result()
+                        all_domains.update(result)
+                    except Exception as e:
+                        self.console.print_error(f"Error processing IP: {str(e)}")
 
-        with ThreadPoolExecutor(max_workers=5) as executor:
-            futures = [
-                executor.submit(self.process_ip, ip, output_file, scrapers, total)
-                for ip in ips
-            ]
-            for future in as_completed(futures):
-                try:
-                    result = future.result()
-                    all_domains.update(result)
-                except Exception as e:
-                    self.console.print_error(f"Error processing IP: {str(e)}")
-
-        self.console.print_final_summary(output_file)
-        return all_domains
+            self.console.print_final_summary(output_file)
+            return all_domains
 
 
 def main():

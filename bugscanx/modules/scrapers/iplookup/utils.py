@@ -62,6 +62,15 @@ class RequestHandler:
         self.session.close()
 
 
+class CursorManager:
+    def __enter__(self):
+        print('\033[?25l', end='', flush=True)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print('\033[?25h', end='', flush=True)
+
+
 def process_cidr(cidr):
     try:
         network = ipaddress.ip_network(cidr, strict=False)

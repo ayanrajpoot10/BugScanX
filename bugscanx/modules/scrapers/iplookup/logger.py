@@ -6,13 +6,6 @@ class IPLookupConsole(Console):
         super().__init__()
         self.total_domains = 0
         self.ip_stats = {}
-        self.disable_cursor()
-
-    def disable_cursor(self):
-        print('\033[?25l', end='', flush=True)
-
-    def enable_cursor(self):
-        print('\033[?25h', end='', flush=True)
 
     def print_ip_start(self, ip):
         self.print(f"[cyan]Processing: {ip}[/cyan]")
@@ -28,7 +21,6 @@ class IPLookupConsole(Console):
         print("\r\033[K", end="")
         self.print(f"\n[green]Total: [bold]{self.total_domains}[/bold] domains found")
         self.print(f"[green]Results saved to {output_file}[/green]")
-        self.enable_cursor()
 
     def print_progress(self, current, total):
         self.print(f"Progress: {current} / {total}", end="\r")

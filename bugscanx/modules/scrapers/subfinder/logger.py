@@ -6,13 +6,6 @@ class SubFinderConsole(Console):
         super().__init__()
         self.total_subdomains = 0
         self.domain_stats = {}
-        self.disable_cursor()
-
-    def disable_cursor(self):
-        print('\033[?25l', end='', flush=True)
-
-    def enable_cursor(self):
-        print('\033[?25h', end='', flush=True)
 
     def print_domain_start(self, domain):
         self.print(f"[cyan]Processing: {domain}[/cyan]")
@@ -28,7 +21,6 @@ class SubFinderConsole(Console):
         print("\r\033[K", end="")
         self.print(f"\n[green]Total: [bold]{self.total_subdomains}[/bold] subdomains found")
         self.print(f"[green]Results saved to {output_file}[/green]")
-        self.enable_cursor()
 
     def print_progress(self, current, total):
         self.print(f"Progress: {current} / {total}", end="\r")

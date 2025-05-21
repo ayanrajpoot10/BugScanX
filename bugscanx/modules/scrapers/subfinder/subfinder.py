@@ -4,12 +4,13 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from bugscanx.utils.common import get_input
 from .logger import SubFinderConsole
 from .sources import get_sources
-from .utils import DomainValidator
+from .utils import DomainValidator, CursorManager
 
 class SubFinder:
     def __init__(self):
         self.console = SubFinderConsole()
         self.completed = 0
+        self.cursor_manager = CursorManager()
 
     def _fetch_from_source(self, source, domain):
         try:
@@ -59,20 +60,21 @@ class SubFinder:
         all_subdomains = set()
         total = len(domains)
 
-        with ThreadPoolExecutor(max_workers=3) as executor:
-            futures = [
-                executor.submit(self.process_domain, domain, output_file, sources, total)
-                for domain in domains
-            ]
-            for future in as_completed(futures):
-                try:
-                    result = future.result()
-                    all_subdomains.update(result)
-                except Exception as e:
-                    self.console.print(f"Error processing domain: {str(e)}")
+        with self.cursor_manager:
+            with ThreadPoolExecutor(max_workers=3) as executor:
+                futures = [
+                    executor.submit(self.process_domain, domain, output_file, sources, total)
+                    for domain in domains
+                ]
+                for future in as_completed(futures):
+                    try:
+                        result = future.result()
+                        all_subdomains.update(result)
+                    except Exception as e:
+                        self.console.print(f"Error processing domain: {str(e)}")
 
-        self.console.print_final_summary(output_file)
-        return all_subdomains
+            self.console.print_final_summary(output_file)
+            return all_subdomains
 
 
 def main():
