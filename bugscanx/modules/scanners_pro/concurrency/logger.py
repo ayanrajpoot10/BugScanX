@@ -36,3 +36,11 @@ class Logger:
         with self._lock:
             sys.stderr.write(f'\r{self.CLEAR_LINE}{message}{self.RESET}\n')
             sys.stderr.flush()
+
+class CursorManager:
+    def __enter__(self):
+        print('\033[?25l', end='', flush=True)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print('\033[?25h', end='', flush=True)

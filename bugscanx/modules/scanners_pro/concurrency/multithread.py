@@ -3,8 +3,7 @@ from abc import ABC, abstractmethod
 from threading import Thread, RLock
 from queue import Queue, Empty
 
-from .logger import Logger
-from .cursor import CursorManager
+from .logger import Logger, CursorManager
 
 class MultiThread(ABC):
     def __init__(self, threads=50):
