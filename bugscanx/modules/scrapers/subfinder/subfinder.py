@@ -6,6 +6,7 @@ from .logger import SubFinderConsole
 from .sources import get_sources
 from .utils import DomainValidator, CursorManager
 
+
 class SubFinder:
     def __init__(self):
         self.console = SubFinderConsole()

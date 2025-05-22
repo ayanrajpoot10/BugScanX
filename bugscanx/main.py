@@ -2,6 +2,7 @@ import sys
 from rich import print
 from bugscanx import banner, text_ascii
 
+
 MENU_OPTIONS = {
     '1': ("HOST SCANNER PRO", "bold cyan"),
     '2': ("HOST SCANNER", "bold blue"),

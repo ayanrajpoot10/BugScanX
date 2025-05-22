@@ -5,6 +5,7 @@ from bugscanx.modules.scrapers.subfinder.sources import (
     AnubisDbSource, AlienVaultSource, CertSpotterSource
 )
 
+
 class TestSubfinderSources(unittest.TestCase):
     def setUp(self):
         self.test_domain = "jio.com"
@@ -34,6 +35,7 @@ class TestSubfinderSources(unittest.TestCase):
             except Exception as e:
                 print(f"Error in {source_name}: {str(e)}")
                 raise
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

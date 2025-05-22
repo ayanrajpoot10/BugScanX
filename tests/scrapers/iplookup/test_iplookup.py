@@ -4,6 +4,7 @@ import unittest
 from bugscanx.modules.scrapers.iplookup.iplookup import IPLookup
 from bugscanx.modules.scrapers.iplookup.sources import get_scrapers
 
+
 class TestIPLookup(unittest.TestCase):
     def setUp(self):
         self.iplookup = IPLookup()
@@ -30,6 +31,7 @@ class TestIPLookup(unittest.TestCase):
         if os.path.exists(self.output_file):
             os.remove(self.output_file)
         os.rmdir(self.temp_dir)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

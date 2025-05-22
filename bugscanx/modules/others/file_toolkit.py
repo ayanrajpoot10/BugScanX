@@ -13,6 +13,7 @@ from rich.progress import Progress, TimeElapsedColumn
 from bugscanx.utils.common import get_input, get_confirm, clear_screen
 from bugscanx import text_ascii
 
+
 def read_lines(file_path):
     try:
         with open(file_path, "r", encoding="utf-8") as file:

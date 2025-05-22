@@ -5,6 +5,7 @@ from bugscanx.modules.scrapers.iplookup.sources import (
     YouGetSignalSource
 )
 
+
 class TestIPLookupSources(unittest.TestCase):
     def setUp(self):
         self.test_ip = "8.8.8.8"
@@ -29,6 +30,7 @@ class TestIPLookupSources(unittest.TestCase):
             except Exception as e:
                 print(f"Error in {source_name}: {str(e)}")
                 raise
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

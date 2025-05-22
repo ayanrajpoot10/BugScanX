@@ -4,6 +4,7 @@ import unittest
 from bugscanx.modules.scrapers.subfinder.subfinder import SubFinder
 from bugscanx.modules.scrapers.subfinder.sources import get_sources
 
+
 class TestSubFinder(unittest.TestCase):
     def setUp(self):
         self.subfinder = SubFinder()
@@ -32,6 +33,7 @@ class TestSubFinder(unittest.TestCase):
         if os.path.exists(self.output_file):
             os.remove(self.output_file)
         os.rmdir(self.temp_dir)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

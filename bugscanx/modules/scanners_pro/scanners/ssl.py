@@ -2,6 +2,7 @@ import ssl
 import socket
 from .base import BaseScanner
 
+
 class SSLScanner(BaseScanner):
     def __init__(
         self,

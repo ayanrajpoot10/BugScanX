@@ -5,6 +5,7 @@ from queue import Queue, Empty
 
 from .logger import Logger, CursorManager
 
+
 class MultiThread(ABC):
     def __init__(self, threads=50):
         self._lock = RLock()
