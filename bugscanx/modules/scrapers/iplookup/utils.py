@@ -28,7 +28,6 @@ class RequestHandler:
         self.session.verify = False
         requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
         self.rate_limiter = RateLimiter(1.0)
-        self.session.timeout = 10
 
     def _get_headers(self):
         headers = HEADERS.copy()
