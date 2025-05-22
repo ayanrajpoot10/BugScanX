@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import datetime
 from bs4 import BeautifulSoup
 from .utils import RequestHandler
 
@@ -7,7 +8,6 @@ class SubdomainSource(RequestHandler, ABC):
     def __init__(self, name):
         super().__init__()
         self.name = name
-        self.subdomains = set()
 
     @abstractmethod
     def fetch(self, domain):
@@ -19,11 +19,12 @@ class CrtshSource(SubdomainSource):
         super().__init__("Crt.sh")
 
     def fetch(self, domain):
+        subdomains = set()
         response = self.get(f"https://crt.sh/?q=%25.{domain}&output=json")
         if response and response.headers.get('Content-Type') == 'application/json':
             for entry in response.json():
-                self.subdomains.update(entry['name_value'].splitlines())
-        return self.subdomains
+                subdomains.update(entry['name_value'].splitlines())
+        return subdomains
 
 
 class HackertargetSource(SubdomainSource):
@@ -31,12 +32,13 @@ class HackertargetSource(SubdomainSource):
         super().__init__("Hackertarget")
 
     def fetch(self, domain):
+        subdomains = set()
         response = self.get(f"https://api.hackertarget.com/hostsearch/?q={domain}")
         if response and 'text' in response.headers.get('Content-Type', ''):
-            self.subdomains.update(
+            subdomains.update(
                 [line.split(",")[0] for line in response.text.splitlines()]
             )
-        return self.subdomains
+        return subdomains
 
 
 class RapidDnsSource(SubdomainSource):
@@ -44,14 +46,15 @@ class RapidDnsSource(SubdomainSource):
         super().__init__("RapidDNS")
 
     def fetch(self, domain):
+        subdomains = set()
         response = self.get(f"https://rapiddns.io/subdomain/{domain}?full=1")
         if response:
             soup = BeautifulSoup(response.text, 'html.parser')
             for link in soup.find_all('td'):
                 text = link.get_text(strip=True)
                 if text.endswith(f".{domain}"):
-                    self.subdomains.add(text)
-        return self.subdomains
+                    subdomains.add(text)
+        return subdomains
 
 
 class AnubisDbSource(SubdomainSource):
@@ -59,10 +62,11 @@ class AnubisDbSource(SubdomainSource):
         super().__init__("AnubisDB")
 
     def fetch(self, domain):
+        subdomains = set()
         response = self.get(f"https://jldc.me/anubis/subdomains/{domain}")
         if response:
-            self.subdomains.update(response.json())
-        return self.subdomains
+            subdomains.update(response.json())
+        return subdomains
 
 
 class AlienVaultSource(SubdomainSource):
@@ -70,13 +74,14 @@ class AlienVaultSource(SubdomainSource):
         super().__init__("AlienVault")
 
     def fetch(self, domain):
+        subdomains = set()
         response = self.get(f"https://otx.alienvault.com/api/v1/indicators/domain/{domain}/passive_dns")
         if response:
             for entry in response.json().get("passive_dns", []):
                 hostname = entry.get("hostname")
                 if hostname:
-                    self.subdomains.add(hostname)
-        return self.subdomains
+                    subdomains.add(hostname)
+        return subdomains
 
 
 class CertSpotterSource(SubdomainSource):
@@ -84,11 +89,33 @@ class CertSpotterSource(SubdomainSource):
         super().__init__("CertSpotter")
 
     def fetch(self, domain):
+        subdomains = set()
         response = self.get(f"https://api.certspotter.com/v1/issuances?domain={domain}&include_subdomains=true&expand=dns_names")
         if response:
             for cert in response.json():
-                self.subdomains.update(cert.get('dns_names', []))
-        return self.subdomains
+                subdomains.update(cert.get('dns_names', []))
+        return subdomains
+
+
+class C99Source(SubdomainSource):
+    def __init__(self):
+        super().__init__("C99")
+
+    def fetch(self, domain):
+        subdomains = set()
+        dates = [(datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d') 
+                for i in range(7)]
+        
+        for date in dates:
+            url = f"https://subdomainfinder.c99.nl/scans/{date}/{domain}"
+            response = self.get(url)
+            if response:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                for link in soup.select('td a.link.sd'):
+                    text = link.get_text(strip=True)
+                    if text.endswith(f".{domain}"):
+                        subdomains.add(text)
+        return subdomains
 
 
 def get_sources():
@@ -99,4 +126,5 @@ def get_sources():
         AnubisDbSource(),
         AlienVaultSource(),
         CertSpotterSource(),
+        # C99Source() 
     ]

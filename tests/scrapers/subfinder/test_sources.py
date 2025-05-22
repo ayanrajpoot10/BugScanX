@@ -1,7 +1,7 @@
 import unittest
 import time
 from bugscanx.modules.scrapers.subfinder.sources import (
-    CrtshSource, HackertargetSource, RapidDnsSource,
+    CrtshSource, HackertargetSource, RapidDnsSource, C99Source,
     AnubisDbSource, AlienVaultSource, CertSpotterSource
 )
 
@@ -14,7 +14,8 @@ class TestSubfinderSources(unittest.TestCase):
             'rapiddns': RapidDnsSource(),
             'anubisdb': AnubisDbSource(),
             'alienvault': AlienVaultSource(),
-            'certspotter': CertSpotterSource()
+            'certspotter': CertSpotterSource(),
+            'c99': C99Source()
         }
 
     def test_individual_sources(self):
