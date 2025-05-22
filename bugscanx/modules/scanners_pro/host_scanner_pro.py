@@ -51,7 +51,7 @@ def get_host_input():
 
 def get_input_direct(no302=False):
     filename, cidr = get_host_input()
-    port_list = get_input("Enter port(s)", "number", default="80").split(',')
+    port_list = get_input("Enter port(s)", "number", default="443").split(',')
     output, threads = get_common_inputs(filename or cidr)
     method_list = get_input(
         "Select HTTP method(s)",
