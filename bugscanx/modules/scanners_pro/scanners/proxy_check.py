@@ -8,21 +8,13 @@ class ProxyScanner(BaseScanner):
         host_list=None,
         port_list=None,
         target='',
-        method='GET',
-        path='/',
-        protocol='HTTP/1.1',
         payload='',
-        bug=''
     ):
         super().__init__()
         self.host_list = host_list or []
         self.port_list = port_list or []
         self.target = target
-        self.method = method
-        self.path = path
-        self.protocol = protocol
         self.payload = payload
-        self.bug = bug
 
     def log_info(self, proxy_host_port, status_code, response_lines=None):
         if response_lines is None:
@@ -60,11 +52,7 @@ class ProxyScanner(BaseScanner):
 
         formatted_payload = (
             self.payload
-            .replace('[method]', self.method)
-            .replace('[path]', self.path)
-            .replace('[protocol]', self.protocol)
             .replace('[host]', self.target)
-            .replace('[bug]', self.bug if self.bug else '')
             .replace('[crlf]', '\r\n')
             .replace('[cr]', '\r')
             .replace('[lf]', '\n')

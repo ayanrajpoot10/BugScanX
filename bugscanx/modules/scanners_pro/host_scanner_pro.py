@@ -78,11 +78,8 @@ def get_input_direct(no302=False):
 def get_input_proxy():
     filename, cidr = get_host_input()
     target_url = get_input("Enter target url", default="in1.wstunnel.site")
-    method = get_input("Enter HTTP method", default="GET")
-    path = get_input("Enter path", default="/")
-    protocol = get_input("Enter protocol", default="HTTP/1.1")
     default_payload = (
-        "[method] [path] [protocol][crlf]"
+        "GET / HTTP/1.1[crlf]"
         "Host: [host][crlf]"
         "Connection: Upgrade[crlf]"
         "Upgrade: websocket[crlf][crlf]"
@@ -90,16 +87,11 @@ def get_input_proxy():
     payload = get_input("Enter payload", default=default_payload)
     port_list = get_input("Enter port(s)", "number", default="80").split(',')
     output, threads = get_common_inputs(filename or cidr)
-    bug = get_input("Enter bug", default="", validate_input=False, instruction="(optional)")
     
     scanner = ProxyScanner(
         host_list=read_hosts(filename, cidr),
         port_list=port_list,
         target=target_url,
-        method=method,
-        path=path,
-        protocol=protocol,
-        bug=bug,
         payload=payload
     )
     
@@ -171,16 +163,16 @@ def get_user_input():
         "Select scanning mode",
         "choice", 
         choices=[
-            "Direct", "Direct-no302", "Proxy-check",
-            "Proxy-request", "Ping", "SSL"
+            "Direct", "Direct-no302", "ProxyTest",
+            "ProxyRoute", "Ping", "SSL"
         ]
     )
     
     input_handlers = {
         'Direct': lambda: get_input_direct(no302=False),
         'Direct-no302': lambda: get_input_direct(no302=True),
-        'Proxy-check': get_input_proxy,
-        'Proxy-request': get_input_proxy2,
+        'ProxyTest': get_input_proxy,
+        'ProxyRoute': get_input_proxy2,
         'Ping': get_input_ping,
         'SSL': get_input_ssl
     }
@@ -196,7 +188,7 @@ def main():
 
     if output:
         with open(output, 'a+') as file:
-            if mode == 'Proxy-check':
+            if mode == 'ProxyTest':
                 json.dump(scanner.get_success(), file, indent=2)
             else:
                 file.write('\n'.join([str(x) for x in scanner.get_success()]) + '\n')
