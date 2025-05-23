@@ -115,6 +115,8 @@ class C99Source(SubdomainSource):
                     text = link.get_text(strip=True)
                     if text.endswith(f".{domain}"):
                         subdomains.add(text)
+                if subdomains:
+                    break
         return subdomains
 
 
