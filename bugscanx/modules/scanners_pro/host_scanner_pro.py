@@ -163,14 +163,14 @@ def get_user_input():
         "Select scanning mode",
         "choice", 
         choices=[
-            "Direct", "Direct-no302", "ProxyTest",
+            "Direct", "DirectNon302", "ProxyTest",
             "ProxyRoute", "Ping", "SSL"
         ]
     )
     
     input_handlers = {
         'Direct': lambda: get_input_direct(no302=False),
-        'Direct-no302': lambda: get_input_direct(no302=True),
+        'DirectNon302': lambda: get_input_direct(no302=True),
         'ProxyTest': get_input_proxy,
         'ProxyRoute': get_input_proxy2,
         'Ping': get_input_ping,
