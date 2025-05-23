@@ -1,188 +1,213 @@
-"""Module for gathering and displaying host information."""
-
-import queue
-import socket
 import ssl
-import threading
+import socket
+import http.client
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
-from requests.exceptions import RequestException
 from rich import print
 
 from bugscanx.utils.common import get_input
 
 
-HTTP_METHODS = [
-    "GET",
-    "HEAD",
-    "POST",
-    "PUT",
-    "DELETE",
-    "OPTIONS",
-    "TRACE",
-    "PATCH"
-]
+class HostScanner:
+    CDN_PROVIDERS = {
+        "Cloudflare": {
+            "headers": ["cf-ray", "cf-cache-status", "cf-request-id", "cf-visitor", "cf-connecting-ip", "cf-ipcountry", "cf-railgun", "cf-polished", "cf-apo-via"],
+            "cname": ["cloudflare.net", "cloudflare.com", "cloudflare-dns.com"]
+        },
+        "Akamai": {
+            "headers": ["x-akamai-transformed", "akamai-cache-status", "akamai-origin-hop", "x-akamai-request-id", "x-akamai-ssl-client-sid", "akamai-grn", "x-akamai-config-log-detail"],
+            "cname": ["akamai.net", "edgekey.net", "edgesuite.net", "akamaized.net", "akamaiedge.net", "akamaitechnologies.com", "akamaihd.net"]
+        },
+        "Fastly": {
+            "headers": ["fastly-debug", "x-served-by", "x-cache-hits", "x-timer", "fastly-ff", "x-fastly-request-id"],
+            "cname": ["fastly.net", "fastlylb.net"]
+        },
+        "Amazon CloudFront": {
+            "headers": ["x-amz-cf-id", "x-amz-cf-pop", "x-amz-request-id"],
+            "cname": ["cloudfront.net", "amazonaws.com"]
+        },
+        "Google Cloud CDN": {
+            "headers": ["x-goog-cache-status", "x-goog-generation", "x-goog-metageneration", "x-guploader-uploadid"],
+            "cname": ["googleusercontent.com", "googlevideo.com", "google.com", "gstatic.com", "googleapis.com"]
+        },
+        "Microsoft Azure CDN": {
+            "headers": ["x-azure-ref", "x-azure-requestid", "x-msedge-ref", "x-ec-custom-error", "x-azure-fdid"],
+            "cname": ["azureedge.net", "msedge.net", "azure-edge.net", "trafficmanager.net", "azurefd.net"]
+        },
+        "BunnyCDN": {
+            "headers": ["cdn-pullzone", "cdn-uid", "cdn-requestid", "cdn-cache", "cdn-zone", "bunnycdn-cache-tag"],
+            "cname": ["b-cdn.net"]
+        },
+        "KeyCDN": {
+            "headers": ["x-edge-location", "server-keycdn"],
+            "cname": ["kxcdn.com"]
+        },
+        "Sucuri": {
+            "headers": ["x-sucuri-id", "x-sucuri-cache", "x-sucuri-block", "server-sucuri"],
+            "cname": ["sucuri.net"]
+        },
+        "Imperva": {
+            "headers": ["x-iinfo", "incap-ses", "visid-incap"],
+            "cname": ["incapdns.net", "imperva.com"]
+        },
+        "Cachefly": {
+            "headers": ["x-cf-", "server-cachefly"],
+            "cname": ["cachefly.net"]
+        },
+        "CDN77": {
+            "headers": ["x-77-", "server-cdn77"],
+            "cname": ["cdn77.net", "cdn77.org"]
+        },
+        "Alibaba Cloud CDN": {
+            "headers": ["ali-cdn-", "x-oss-", "server-tengine"],
+            "cname": ["alikunlun.com", "alicdn.com"]
+        },
+        "Tencent Cloud CDN": {
+            "headers": ["x-nws-", "x-daa-tunnel"],
+            "cname": ["qcloudcdn.com", "myqcloud.com"]
+        }
+    }
 
-CDN_PROVIDERS = {
-    "Cloudflare": ["cf-ray", "cf-cache-status"],
-    "Akamai": ["x-akamai-transformed", "akamai-cache-status"],
-    "Fastly": ["fastly-debug", "x-served-by"],
-    "Amazon CloudFront": ["x-amz-cf-id"],
-    "Google Cloud CDN": ["x-goog-cache-status"],
-    "Microsoft Azure CDN": ["x-azure-ref"],
-    "StackPath": ["x-stackpath-xxid"],
-    "Sucuri": ["x-sucuri-id"]
-}
+    def __init__(self, host, protocol="https", method_list=None):
+        self.host = host
+        self.protocol = protocol
+        self.url = f"{protocol}://{host}"
+        self.method_list = method_list
 
+    def get_ips(self):
+        try:
+            ips = socket.getaddrinfo(self.host, None)
+            unique_ips = list(set(ip[4][0] for ip in ips))
+            print("[bold white]\nIPs:[/bold white]")
+            for ip in unique_ips:
+                print(f"  • {ip}")
+            return True
+        except socket.gaierror as e:
+            print(f"[bold red] Error resolving hostname: {e}[/bold red]")
+            return False
 
-def check_cdn(url):
-    try:
-        response = requests.get(url, timeout=5)
-        headers = response.headers
+    def get_cname_records(self):
+        try:
+            result = []
+            answers = socket.getaddrinfo(self.host, None)
+            for answer in answers:
+                try:
+                    cname = socket.gethostbyaddr(answer[4][0])[0]
+                    result.append(cname.lower())
+                except (socket.herror, socket.gaierror):
+                    continue
+            return result
+        except (socket.herror, socket.gaierror):
+            return []
+
+    def get_cdn(self):
+        try:
+            detected_cdns = set()
+            
+            response = requests.get(self.url, timeout=5)
+            headers = {k.lower(): v.lower() for k, v in response.headers.items()}
+            
+            cnames = self.get_cname_records()
+            
+            for provider, indicators in self.CDN_PROVIDERS.items():
+                if any(header.lower() in headers.keys() for header in indicators['headers']):
+                    detected_cdns.add(provider)
+                    continue
+                
+                if any(cname_pattern in cname for cname in cnames 
+                      for cname_pattern in indicators['cname']):
+                    detected_cdns.add(provider)
+            
+            if detected_cdns:
+                print("[bold white]\nCDNs:[/bold white]")
+                for cdn in detected_cdns:
+                    print(f"  • {cdn}")
+            else:
+                print("[bold white]\nNo known CDN[/bold white]")
+                
+        except requests.exceptions.RequestException as e:
+            print(f"[bold red] Error checking CDN: {e}[/bold red]")
+
+    def get_http_info(self):
+        def check_method(method):
+            try:
+                response = requests.request(method, self.url, timeout=5)
+                return method, response.status_code, dict(response.headers)
+            except requests.exceptions.RequestException as e:
+                return method, 0, {'error': str(e)}
         
-        detected_cdns = []
-        for provider, indicators in CDN_PROVIDERS.items():
-            if any(header.lower() in map(str.lower, headers.keys())
-                  for header in indicators):
-                detected_cdns.append(provider)
+        with ThreadPoolExecutor(max_workers=len(self.method_list)) as executor:
+            futures = {
+                executor.submit(check_method, method): method 
+                for method in self.method_list
+            }
+            
+            for future in as_completed(futures):
+                method, status_code, headers = future.result()
+                
+                status_desc = http.client.responses.get(status_code, 'Unknown Status Code')
+                print(f"\n[bold yellow]Method: {method}[/bold yellow] | [bold magenta]Status: {status_code} {status_desc}[/bold magenta]")
+                
+                if 'error' in headers:
+                    print(f"  [bold red]Error: {headers['error']}[/bold red]")
+                else:
+                    if headers:
+                        print("  [bold white]Headers:[/bold white]")
+                        for header_name, header_value in headers.items():
+                            print(f"    {header_name}: {header_value}")
+
+    def get_sni_info(self):
+        if self.protocol != "https":
+            return
         
-        return detected_cdns, headers
-    except RequestException as e:
-        return None, str(e)
+        try:
+            context = ssl.create_default_context()
+            with socket.create_connection((self.host, 443)) as sock:
+                with context.wrap_socket(sock, server_hostname=self.host) as ssock:
+                    sni_info = {
+                        'version': ssock.version(),
+                        'cipher': ssock.cipher(),
+                        'cert': ssock.getpeercert()
+                    }
+                    
+                    print(f"[bold white]SSL Version:[/bold white] {sni_info['version']}")
+                    print(f"[bold white]Cipher Suite:[/bold white] {sni_info['cipher'][0]}")
+                    print(f"[bold white]Cipher Bits:[/bold white] {sni_info['cipher'][1]}")
+                    
+                    cert = sni_info['cert']
+                    
+                    def parse_cert_field(field):
+                        return {item[0]: item[1] if len(item) > 1 else '' for item in field}
+                    
+                    print(f"[bold white]Subject:[/bold white] {parse_cert_field(cert.get('subject', []))}")
+                    print(f"[bold white]Issuer:[/bold white] {parse_cert_field(cert.get('issuer', []))}")
+                    print(f"[bold white]Serial Number:[/bold white] {cert.get('serialNumber', 'N/A')}")
+                    
+        except Exception as e:
+            print(f"[bold red] Error getting SSL info: {e}[/bold red]")
 
+    def scan(self):
 
-def check_http_method(url, method):
-    try:
-        response = requests.request(method, url, timeout=5)
-        return method, response.status_code, dict(response.headers)
-    except RequestException as e:
-        return method, None, str(e)
-
-
-def print_result(method, status_code, headers):
-    print(f"\n[bold yellow]{'=' * 50}[/bold yellow]")
-    print(f"[bold cyan]HTTP Method:[/bold cyan] {method}")
-    print(f"[bold magenta]Status Code:[/bold magenta] {status_code}")
-    
-    if isinstance(headers, dict):
-        print("[bold green]Headers:[/bold green]")
-        for header_name, header_value in headers.items():
-            print(f"  {header_name}: {header_value}")
-    else:
-        print(f"[bold red]Error:[/bold red] {headers}")
-
-
-def result_printer(result_queue):
-    while True:
-        result = result_queue.get()
-        if result is None:
-            break
-        method, status_code, headers = result
-        print_result(method, status_code, headers)
-        result_queue.task_done()
-
-
-def check_http_methods(url):
-    result_queue = queue.Queue()
-    printer_thread = threading.Thread(
-        target=result_printer,
-        args=(result_queue,)
-    )
-    printer_thread.start()
-
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        futures = [
-            executor.submit(check_http_method, url, method)
-            for method in HTTP_METHODS
-        ]
-        for future in as_completed(futures):
-            result_queue.put(future.result())
-    
-    result_queue.put(None)
-    printer_thread.join()
-
-
-def get_host_ips(hostname):
-    try:
-        ips = socket.getaddrinfo(hostname, None)
-        unique_ips = list(set(ip[4][0] for ip in ips))
-        return unique_ips, None
-    except socket.gaierror as e:
-        return [], f"Error resolving hostname: {e}"
-
-
-def get_sni_info(hostname, port=443):
-    try:
-        context = ssl.create_default_context()
-        with socket.create_connection((hostname, port)) as sock:
-            with context.wrap_socket(sock, server_hostname=hostname) as ssock:
-                return {
-                    'version': ssock.version(),
-                    'cipher': ssock.cipher(),
-                    'cert': ssock.getpeercert()
-                }
-    except Exception as e:
-        return f"Error getting SNI info: {e}"
+        if not self.get_ips():
+            return
+            
+        self.get_cdn()
+        self.get_http_info()
+        self.get_sni_info()
 
 
 def main():
     host = get_input("Enter host")
     protocol = get_input("Select protocol", "choice", choices=["http", "https"])
-    url = f"{protocol}://{host}"
+    available_methods = ["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"]
+    method_list = get_input(
+        "Select HTTP method(s)",
+        "choice",
+        multiselect=True, 
+        choices=available_methods,
+        transformer=lambda result: ', '.join(result) if isinstance(result, list) else result
+    )
 
-    print("\n[bold cyan]Target Information[/bold cyan]")
-    print(f"[bold white]Hostname:[/bold white] {host}")
-    print(f"[bold white]Target URL:[/bold white] {url}\n")
-    
-    ip_addresses, dns_error = get_host_ips(host)
-    
-    if dns_error:
-        print(
-            "\n[bold red] Invalid host. "
-            "Please check the hostname and try again.[/bold red]"
-        )
-        return
-    
-    print("[bold white]IP Addresses:[/bold white]")
-    for ip in ip_addresses:
-        print(f"  → {ip}")
-    
-    print("\n[bold cyan]CDN Information[/bold cyan]")
-    detected_cdns, cdn_response = check_cdn(url)
-    if detected_cdns is None:
-        print(f"[bold red]Error checking CDN: {cdn_response}[/bold red]")
-    else:
-        if detected_cdns:
-            print("[bold white]CDN Providers Detected:[/bold white]")
-            for cdn in detected_cdns:
-                print(f"  → {cdn}")
-        else:
-            print("[bold white]No known CDN detected.[/bold white]")
-
-    print("\n[bold cyan]HTTP Methods Information[/bold cyan]")
-    check_http_methods(url)
-
-    if protocol == "https":
-        print("\n[bold cyan]SNI Information[/bold cyan]")
-        sni_info = get_sni_info(host)
-        if isinstance(sni_info, dict):
-            print(f"\n[bold white]SSL Version:[/bold white] {sni_info['version']}")
-            print(
-                f"[bold white]Cipher Suite:[/bold white] {sni_info['cipher'][0]}"
-            )
-            print(
-                f"[bold white]Cipher Bits:[/bold white] {sni_info['cipher'][1]}"
-            )
-            
-            cert = sni_info['cert']
-            print("\n[bold white]Certificate Details:[/bold white]")
-            for key, value in cert.items():
-                if isinstance(value, list):
-                    print(f"\n[bold green]{key}:[/bold green]")
-                    for item in value:
-                        print(f"  → {item}")
-                else:
-                    print(f"[bold green]{key}:[/bold green] {value}")
-        else:
-            print(f"[bold red]{sni_info}[/bold red]")
+    scanner = HostScanner(host, protocol, method_list)
+    scanner.scan()
