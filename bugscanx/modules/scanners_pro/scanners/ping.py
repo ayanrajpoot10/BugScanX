@@ -17,8 +17,8 @@ class PingScanner(BaseScanner):
     def log_info(self, **kwargs):
         if self.is_cidr_input:
             log_parts = [
-                self.colorize('{port:<6}', 'CYAN'),
-                self.colorize('{host}', 'LGRAY'),
+                self.logger.colorize('{port:<6}', 'CYAN'),
+                self.logger.colorize('{host}', 'LGRAY'),
             ]
         else:
             log_parts = [
