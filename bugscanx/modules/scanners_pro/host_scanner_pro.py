@@ -179,17 +179,14 @@ def get_user_input():
     }
     
     scanner, output, threads = input_handlers[mode]()
-    return scanner, output, threads, mode
+    return scanner, output, threads
 
 
 def main():
-    scanner, output, threads, mode = get_user_input()
+    scanner, output, threads = get_user_input()
     scanner.threads = int(threads)
     scanner.start()
 
     if output:
         with open(output, 'a+') as file:
-            if mode == 'ProxyTest':
-                json.dump(scanner.get_success(), file, indent=2)
-            else:
-                file.write('\n'.join([str(x) for x in scanner.get_success()]) + '\n')
+            json.dump(scanner.get_success(), file, indent=2)
