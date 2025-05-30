@@ -138,7 +138,8 @@ def get_input_ssl():
     output, threads = get_common_inputs(filename or cidr)
     
     scanner = SSLScanner(
-        host_list=read_hosts(filename, cidr)
+        host_list=read_hosts(filename, cidr),
+        is_cidr_input=cidr is not None
     )
     
     return scanner, output, threads

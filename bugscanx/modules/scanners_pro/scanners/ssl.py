@@ -7,16 +7,25 @@ class SSLScanner(BaseScanner):
     def __init__(
         self,
         host_list=None,
+        is_cidr_input=False,
     ):
         super().__init__()
         self.host_list = host_list or []
         self.tls_version = ssl.PROTOCOL_TLS
+        self.is_cidr_input = is_cidr_input
 
     def log_info(self, **kwargs):
-        messages = [
-            self.logger.colorize('{tls_version:<8}', 'CYAN'),
-            self.logger.colorize('{sni}', 'LGRAY'),
-        ]
+        if self.is_cidr_input:
+            messages = [
+                self.logger.colorize('{tls_version:<8}', 'CYAN'),
+                self.logger.colorize('{sni}', 'LGRAY'),
+            ]
+        else:
+            messages = [
+                self.logger.colorize('{tls_version:<8}', 'CYAN'),
+                self.logger.colorize('{ip:<15}', 'YELLOW'),
+                self.logger.colorize('{sni}', 'LGRAY'),
+            ]
         self.logger.log('  '.join(messages).format(**kwargs))
 
     def generate_tasks(self):
@@ -26,8 +35,18 @@ class SSLScanner(BaseScanner):
             }
 
     def init(self):
-        self.log_info(tls_version='TLS', sni='SNI')
-        self.log_info(tls_version='---',sni='---')
+        if self.is_cidr_input:
+            self.log_info(tls_version='TLS', sni='SNI')
+            self.log_info(tls_version='---', sni='---')
+        else:
+            self.log_info(tls_version='TLS', ip='IP', sni='SNI')
+            self.log_info(tls_version='---', ip='--', sni='---')
+
+    def resolve_ip(self, host):
+        try:
+            return socket.gethostbyname(host)
+        except Exception:
+            return "Unknown"
 
     def task(self, payload):
         sni = payload['host']
@@ -39,6 +58,10 @@ class SSLScanner(BaseScanner):
             'sni': sni,
             'tls_version': 'Unknown',
         }
+
+        if not self.is_cidr_input:
+            ip = self.resolve_ip(sni)
+            response['ip'] = ip
 
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socket_client:
