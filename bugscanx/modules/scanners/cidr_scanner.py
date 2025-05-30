@@ -63,16 +63,16 @@ def perform_scan(hosts, ports, output_file, threads, method):
     print(f"[bold green]Scanning using HTTP method: {method}...\n[/bold green]")
     
     headers = (
-        "[green]{'Code':<4}[/green] "
-        "[cyan]{'Server':<15}[/cyan] "
-        "[yellow]{'Port':<5}[/yellow] "
-        "[magenta]{'IP Address'}[/magenta]"
+        f"[green]{'Code':<4}[/green] "
+        f"[cyan]{'Server':<15}[/cyan] "
+        f"[yellow]{'Port':<5}[/yellow] "
+        f"[magenta]{'IP Address'}[/magenta]"
     )
     separator = (
-        "[green]{'----':<4}[/green] "
-        "[cyan]{'------':<15}[/cyan] "
-        "[yellow]{'----':<5}[/yellow] "
-        "[magenta]{'---------'}[/magenta]"
+        f"[green]{'----':<4}[/green] "
+        f"[cyan]{'------':<15}[/cyan] "
+        f"[yellow]{'----':<5}[/yellow] "
+        f"[magenta]{'---------'}[/magenta]"
     )
 
     if output_file:
