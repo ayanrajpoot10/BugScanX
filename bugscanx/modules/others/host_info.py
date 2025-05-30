@@ -15,6 +15,14 @@ class HostScanner:
             "headers": ["cf-ray", "cf-cache-status", "cf-request-id", "cf-visitor", "cf-connecting-ip", "cf-ipcountry", "cf-railgun", "cf-polished", "cf-apo-via"],
             "cname": ["cloudflare.net", "cloudflare.com", "cloudflare-dns.com"]
         },
+        "Amazon CloudFront": {
+            "headers": ["x-amz-cf-id", "x-amz-cf-pop", "x-amz-request-id"],
+            "cname": ["cloudfront.net", "amazonaws.com"]
+        },
+        "Google": {
+            "headers": ["x-goog-cache-status", "x-goog-generation", "x-goog-metageneration", "x-guploader-uploadid"],
+            "cname": ["googleusercontent.com", "googlevideo.com", "google.com", "gstatic.com", "googleapis.com"]
+        },
         "Akamai": {
             "headers": ["x-akamai-transformed", "akamai-cache-status", "akamai-origin-hop", "x-akamai-request-id", "x-akamai-ssl-client-sid", "akamai-grn", "x-akamai-config-log-detail"],
             "cname": ["akamai.net", "edgekey.net", "edgesuite.net", "akamaized.net", "akamaiedge.net", "akamaitechnologies.com", "akamaihd.net"]
@@ -23,15 +31,7 @@ class HostScanner:
             "headers": ["fastly-debug", "x-served-by", "x-cache-hits", "x-timer", "fastly-ff", "x-fastly-request-id"],
             "cname": ["fastly.net", "fastlylb.net"]
         },
-        "Amazon CloudFront": {
-            "headers": ["x-amz-cf-id", "x-amz-cf-pop", "x-amz-request-id"],
-            "cname": ["cloudfront.net", "amazonaws.com"]
-        },
-        "Google Cloud CDN": {
-            "headers": ["x-goog-cache-status", "x-goog-generation", "x-goog-metageneration", "x-guploader-uploadid"],
-            "cname": ["googleusercontent.com", "googlevideo.com", "google.com", "gstatic.com", "googleapis.com"]
-        },
-        "Microsoft Azure CDN": {
+        "Microsoft Azure": {
             "headers": ["x-azure-ref", "x-azure-requestid", "x-msedge-ref", "x-ec-custom-error", "x-azure-fdid"],
             "cname": ["azureedge.net", "msedge.net", "azure-edge.net", "trafficmanager.net", "azurefd.net"]
         },
@@ -49,7 +49,7 @@ class HostScanner:
         },
         "Imperva": {
             "headers": ["x-iinfo", "incap-ses", "visid-incap"],
-            "cname": ["incapdns.net", "imperva.com"]
+            "cname": ["incapdns.net", "imperva.com", "impervadns.net"]
         },
         "Cachefly": {
             "headers": ["x-cf-", "server-cachefly"],
@@ -59,11 +59,11 @@ class HostScanner:
             "headers": ["x-77-", "server-cdn77"],
             "cname": ["cdn77.net", "cdn77.org"]
         },
-        "Alibaba Cloud CDN": {
+        "Alibaba": {
             "headers": ["ali-cdn-", "x-oss-", "server-tengine"],
             "cname": ["alikunlun.com", "alicdn.com"]
         },
-        "Tencent Cloud CDN": {
+        "Tencent": {
             "headers": ["x-nws-", "x-daa-tunnel"],
             "cname": ["qcloudcdn.com", "myqcloud.com"]
         }
