@@ -54,15 +54,6 @@ class SSLScanner(BaseScanner):
         if not sni:
             return
 
-        response = {
-            'sni': sni,
-            'tls_version': 'Unknown',
-        }
-
-        if not self.is_cidr_input:
-            ip = self.resolve_ip(sni)
-            response['ip'] = ip
-
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socket_client:
                 socket_client.settimeout(2)
@@ -73,9 +64,19 @@ class SSLScanner(BaseScanner):
                     server_hostname=sni,
                     do_handshake_on_connect=True,
                 ) as ssl_socket:
-                    response['tls_version'] = ssl_socket.version()
-                    self.success(sni)
-                    self.log_info(**response)
+                    
+                    # Create unified data dictionary for both saving and logging
+                    data = {
+                        'sni': sni,
+                        'tls_version': ssl_socket.version()
+                    }
+                    
+                    # Only resolve IP when not scanning CIDR
+                    if not self.is_cidr_input:
+                        data['ip'] = self.resolve_ip(sni)
+                    
+                    self.success(data)
+                    self.log_info(**data)
         except Exception:
             pass
 

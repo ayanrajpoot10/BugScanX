@@ -64,12 +64,16 @@ class PingScanner(BaseScanner):
                 result = sock.connect_ex((host, int(port)))
 
             if result == 0:
-                ip = self.resolve_ip(host)
                 data = {
                     'host': host,
-                    'port': port,
-                    'ip': ip
+                    'port': port
                 }
+                
+                # Only resolve IP when not scanning CIDR
+                if not self.is_cidr_input:
+                    ip = self.resolve_ip(host)
+                    data['ip'] = ip
+                
                 self.success(data)
                 self.log_info(**data)
 
