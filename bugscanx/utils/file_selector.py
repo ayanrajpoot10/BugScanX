@@ -31,12 +31,15 @@ def file_manager(start_dir):
         print()
         lines_printed += 2
 
+        total_items = len(directories) + len(files)
+        width = len(str(total_items))
+
         for idx, item in enumerate(directories + files, 1):
             color = "yellow" if item.is_dir() else "white"
-            print(f"  {idx}. [{color}]{item.name}[/{color}]")
+            print(f"  {idx:>{width}}. [{color}]{item.name}[/{color}]")
             lines_printed += 1
 
-        print("[blue]  0. cd ..[/blue]")
+        print(f"[blue]  {0:>{width}}. cd ..[/blue]")
         print()
         lines_printed += 2
 
