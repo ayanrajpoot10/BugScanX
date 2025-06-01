@@ -1,8 +1,7 @@
 import re
 import random
 import string
-import dns.resolver
-import dns.exception
+import socket
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
@@ -39,14 +38,24 @@ class DomainValidator:
 
 
 class WildcardDetector:
-    def __init__(self, dns_resolver):
-        self.dns_resolver = dns_resolver
+    def __init__(self, timeout=3):
         self.wildcard_ips = set()
         self.wildcard_detected = False
+        self.timeout = timeout
         
     def _generate_random_subdomain(self, length=10):
         random_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
         return f"{random_string}-nonexistent-{random.randint(10000, 99999)}"
+    
+    def _resolve_domain(self, domain):
+        try:
+            socket.setdefaulttimeout(self.timeout)
+            ip = socket.gethostbyname(domain)
+            return True, ip
+        except (socket.gaierror, socket.timeout):
+            return False, None
+        except Exception:
+            return False, None
     
     def detect_wildcards(self, domain, test_count=5):
         self.wildcard_ips.clear()
@@ -58,7 +67,7 @@ class WildcardDetector:
             random_subdomain = self._generate_random_subdomain()
             test_domain = f"{random_subdomain}.{domain}"
             
-            exists, ip = self.dns_resolver.check_subdomain(test_domain)
+            exists, ip = self._resolve_domain(test_domain)
             if exists and ip:
                 ips = [ip] if isinstance(ip, str) else ip
                 for single_ip in ips:
@@ -90,34 +99,22 @@ class WildcardDetector:
 
 
 class DNSResolver:
-    def __init__(self, timeout=3, nameservers=None):
-        self.resolver = dns.resolver.Resolver()
-        self.resolver.timeout = timeout
-        self.resolver.lifetime = timeout
-        
-        if nameservers:
-            self.resolver.nameservers = nameservers
-        else:
-            self.resolver.nameservers = ['8.8.8.8', '1.1.1.1', '8.8.4.4', '1.0.0.1']
-
-    def resolve(self, hostname, record_type='A'):
+    def __init__(self, timeout=3):
+        socket.setdefaulttimeout(timeout)
+    
+    def resolve(self, hostname):
         try:
-            answers = self.resolver.resolve(hostname, record_type)
-            if record_type == 'A' or record_type == 'AAAA':
-                ips = [str(answer) for answer in answers]
-                return True, ips[0] if len(ips) == 1 else ips
-            else:
-                return True, [str(answer) for answer in answers]
-        except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer, 
-                dns.resolver.NoNameservers, dns.exception.Timeout, 
-                Exception):
+            
+            ip = socket.gethostbyname(hostname)
+            return True, ip
+        except (socket.gaierror, socket.timeout):
+            return False, None
+        except Exception:
             return False, None
 
     def check_subdomain(self, subdomain):
         success, result = self.resolve(subdomain)
-        if success:
-            return True, result if isinstance(result, str) else result[0]
-        return False, None
+        return success, result
 
 
 class WordlistManager:
@@ -146,10 +143,10 @@ class WordlistManager:
 
 
 class SubdomainBruteforcer:
-    def __init__(self, wordlist_path, max_workers=50, timeout=3, nameservers=None, enable_wildcard_filtering=True):
+    def __init__(self, wordlist_path, max_workers=50, timeout=3, enable_wildcard_filtering=True):
         self.wordlist_manager = WordlistManager(wordlist_path)
-        self.dns_resolver = DNSResolver(timeout=timeout, nameservers=nameservers)
-        self.wildcard_detector = WildcardDetector(self.dns_resolver)
+        self.dns_resolver = DNSResolver(timeout=timeout)
+        self.wildcard_detector = WildcardDetector(timeout=timeout)
         self.max_workers = max_workers
         self.wordlist = []
         self.enable_wildcard_filtering = enable_wildcard_filtering

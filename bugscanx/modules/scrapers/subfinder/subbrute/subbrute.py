@@ -1,7 +1,7 @@
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from bugscanx.utils.common import get_input
+from bugscanx.utils.common import get_input, get_confirm
 from .logger import SubBruteConsole
 from .utils import DomainValidator, SubdomainBruteforcer, CursorManager
 
@@ -14,7 +14,7 @@ class SubBrute:
         
         if wordlist_path is None:
             current_dir = os.path.dirname(os.path.abspath(__file__))
-            wordlist_path = os.path.join(current_dir, 'wordlist.txt')
+            wordlist_path = os.path.join(current_dir, 'wordlist_example.txt')
             
         self.bruteforcer = SubdomainBruteforcer(
             wordlist_path=wordlist_path,
@@ -133,18 +133,16 @@ def main():
         return
 
     output_file = get_input("Enter output filename", default=default_output)
-    
-    use_custom_wordlist = get_input("Use custom wordlist?", "choice", 
-                                   choices=["No", "Yes"]) == "Yes"
+
+    use_custom_wordlist = get_confirm(" Use custom wordlist?")
+
     wordlist_path = get_input("Enter wordlist path", "file") if use_custom_wordlist else None
 
     max_workers = int(get_input("Max concurrent threads per domain", 
                                default="50"))
     dns_timeout = int(get_input("DNS timeout in seconds", 
                                default="3"))
-    
-    enable_wildcard_filtering = get_input("Enable wildcard filtering?", "choice", 
-                                          choices=["Yes", "No"]) == "Yes"
+    enable_wildcard_filtering = get_confirm(" Enable wildcard filtering?")
 
     subbrute = SubBrute(
         wordlist_path=wordlist_path,
