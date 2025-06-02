@@ -2,48 +2,14 @@ import socket
 from .base import BaseScanner
 
 
-class PingScanner(BaseScanner):
+class PingScannerBase(BaseScanner):
     def __init__(
         self,
-        host_list=None,
         port_list=None,
-        is_cidr_input=False,
+        **kwargs
     ):
-        super().__init__()
-        self.host_list = host_list or []
+        super().__init__(**kwargs)
         self.port_list = port_list or []
-        self.is_cidr_input = is_cidr_input
-
-    def log_info(self, **kwargs):
-        if self.is_cidr_input:
-            log_parts = [
-                self.logger.colorize('{port:<6}', 'CYAN'),
-                self.logger.colorize('{host}', 'LGRAY'),
-            ]
-        else:
-            log_parts = [
-                self.logger.colorize('{port:<6}', 'CYAN'),
-                self.logger.colorize('{ip:<15}', 'YELLOW'),
-                self.logger.colorize('{host}', 'LGRAY'),
-            ]
-
-        self.logger.log('  '.join(log_parts).format(**kwargs))
-
-    def generate_tasks(self):
-        for host in self.filter_list(self.host_list):
-            for port in self.filter_list(self.port_list):
-                yield {
-                    'host': host,
-                    'port': port,
-                }
-
-    def init(self):
-        if self.is_cidr_input:
-            self.log_info(port='Port', host='Host')
-            self.log_info(port='----', host='----')
-        else:
-            self.log_info(port='Port', ip='IP', host='Host')
-            self.log_info(port='----', ip='--', host='----')
 
     def resolve_ip(self, host):
         try:
@@ -69,13 +35,7 @@ class PingScanner(BaseScanner):
                     'port': port
                 }
                 
-                # Only resolve IP when not scanning CIDR
-                if not self.is_cidr_input:
-                    ip = self.resolve_ip(host)
-                    data['ip'] = ip
-                
-                self.success(data)
-                self.log_info(**data)
+                self._handle_success(data)
 
         except Exception:
             pass
@@ -84,3 +44,82 @@ class PingScanner(BaseScanner):
 
     def complete(self):
         self.log_progress(self.logger.colorize("Scan completed", "GREEN"))
+
+
+class HostPingScanner(PingScannerBase):    
+    def __init__(
+        self,
+        host_list=None,
+        port_list=None,
+        threads=50,
+        **kwargs
+    ):
+        super().__init__(port_list=port_list, threads=threads, is_cidr_input=False, **kwargs)
+        self.host_list = host_list or []
+        
+    def init(self):
+        self.log_info(port='Port', ip='IP', host='Host')
+        self.log_info(port='----', ip='--', host='----')
+
+    def log_info(self, **kwargs):
+        log_parts = [
+            self.logger.colorize('{port:<6}', 'CYAN'),
+            self.logger.colorize('{ip:<15}', 'YELLOW'),
+            self.logger.colorize('{host}', 'LGRAY'),
+        ]
+
+        self.logger.log('  '.join(log_parts).format(**kwargs))
+
+    def _handle_success(self, data):
+        ip = self.resolve_ip(data['host'])
+        data['ip'] = ip
+        self.success(data)
+        self.log_info(**data)
+
+    def generate_tasks(self):
+        for host in self.filter_list(self.host_list):
+            for port in self.filter_list(self.port_list):
+                yield {
+                    'host': host,
+                    'port': port,
+                }
+
+
+
+class CIDRPingScanner(PingScannerBase):    
+    def __init__(
+        self,
+        cidr_ranges=None,
+        port_list=None,
+        threads=50,
+        **kwargs
+    ):
+        super().__init__(port_list=port_list, threads=threads, is_cidr_input=True, cidr_ranges=cidr_ranges, **kwargs)
+        self.cidr_ranges = cidr_ranges or []
+        
+        if self.cidr_ranges:
+            self.set_cidr_total(self.cidr_ranges)
+
+    def log_info(self, **kwargs):
+        log_parts = [
+            self.logger.colorize('{port:<6}', 'CYAN'),
+            self.logger.colorize('{host}', 'LGRAY'),
+        ]
+
+        self.logger.log('  '.join(log_parts).format(**kwargs))
+
+    def _handle_success(self, data):
+        self.success(data)
+        self.log_info(**data)
+
+    def generate_tasks(self):
+        for host in self.generate_cidr_hosts(self.cidr_ranges):
+            for port in self.filter_list(self.port_list):
+                yield {
+                    'host': host,
+                    'port': port,
+                }
+
+    def init(self):
+        self.log_info(port='Port', host='Host')
+        self.log_info(port='----', host='----')

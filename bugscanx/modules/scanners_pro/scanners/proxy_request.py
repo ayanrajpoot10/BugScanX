@@ -1,26 +1,16 @@
 import requests
 from urllib.parse import urlparse, urlunparse
-from .direct import DirectScanner
+from .direct import DirectScannerBase
 
 
-class Proxy2Scanner(DirectScanner):
+class Proxy2ScannerBase(DirectScannerBase):
     def __init__(
         self,
         proxy=None,
         auth=None,
-        method_list=None,
-        host_list=None,
-        port_list=None,
-        no302=False,
-        is_cidr_input=False,
+        **kwargs
     ):
-        super().__init__(
-            method_list=method_list,
-            host_list=host_list,
-            port_list=port_list,
-            no302=no302,
-            is_cidr_input=is_cidr_input,
-        )
+        super().__init__(**kwargs)
         self.proxy = proxy or {}
         self.auth = auth
         self.session = requests.Session()
@@ -71,3 +61,116 @@ class Proxy2Scanner(DirectScanner):
                 if attempt == max_attempts - 1:
                     return None
         return None
+
+
+class HostProxy2Scanner(Proxy2ScannerBase):
+    def __init__(
+        self,
+        method_list=None,
+        host_list=None,
+        port_list=None,
+        no302=False,
+        threads=50,
+        **kwargs
+    ):
+        super().__init__(
+            method_list=method_list,
+            port_list=port_list,
+            no302=no302,
+            threads=threads,
+            is_cidr_input=False,
+            **kwargs
+        )
+        self.host_list = host_list or []
+
+    def log_info(self, **kwargs):
+        server = kwargs.get('server', '')
+        kwargs['server'] = ((server[:12] + "...") if len(server) > 12 
+                          else f"{server:<12}")
+
+        messages = [
+            self.logger.colorize(f"{{method:<6}}", "CYAN"),
+            self.logger.colorize(f"{{status_code:<4}}", "GREEN"),
+            self.logger.colorize(f"{{server:<15}}", "MAGENTA"),
+            self.logger.colorize(f"{{port:<4}}", "ORANGE"),
+            self.logger.colorize(f"{{ip:<16}}", "BLUE"),
+            self.logger.colorize(f"{{host}}", "LGRAY")
+        ]
+
+        self.logger.log('  '.join(messages).format(**kwargs))
+
+    def generate_tasks(self):
+        for method in self.filter_list(self.method_list):
+            for host in self.filter_list(self.host_list):
+                for port in self.filter_list(self.port_list):
+                    yield {
+                        'method': method.upper(),
+                        'host': host,
+                        'port': port,
+                    }
+
+    def init(self):
+        self.log_info(method='Method', status_code='Code', server='Server', port='Port', ip='IP', host='Host')
+        self.log_info(method='------', status_code='----', server='------', port='----', ip='--', host='----')
+
+    def _handle_success(self, data):
+        self.success(data)
+        self.log_info(**data)
+
+
+class CIDRProxy2Scanner(Proxy2ScannerBase):
+    def __init__(
+        self,
+        method_list=None,
+        cidr_ranges=None,
+        port_list=None,
+        no302=False,
+        threads=50,
+        **kwargs
+    ):
+        super().__init__(
+            method_list=method_list,
+            port_list=port_list,
+            no302=no302,
+            threads=threads,
+            is_cidr_input=True,
+            cidr_ranges=cidr_ranges,
+            **kwargs
+        )
+        self.cidr_ranges = cidr_ranges or []
+        
+        if self.cidr_ranges:
+            self.set_cidr_total(self.cidr_ranges)
+
+    def log_info(self, **kwargs):
+        server = kwargs.get('server', '')
+        kwargs['server'] = ((server[:12] + "...") if len(server) > 12 
+                          else f"{server:<12}")
+
+        messages = [
+            self.logger.colorize(f"{{method:<6}}", "CYAN"),
+            self.logger.colorize(f"{{status_code:<4}}", "GREEN"),
+            self.logger.colorize(f"{{server:<15}}", "MAGENTA"),
+            self.logger.colorize(f"{{port:<4}}", "ORANGE"),
+            self.logger.colorize(f"{{host}}", "LGRAY")
+        ]
+
+        self.logger.log('  '.join(messages).format(**kwargs))
+
+    def generate_tasks(self):
+        for method in self.filter_list(self.method_list):
+            for host in self.generate_cidr_hosts(self.cidr_ranges):
+                for port in self.filter_list(self.port_list):
+                    yield {
+                        'method': method.upper(),
+                        'host': host,
+                        'port': port,
+                    }
+
+    def init(self):
+        self.log_info(method='Method', status_code='Code', server='Server', port='Port', host='Host')
+        self.log_info(method='------', status_code='----', server='------', port='----', host='----')
+
+    def _handle_success(self, data):
+        self.success(data)
+        self.log_info(**data)

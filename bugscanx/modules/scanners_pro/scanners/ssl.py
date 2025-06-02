@@ -3,44 +3,13 @@ import socket
 from .base import BaseScanner
 
 
-class SSLScanner(BaseScanner):
+class SSLScannerBase(BaseScanner):
     def __init__(
         self,
-        host_list=None,
-        is_cidr_input=False,
+        **kwargs
     ):
-        super().__init__()
-        self.host_list = host_list or []
+        super().__init__(**kwargs)
         self.tls_version = ssl.PROTOCOL_TLS
-        self.is_cidr_input = is_cidr_input
-
-    def log_info(self, **kwargs):
-        if self.is_cidr_input:
-            messages = [
-                self.logger.colorize('{tls_version:<8}', 'CYAN'),
-                self.logger.colorize('{sni}', 'LGRAY'),
-            ]
-        else:
-            messages = [
-                self.logger.colorize('{tls_version:<8}', 'CYAN'),
-                self.logger.colorize('{ip:<15}', 'YELLOW'),
-                self.logger.colorize('{sni}', 'LGRAY'),
-            ]
-        self.logger.log('  '.join(messages).format(**kwargs))
-
-    def generate_tasks(self):
-        for host in self.filter_list(self.host_list):
-            yield {
-                'host': host,
-            }
-
-    def init(self):
-        if self.is_cidr_input:
-            self.log_info(tls_version='TLS', sni='SNI')
-            self.log_info(tls_version='---', sni='---')
-        else:
-            self.log_info(tls_version='TLS', ip='IP', sni='SNI')
-            self.log_info(tls_version='---', ip='--', sni='---')
 
     def resolve_ip(self, host):
         try:
@@ -65,18 +34,12 @@ class SSLScanner(BaseScanner):
                     do_handshake_on_connect=True,
                 ) as ssl_socket:
                     
-                    # Create unified data dictionary for both saving and logging
                     data = {
                         'sni': sni,
                         'tls_version': ssl_socket.version()
                     }
                     
-                    # Only resolve IP when not scanning CIDR
-                    if not self.is_cidr_input:
-                        data['ip'] = self.resolve_ip(sni)
-                    
-                    self.success(data)
-                    self.log_info(**data)
+                    self._handle_success(data)
         except Exception:
             pass
 
@@ -84,3 +47,72 @@ class SSLScanner(BaseScanner):
 
     def complete(self):
         self.log_progress(self.logger.colorize("Scan completed", "GREEN"))
+
+
+class HostSSLScanner(SSLScannerBase):
+    def __init__(
+        self,
+        host_list=None,
+        threads=50,
+        **kwargs
+    ):
+        super().__init__(threads=threads, is_cidr_input=False, **kwargs)
+        self.host_list = host_list or []
+
+    def log_info(self, **kwargs):
+        messages = [
+            self.logger.colorize('{tls_version:<8}', 'CYAN'),
+            self.logger.colorize('{ip:<15}', 'YELLOW'),
+            self.logger.colorize('{sni}', 'LGRAY'),
+        ]
+        self.logger.log('  '.join(messages).format(**kwargs))
+
+    def generate_tasks(self):
+        for host in self.filter_list(self.host_list):
+            yield {
+                'host': host,
+            }
+
+    def init(self):
+        self.log_info(tls_version='TLS', ip='IP', sni='SNI')
+        self.log_info(tls_version='---', ip='--', sni='---')
+
+    def _handle_success(self, data):
+        data['ip'] = self.resolve_ip(data['sni'])
+        self.success(data)
+        self.log_info(**data)
+
+
+class CIDRSSLScanner(SSLScannerBase):
+    def __init__(
+        self,
+        cidr_ranges=None,
+        threads=50,
+        **kwargs
+    ):
+        super().__init__(threads=threads, is_cidr_input=True, cidr_ranges=cidr_ranges, **kwargs)
+        self.cidr_ranges = cidr_ranges or []
+        
+        if self.cidr_ranges:
+            self.set_cidr_total(self.cidr_ranges)
+
+    def log_info(self, **kwargs):
+        messages = [
+            self.logger.colorize('{tls_version:<8}', 'CYAN'),
+            self.logger.colorize('{sni}', 'LGRAY'),
+        ]
+        self.logger.log('  '.join(messages).format(**kwargs))
+
+    def generate_tasks(self):
+        for host in self.generate_cidr_hosts(self.cidr_ranges):
+            yield {
+                'host': host,
+            }
+
+    def init(self):
+        self.log_info(tls_version='TLS', sni='SNI')
+        self.log_info(tls_version='---', sni='---')
+
+    def _handle_success(self, data):
+        self.success(data)
+        self.log_info(**data)

@@ -3,6 +3,10 @@ from rich import print
 
 
 def get_hosts_from_cidr(cidr_input):
+    """
+    Legacy function for backward compatibility.
+    WARNING: This loads all IPs into memory. Use cidr_hosts_generator for large ranges.
+    """
     hosts = []
     cidr_ranges = [c.strip() for c in cidr_input.split(',')]
     
@@ -13,6 +17,39 @@ def get_hosts_from_cidr(cidr_input):
         except ValueError:
             continue
     return hosts
+
+
+# def cidr_hosts_generator(cidr_input):
+#     """
+#     Generator function that yields hosts from CIDR ranges without loading all in memory.
+#     Use this for memory-efficient CIDR scanning.
+#     """
+#     cidr_ranges = [c.strip() for c in cidr_input.split(',')]
+    
+#     for cidr in cidr_ranges:
+#         try:
+#             network = ipaddress.ip_network(cidr, strict=False)
+#             for ip in network.hosts():
+#                 yield str(ip)
+#         except ValueError:
+#             continue
+
+
+def get_total_cidr_hosts(cidr_input):
+    """
+    Calculate the total number of hosts in CIDR ranges without generating them.
+    """
+    total = 0
+    cidr_ranges = [c.strip() for c in cidr_input.split(',')]
+    
+    for cidr in cidr_ranges:
+        try:
+            network = ipaddress.ip_network(cidr, strict=False)
+            # For host addresses, subtract network and broadcast addresses
+            total += max(0, network.num_addresses - 2)
+        except ValueError:
+            continue
+    return total
 
 
 def validate_cidr(cidr):

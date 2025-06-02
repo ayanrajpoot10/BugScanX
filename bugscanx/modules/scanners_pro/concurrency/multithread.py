@@ -21,22 +21,28 @@ class MultiThread(ABC):
 
     def _add_task(self, task):
         self._queue.put(task)
-        self._total += 1
+        if not hasattr(self, '_total_preset'):
+            self._total += 1
+
+    def set_total(self, total):
+        self._total = total
+        self._total_preset = True
 
     def start(self):
         print()
         with CursorManager():
             try:
-                for task in self.generate_tasks():
-                    self._add_task(task)
-
                 self.init()
                 workers = [
                     Thread(target=self._worker, daemon=True)
-                    for _ in range(min(self.threads, self._queue.qsize() or self.threads))
+                    for _ in range(self.threads)
                 ]
                 for t in workers:
                     t.start()
+                
+                for task in self.generate_tasks():
+                    self._add_task(task)
+                
                 self._queue.join()
                 self.complete()
             except KeyboardInterrupt:
@@ -60,7 +66,8 @@ class MultiThread(ABC):
                 self._queue.task_done()
 
     def success(self, item):
-        self._success.append(item)
+        with self._lock:
+            self._success.append(item)
 
     def get_success(self):
         return self._success
