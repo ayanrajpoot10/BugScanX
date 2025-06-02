@@ -4,15 +4,6 @@ import json
 from bugscanx.utils.common import get_input, get_confirm, is_cidr
 
 
-def read_hosts(filename=None, cidr=None):
-    if filename:
-        with open(filename) as file:
-            return [line.strip() for line in file]
-    elif cidr:
-        return []
-    return []
-
-
 def get_cidr_ranges_from_input(cidr_input):
     return [c.strip() for c in cidr_input.split(',')]
 
@@ -65,7 +56,7 @@ def get_input_direct(no302=False):
     
     if cidr:
         cidr_ranges = get_cidr_ranges_from_input(cidr)
-        from .scanners.direct import CIDRDirectScanner
+        from .scanners.direct import CIDRDirectScanner        
         scanner = CIDRDirectScanner(
             method_list=method_list,
             cidr_ranges=cidr_ranges,
@@ -76,7 +67,7 @@ def get_input_direct(no302=False):
         from .scanners.direct import HostDirectScanner
         scanner = HostDirectScanner(
             method_list=method_list,
-            host_list=read_hosts(filename, cidr),
+            input_file=filename,
             port_list=port_list,
             no302=no302
         )
@@ -112,7 +103,7 @@ def get_input_proxy():
     else:
         from .scanners.proxy_check import HostProxyScanner
         scanner = HostProxyScanner(
-            host_list=read_hosts(filename, cidr),
+            input_file=filename,
             port_list=port_list,
             target=target_url,
             payload=payload,
@@ -161,7 +152,7 @@ def get_input_proxy2():
         from .scanners.proxy_request import HostProxy2Scanner
         scanner = HostProxy2Scanner(
             method_list=method_list,
-            host_list=read_hosts(filename, cidr),
+            input_file=filename,
             port_list=port_list,
         ).set_proxy(proxy, proxy_username, proxy_password)
 
@@ -184,7 +175,7 @@ def get_input_ssl():
     else:
         from .scanners.ssl import HostSSLScanner
         scanner = HostSSLScanner(
-            host_list=read_hosts(filename, cidr),
+            input_file=filename,
         )
     
     return scanner, output, threads
@@ -192,6 +183,8 @@ def get_input_ssl():
 
 def get_input_ping():
     filename, cidr = get_host_input()
+    if filename is None and cidr is None:
+        return None, None, None
         
     port_list = get_input("Enter port(s)", "number", default="443").split(',')
     output, threads = get_common_inputs(filename or cidr)
@@ -206,7 +199,7 @@ def get_input_ping():
     else:
         from .scanners.ping import HostPingScanner
         scanner = HostPingScanner(
-            host_list=read_hosts(filename, cidr),
+            input_file=filename,
             port_list=port_list,
         )
     

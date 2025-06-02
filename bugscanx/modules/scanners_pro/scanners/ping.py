@@ -49,13 +49,16 @@ class PingScannerBase(BaseScanner):
 class HostPingScanner(PingScannerBase):    
     def __init__(
         self,
-        host_list=None,
+        input_file=None,
         port_list=None,
         threads=50,
         **kwargs
     ):
         super().__init__(port_list=port_list, threads=threads, is_cidr_input=False, **kwargs)
-        self.host_list = host_list or []
+        self.input_file = input_file
+
+        if self.input_file:
+            self.set_host_total(self.input_file)
         
     def init(self):
         self.log_info(port='Port', ip='IP', host='Host')
@@ -75,15 +78,14 @@ class HostPingScanner(PingScannerBase):
         data['ip'] = ip
         self.success(data)
         self.log_info(**data)
-
+        
     def generate_tasks(self):
-        for host in self.filter_list(self.host_list):
-            for port in self.filter_list(self.port_list):
+        for host in self.generate_hosts_from_file(self.input_file):
+            for port in self.port_list:
                 yield {
                     'host': host,
                     'port': port,
                 }
-
 
 
 class CIDRPingScanner(PingScannerBase):    
@@ -114,7 +116,7 @@ class CIDRPingScanner(PingScannerBase):
 
     def generate_tasks(self):
         for host in self.generate_cidr_hosts(self.cidr_ranges):
-            for port in self.filter_list(self.port_list):
+            for port in self.port_list:
                 yield {
                     'host': host,
                     'port': port,

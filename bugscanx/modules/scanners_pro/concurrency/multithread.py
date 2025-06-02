@@ -21,12 +21,9 @@ class MultiThread(ABC):
 
     def _add_task(self, task):
         self._queue.put(task)
-        if not hasattr(self, '_total_preset'):
-            self._total += 1
 
     def set_total(self, total):
         self._total = total
-        self._total_preset = True
 
     def start(self):
         print()

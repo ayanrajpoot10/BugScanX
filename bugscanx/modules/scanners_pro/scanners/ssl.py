@@ -52,12 +52,15 @@ class SSLScannerBase(BaseScanner):
 class HostSSLScanner(SSLScannerBase):
     def __init__(
         self,
-        host_list=None,
+        input_file=None,
         threads=50,
         **kwargs
     ):
         super().__init__(threads=threads, is_cidr_input=False, **kwargs)
-        self.host_list = host_list or []
+        self.input_file = input_file
+
+        if self.input_file:
+            self.set_host_total(self.input_file)
 
     def log_info(self, **kwargs):
         messages = [
@@ -68,7 +71,7 @@ class HostSSLScanner(SSLScannerBase):
         self.logger.log('  '.join(messages).format(**kwargs))
 
     def generate_tasks(self):
-        for host in self.filter_list(self.host_list):
+        for host in self.generate_hosts_from_file(self.input_file):
             yield {
                 'host': host,
             }

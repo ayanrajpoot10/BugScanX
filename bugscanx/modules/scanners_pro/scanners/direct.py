@@ -92,7 +92,7 @@ class HostDirectScanner(DirectScannerBase):
     def __init__(
         self,
         method_list=None,
-        host_list=None,
+        input_file=None,
         port_list=None,
         no302=False,
         threads=50,
@@ -106,7 +106,10 @@ class HostDirectScanner(DirectScannerBase):
             is_cidr_input=False,
             **kwargs
         )
-        self.host_list = host_list or []
+        self.input_file = input_file
+        
+        if self.input_file:
+            self.set_host_total(self.input_file)
 
     def log_info(self, **kwargs):
         server = kwargs.get('server', '')
@@ -119,15 +122,13 @@ class HostDirectScanner(DirectScannerBase):
             self.logger.colorize(f"{{server:<15}}", "MAGENTA"),
             self.logger.colorize(f"{{port:<4}}", "ORANGE"),
             self.logger.colorize(f"{{ip:<16}}", "BLUE"),
-            self.logger.colorize(f"{{host}}", "LGRAY")
-        ]
-
+            self.logger.colorize(f"{{host}}", "LGRAY")        ]
         self.logger.log('  '.join(messages).format(**kwargs))
 
     def generate_tasks(self):
-        for method in self.filter_list(self.method_list):
-            for host in self.filter_list(self.host_list):
-                for port in self.filter_list(self.port_list):
+        for method in self.method_list:
+            for host in self.generate_hosts_from_file(self.input_file):
+                for port in self.port_list:
                     yield {
                         'method': method.upper(),
                         'host': host,
@@ -180,12 +181,11 @@ class CIDRDirectScanner(DirectScannerBase):
             self.logger.colorize(f"{{host}}", "LGRAY")
         ]
 
-        self.logger.log('  '.join(messages).format(**kwargs))
-
+        self.logger.log('  '.join(messages).format(**kwargs))    
     def generate_tasks(self):
-        for method in self.filter_list(self.method_list):
+        for method in self.method_list:
             for host in self.generate_cidr_hosts(self.cidr_ranges):
-                for port in self.filter_list(self.port_list):
+                for port in self.port_list:
                     yield {
                         'method': method.upper(),
                         'host': host,

@@ -16,18 +16,6 @@ class BaseScanner(MultiThread):
         protocol = 'https' if port == '443' else 'http'
         return f'{protocol}://{self.convert_host_port(host, port)}'
 
-    def filter_list(self, data):
-        if self.is_cidr_input:
-            return data
-            
-        filtered_data = []
-        for item in data:
-            item = str(item).strip()
-            if item.startswith(('#', '*')) or not item:
-                continue
-            filtered_data.append(item)
-        return list(set(filtered_data))
-
     def generate_cidr_hosts(self, cidr_ranges):
         for cidr in cidr_ranges:
             try:
@@ -53,3 +41,27 @@ class BaseScanner(MultiThread):
             port_multiplier = len(getattr(self, 'port_list', [1]))
             method_multiplier = len(getattr(self, 'method_list', [1]))
             self.set_total(total_hosts * port_multiplier * method_multiplier)
+
+    def read_lines_count(self, filepath):
+        line_count = 0
+        with open(filepath, 'rb') as f:
+            while chunk := f.read(8192):
+                line_count += chunk.count(b'\n')
+        return line_count
+
+    def set_host_total(self, host_filepath):
+        if host_filepath:
+            total_hosts = self.read_lines_count(host_filepath)
+            port_multiplier = len(getattr(self, 'port_list', [1]))
+            method_multiplier = len(getattr(self, 'method_list', [1]))
+            self.set_total(total_hosts * port_multiplier * method_multiplier)
+
+    def generate_hosts_from_file(self, filepath):
+        try:
+            with open(filepath, 'r', encoding='utf-8') as file:
+                for line in file:
+                    host = line.strip()
+                    if host and not host.startswith(('#', '*')):
+                        yield host
+        except (FileNotFoundError, IOError, UnicodeDecodeError):
+            return
