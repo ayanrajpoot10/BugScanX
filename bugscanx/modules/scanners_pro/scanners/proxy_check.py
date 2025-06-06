@@ -1,4 +1,5 @@
 import socket
+
 from .base import BaseScanner
 
 

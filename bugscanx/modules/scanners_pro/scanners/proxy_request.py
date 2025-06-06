@@ -1,5 +1,6 @@
 import requests
 from urllib.parse import urlparse, urlunparse
+
 from .direct import DirectScannerBase
 
 

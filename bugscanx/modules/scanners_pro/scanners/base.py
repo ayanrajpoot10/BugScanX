@@ -1,5 +1,6 @@
-from ..concurrency.multithread import MultiThread
 import ipaddress
+
+from ..concurrency.multithread import MultiThread
 
 
 class BaseScanner(MultiThread):

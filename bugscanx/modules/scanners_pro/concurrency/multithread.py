@@ -1,7 +1,7 @@
 import time
 from abc import ABC, abstractmethod
-from threading import Thread, RLock
 from queue import Queue, Empty
+from threading import Thread, RLock
 
 from .logger import Logger, CursorManager
 

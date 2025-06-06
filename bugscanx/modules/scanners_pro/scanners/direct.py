@@ -1,6 +1,7 @@
 import socket
 import requests
 import urllib3
+
 from .base import BaseScanner
 from bugscanx.utils.config import EXCLUDE_LOCATIONS
 

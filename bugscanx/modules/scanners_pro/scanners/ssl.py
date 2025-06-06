@@ -1,5 +1,6 @@
 import ssl
 import socket
+
 from .base import BaseScanner
 
 
