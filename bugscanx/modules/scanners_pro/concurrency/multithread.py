@@ -14,13 +14,11 @@ class MultiThread(ABC):
         self._total = 0
         self._scanned = 0
         self._success = []
+        self._success_count = 0
 
         self.threads = threads
 
         self.logger = Logger()
-
-    def _add_task(self, task):
-        self._queue.put(task)
 
     def set_total(self, total):
         self._total = total
@@ -38,7 +36,7 @@ class MultiThread(ABC):
                     t.start()
                 
                 for task in self.generate_tasks():
-                    self._add_task(task)
+                    self._queue.put(task)
                 
                 self._queue.join()
                 self.complete()
@@ -65,6 +63,7 @@ class MultiThread(ABC):
     def success(self, item):
         with self._lock:
             self._success.append(item)
+            self._success_count += 1
 
     def get_success(self):
         return self._success
@@ -73,7 +72,7 @@ class MultiThread(ABC):
         parts = [
             f"{self._scanned / max(1, self._total) * 100:.2f}%",
             f"{self._scanned} / {self._total}",
-            f"{len(self._success)}"
+            f"{self._success_count}"
         ] + [str(x) for x in extra if x]
         self.logger.replace(" - ".join(parts))
 
