@@ -76,7 +76,7 @@ def get_input(
         
     if validate_input and validators:
         if input_type == "number":
-            validators = [lambda x: is_digit(x, allow_comma_separated)]
+            validators = [required, lambda x: is_digit(x, allow_comma_separated)]
         common_params["validate"] = create_validator(validators)
     
     input_type_params = {
@@ -95,8 +95,6 @@ def get_input(
     common_params.update(kwargs)
     
     handler = INPUT_HANDLERS.get(input_type)
-    if not handler:
-        raise ValueError(f"Unsupported input_type: {input_type}")
     
     return strip_handler(handler, strip_input)(common_params)
 

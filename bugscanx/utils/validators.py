@@ -34,47 +34,28 @@ def create_validator(validators):
 
 
 def required(text):
-    return bool(text.strip()) or "Input cannot be empty"
+    return True if text.strip() else "Input is required."
 
 
 def is_file(text):
-    return os.path.isfile(text) or f"File does not exist: {text}"
+    return os.path.isfile(text) or f"File not found: {text}"
 
 
 def is_cidr(text):
     if not text.strip():
         return "CIDR input cannot be empty"
-
-    if text.endswith(',') or ',,' in text:
-        return "Empty value after comma"
-
-    parts = [p.strip() for p in text.split(',')]
-    for part in parts:
-        if not part:
-            return "Empty value between commas"
-        try:
-            ipaddress.ip_network(part, strict=False)
-        except ValueError:
-            return f"Invalid CIDR notation: {part}"
-    return True
+    
+    try:
+        ipaddress.ip_network(text.strip(), strict=False)
+        return True
+    except ValueError:
+        return f"Invalid CIDR notation: {text.strip()}"
 
 
 def is_digit(text, allow_comma=True):
-    if not text.strip():
-        return "Input cannot be empty"
-
     if not allow_comma and ',' in text:
-        return "Multi values are not allowed"
-
-    parts = text.split(',') if allow_comma else [text]
-
-    if text.endswith(',') or ',,' in text:
-        return "Empty value after comma"
-
-    for part in parts:
-        part = part.strip()
-        if not part:
-            return "Empty value between commas"
-        if not part.isdigit():
-            return f"Not a valid number: {part}"
+        return "Only a single value allowed"
+    
+    if not text.strip().replace(',', '').replace(' ', '').isdigit():
+        return f"Invalid number: {text}"
     return True
