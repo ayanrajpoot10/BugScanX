@@ -31,7 +31,7 @@ class DirectScannerBase(BaseScanner):
         max_attempts = self.DEFAULT_RETRY
 
         for attempt in range(max_attempts):
-            self.log_progress(method, url)
+            self.progress(method, url)
             try:
                 return self.requests.request(method, url, **kwargs)
             except (
@@ -43,7 +43,7 @@ class DirectScannerBase(BaseScanner):
                 wait_time = (1 if isinstance(e, requests.exceptions.ConnectionError)
                            else 3)
                 for _ in self.sleep(wait_time):
-                    self.log_progress(method, url)
+                    self.progress(method, url)
                 if attempt == max_attempts - 1:
                     return None
         return None
@@ -86,7 +86,7 @@ class DirectScannerBase(BaseScanner):
         self._handle_success(data)
 
     def complete(self):
-        self.log_progress(self.logger.colorize("Scan completed", "GREEN"))
+        self.progress(self.logger.colorize("Scan completed", "GREEN"))
 
 
 class HostDirectScanner(DirectScannerBase):

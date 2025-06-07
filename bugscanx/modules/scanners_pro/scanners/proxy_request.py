@@ -47,7 +47,7 @@ class Proxy2ScannerBase(DirectScannerBase):
         max_attempts = self.DEFAULT_RETRY
 
         for attempt in range(max_attempts):
-            self.log_progress(f"{method} (via proxy) {url}")
+            self.progress(f"{method} (via proxy) {url}")
             try:
                 return self.session.request(method, url, **kwargs)
             except (
@@ -58,7 +58,7 @@ class Proxy2ScannerBase(DirectScannerBase):
             ) as e:
                 wait_time = 1 if isinstance(e, requests.exceptions.ConnectionError) else 5
                 for _ in self.sleep(wait_time):
-                    self.log_progress(f"{method} (via proxy) {url}")
+                    self.progress(f"{method} (via proxy) {url}")
                 if attempt == max_attempts - 1:
                     return None
         return None

@@ -41,10 +41,10 @@ class PingScannerBase(BaseScanner):
         except Exception:
             pass
 
-        self.log_progress(f"{host}:{port}")
+        self.progress(f"{host}:{port}")
 
     def complete(self):
-        self.log_progress(self.logger.colorize("Scan completed", "GREEN"))
+        self.progress(self.logger.colorize("Scan completed", "GREEN"))
 
 
 class HostPingScanner(PingScannerBase):    

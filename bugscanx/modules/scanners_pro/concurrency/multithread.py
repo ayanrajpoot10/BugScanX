@@ -68,7 +68,7 @@ class MultiThread(ABC):
     def get_success(self):
         return self._success
 
-    def log_progress(self, *extra):
+    def progress(self, *extra):
         parts = [
             f"{self._scanned / max(1, self._total) * 100:.2f}%",
             f"{self._scanned} / {self._total}",

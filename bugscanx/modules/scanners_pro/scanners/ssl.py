@@ -44,10 +44,10 @@ class SSLScannerBase(BaseScanner):
         except Exception:
             pass
 
-        self.log_progress(sni)
+        self.progress(sni)
 
     def complete(self):
-        self.log_progress(self.logger.colorize("Scan completed", "GREEN"))
+        self.progress(self.logger.colorize("Scan completed", "GREEN"))
 
 
 class HostSSLScanner(SSLScannerBase):
