@@ -22,12 +22,12 @@ MENU_OPTIONS = {
 def main():
     try:
         while True:
-            banner()
-            menu_items = (
+            menu = (
                 f"[{color}] [{k}]{' ' if len(k)==1 else ''} {desc}"
                 for k, (desc, color) in MENU_OPTIONS.items()
             )
-            print('\n'.join(menu_items))
+            banner()
+            print('\n'.join(menu))
 
             choice = input("\n \033[36m[-]  Your Choice: \033[0m")
             if choice not in MENU_OPTIONS:
