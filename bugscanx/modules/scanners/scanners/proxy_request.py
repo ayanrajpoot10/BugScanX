@@ -1,29 +1,45 @@
-import socket
 import requests
-import urllib3
+from urllib.parse import urlparse, urlunparse
 
-from .base import BaseScanner
-from bugscanx.utils.config import EXCLUDE_LOCATIONS
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+from .direct import DirectScannerBase
 
 
-class DirectScannerBase(BaseScanner):
-    requests = requests
-    DEFAULT_TIMEOUT = 3
-    DEFAULT_RETRY = 1
-
+class Proxy2ScannerBase(DirectScannerBase):
     def __init__(
         self,
-        method_list=None,
-        port_list=None,
-        no302=False,
+        proxy=None,
+        auth=None,
         **kwargs
     ):
         super().__init__(**kwargs)
-        self.method_list = method_list or []
-        self.port_list = port_list or []
-        self.no302 = no302
+        self.proxy = proxy or {}
+        self.auth = auth
+        self.session = requests.Session()
+        if self.proxy:
+            self.session.proxies.update(self.proxy)
+        if self.auth:
+            self.session.auth = self.auth
+        self.requests = self.session
+
+    def set_proxy(self, proxy, username=None, password=None):
+        if not proxy.startswith(('http://', 'https://')):
+            proxy = f'http://{proxy}'
+
+        parsed = urlparse(proxy)
+        proxy_url = urlunparse(parsed)
+
+        self.proxy = {
+            'http': proxy_url,
+            'https': proxy_url
+        }
+        self.session.proxies.update(self.proxy)
+
+        if username and password:
+            from requests.auth import HTTPProxyAuth
+            self.auth = HTTPProxyAuth(username, password)
+            self.session.auth = self.auth
+
+        return self
 
     def request(self, method, url, **kwargs):
         method = method.upper()
@@ -31,65 +47,24 @@ class DirectScannerBase(BaseScanner):
         max_attempts = self.DEFAULT_RETRY
 
         for attempt in range(max_attempts):
-            self.progress(method, url)
+            self.progress(f"{method} (via proxy) {url}")
             try:
-                return self.requests.request(method, url, **kwargs)
+                return self.session.request(method, url, **kwargs)
             except (
                 requests.exceptions.ConnectionError,
                 requests.exceptions.ReadTimeout,
                 requests.exceptions.Timeout,
-                requests.exceptions.RequestException
+                requests.exceptions.ProxyError
             ) as e:
-                wait_time = (1 if isinstance(e, requests.exceptions.ConnectionError)
-                           else 3)
+                wait_time = 1 if isinstance(e, requests.exceptions.ConnectionError) else 5
                 for _ in self.sleep(wait_time):
-                    self.progress(method, url)
+                    self.progress(f"{method} (via proxy) {url}")
                 if attempt == max_attempts - 1:
                     return None
         return None
 
-    def task(self, payload):
-        method = payload['method']
-        host = payload['host']
-        port = payload['port']
 
-        try:
-            ip = socket.gethostbyname(host)
-        except socket.gaierror:
-            return
-
-        response = self.request(method, self.get_url(host, port), verify=False, allow_redirects=False)
-
-        if response is None:
-            return
-
-        if self.no302 and response.status_code == 302:
-            return
-
-        if not self.no302:
-            location = response.headers.get('location', '')
-            if location and location in EXCLUDE_LOCATIONS:
-                return
-
-        data = {
-            'method': method,
-            'host': host,
-            'port': port,
-            'status_code': response.status_code,
-            'server': response.headers.get('server', ''),
-            'ip': ip
-        }
-
-        if not self.no302:
-            data['location'] = response.headers.get('location', '')
-
-        self._handle_success(data)
-
-    def complete(self):
-        self.progress(self.logger.colorize("Scan completed", "GREEN"))
-
-
-class HostDirectScanner(DirectScannerBase):
+class HostProxy2Scanner(Proxy2ScannerBase):
     def __init__(
         self,
         method_list=None,
@@ -97,6 +72,7 @@ class HostDirectScanner(DirectScannerBase):
         port_list=None,
         no302=False,
         threads=50,
+        output_file=None,
         **kwargs
     ):
         super().__init__(
@@ -105,10 +81,11 @@ class HostDirectScanner(DirectScannerBase):
             no302=no302,
             threads=threads,
             is_cidr_input=False,
+            output_file=output_file,
             **kwargs
         )
         self.input_file = input_file
-        
+
         if self.input_file:
             self.set_host_total(self.input_file)
 
@@ -123,8 +100,15 @@ class HostDirectScanner(DirectScannerBase):
             self.logger.colorize(f"{{server:<15}}", "MAGENTA"),
             self.logger.colorize(f"{{port:<4}}", "ORANGE"),
             self.logger.colorize(f"{{ip:<16}}", "BLUE"),
-            self.logger.colorize(f"{{host}}", "LGRAY")        ]
-        self.logger.log('  '.join(messages).format(**kwargs))
+            self.logger.colorize(f"{{host}}", "LGRAY")
+        ]
+
+        formatted_message = '  '.join(messages).format(**kwargs)
+        self.logger.log(formatted_message)
+        
+        if self.output_file and 'method' in kwargs and kwargs['method']:
+            plain_message = f"{kwargs['method']:<6}  {kwargs['status_code']:<4}  {kwargs['server']:<15}  {kwargs['port']:<4}  {kwargs['ip']:<16}  {kwargs['host']}"
+            self.write_to_file(plain_message)
 
     def generate_tasks(self):
         for method in self.method_list:
@@ -137,6 +121,7 @@ class HostDirectScanner(DirectScannerBase):
                     }
 
     def init(self):
+        self.write_scan_metadata(self.input_file)
         self.log_info(method='Method', status_code='Code', server='Server', port='Port', ip='IP', host='Host')
         self.log_info(method='------', status_code='----', server='------', port='----', ip='--', host='----')
 
@@ -145,7 +130,7 @@ class HostDirectScanner(DirectScannerBase):
         self.log_info(**data)
 
 
-class CIDRDirectScanner(DirectScannerBase):
+class CIDRProxy2Scanner(Proxy2ScannerBase):
     def __init__(
         self,
         method_list=None,
@@ -153,6 +138,7 @@ class CIDRDirectScanner(DirectScannerBase):
         port_list=None,
         no302=False,
         threads=50,
+        output_file=None,
         **kwargs
     ):
         super().__init__(
@@ -162,6 +148,7 @@ class CIDRDirectScanner(DirectScannerBase):
             threads=threads,
             is_cidr_input=True,
             cidr_ranges=cidr_ranges,
+            output_file=output_file,
             **kwargs
         )
         self.cidr_ranges = cidr_ranges or []
@@ -182,7 +169,13 @@ class CIDRDirectScanner(DirectScannerBase):
             self.logger.colorize(f"{{host}}", "LGRAY")
         ]
 
-        self.logger.log('  '.join(messages).format(**kwargs))    
+        formatted_message = '  '.join(messages).format(**kwargs)
+        self.logger.log(formatted_message)
+        
+        if self.output_file and 'method' in kwargs and kwargs['method']:
+            plain_message = f"{kwargs['method']:<6}  {kwargs['status_code']:<4}  {kwargs['server']:<15}  {kwargs['port']:<4}  {kwargs['host']}"
+            self.write_to_file(plain_message)
+
     def generate_tasks(self):
         for method in self.method_list:
             for host in self.generate_cidr_hosts(self.cidr_ranges):
@@ -194,6 +187,7 @@ class CIDRDirectScanner(DirectScannerBase):
                     }
 
     def init(self):
+        self.write_scan_metadata()
         self.log_info(method='Method', status_code='Code', server='Server', port='Port', host='Host')
         self.log_info(method='------', status_code='----', server='------', port='----', host='----')
 

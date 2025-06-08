@@ -55,9 +55,10 @@ class HostSSLScanner(SSLScannerBase):
         self,
         input_file=None,
         threads=50,
+        output_file=None,
         **kwargs
     ):
-        super().__init__(threads=threads, is_cidr_input=False, **kwargs)
+        super().__init__(threads=threads, is_cidr_input=False, output_file=output_file, **kwargs)
         self.input_file = input_file
 
         if self.input_file:
@@ -69,7 +70,12 @@ class HostSSLScanner(SSLScannerBase):
             self.logger.colorize('{ip:<15}', 'YELLOW'),
             self.logger.colorize('{sni}', 'LGRAY'),
         ]
-        self.logger.log('  '.join(messages).format(**kwargs))
+        formatted_message = '  '.join(messages).format(**kwargs)
+        self.logger.log(formatted_message)
+        
+        if self.output_file and 'tls_version' in kwargs and kwargs['tls_version']:
+            plain_message = f"{kwargs['tls_version']:<8}  {kwargs['ip']:<15}  {kwargs['sni']}"
+            self.write_to_file(plain_message)
 
     def generate_tasks(self):
         for host in self.generate_hosts_from_file(self.input_file):
@@ -78,6 +84,7 @@ class HostSSLScanner(SSLScannerBase):
             }
 
     def init(self):
+        self.write_scan_metadata(self.input_file)
         self.log_info(tls_version='TLS', ip='IP', sni='SNI')
         self.log_info(tls_version='---', ip='--', sni='---')
 
@@ -92,9 +99,10 @@ class CIDRSSLScanner(SSLScannerBase):
         self,
         cidr_ranges=None,
         threads=50,
+        output_file=None,
         **kwargs
     ):
-        super().__init__(threads=threads, is_cidr_input=True, cidr_ranges=cidr_ranges, **kwargs)
+        super().__init__(threads=threads, is_cidr_input=True, cidr_ranges=cidr_ranges, output_file=output_file, **kwargs)
         self.cidr_ranges = cidr_ranges or []
         
         if self.cidr_ranges:
@@ -105,7 +113,12 @@ class CIDRSSLScanner(SSLScannerBase):
             self.logger.colorize('{tls_version:<8}', 'CYAN'),
             self.logger.colorize('{sni}', 'LGRAY'),
         ]
-        self.logger.log('  '.join(messages).format(**kwargs))
+        formatted_message = '  '.join(messages).format(**kwargs)
+        self.logger.log(formatted_message)
+        
+        if self.output_file and 'tls_version' in kwargs and kwargs['tls_version']:
+            plain_message = f"{kwargs['tls_version']:<8}  {kwargs['sni']}"
+            self.write_to_file(plain_message)
 
     def generate_tasks(self):
         for host in self.generate_cidr_hosts(self.cidr_ranges):
@@ -114,6 +127,7 @@ class CIDRSSLScanner(SSLScannerBase):
             }
 
     def init(self):
+        self.write_scan_metadata()
         self.log_info(tls_version='TLS', sni='SNI')
         self.log_info(tls_version='---', sni='---')
 

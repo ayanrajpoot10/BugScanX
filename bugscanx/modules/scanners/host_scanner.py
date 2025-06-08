@@ -1,151 +1,244 @@
-import socket
-import urllib3
-import requests
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from pathlib import Path
-from threading import Lock
-from tqdm import tqdm
-from rich import print
+import os
 
-from bugscanx.utils.file_selector import file_manager
-from bugscanx.utils.common import clear_screen, get_input
-from bugscanx.utils.config import SUBSCAN_TIMEOUT, EXCLUDE_LOCATIONS
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-file_write_lock = Lock()
+from bugscanx.utils.common import get_input, get_confirm, is_cidr
 
 
-def read_file(file_path):
-    try:
-        with open(file_path, 'r') as file:
-            return [line.strip() for line in file if line.strip()]
-    except (FileNotFoundError, IOError) as e:
-        print(f"[red]Error reading file: {e}[/red]")
-        return []
+def get_cidr_ranges_from_input(cidr_input):
+    return [c.strip() for c in cidr_input.split(',')]
 
 
-def check_http_response(
-    host, 
-    port, 
-    timeout=SUBSCAN_TIMEOUT, 
-    exclude_locations=EXCLUDE_LOCATIONS
-):
-    protocol = 'https' if port in ('443', '8443') else 'http'
-    url = f"{protocol}://{host}:{port}"
+def get_common_inputs(input_source):
+    if isinstance(input_source, str) and '/' in input_source:
+        first_cidr = input_source.split(',')[0].strip()
+        default_filename = f"result_{first_cidr.replace('/', '-')}.txt"
+    else:
+        default_filename = f"result_{os.path.basename(str(input_source))}"
+    output = get_input(
+        "Enter output filename",
+        default=default_filename,
+        validate_input=False
+    )
+    threads = get_input(
+        "Enter threads",
+        "number",
+        default="50",
+        allow_comma_separated=False
+    )
+    return output, threads
+
+
+def get_host_input():
+    filename = get_input("Enter filename", "file", mandatory=False)
+    if not filename:
+        cidr = get_input("Enter CIDR range(s)", validators=[is_cidr])
+        return None, cidr
+    return filename, None
+
+
+def get_input_direct(no302=False):
+    filename, cidr = get_host_input()
+    if filename is None and cidr is None:
+        return None, None, None
+        
+    port_list = get_input("Enter port(s)", "number", default="443").split(',')
+    output, threads = get_common_inputs(filename or cidr)
+    method_list = get_input(
+        "Select HTTP method(s)",
+        "choice",
+        multiselect=True, 
+        choices=[
+            "GET", "HEAD", "POST", "PUT",
+            "DELETE", "OPTIONS", "TRACE", "PATCH"
+        ],
+        transformer=lambda result: ', '.join(result) if isinstance(result, list) else result
+    )
     
-    try:
-        response = requests.head(
-            url,
-            timeout=timeout,
-            allow_redirects=False,
-            verify=False
+    if cidr:
+        cidr_ranges = get_cidr_ranges_from_input(cidr)
+        from .scanners.direct import CIDRDirectScanner        
+        scanner = CIDRDirectScanner(
+            method_list=method_list,
+            cidr_ranges=cidr_ranges,
+            port_list=port_list,
+            no302=no302,
+            output_file=output
         )
-        status_code = response.status_code
-        server_header = response.headers.get('Server', 'N/A')
-
-        if status_code == 302:
-            location = response.headers.get('Location', '').strip()
-            if location in exclude_locations:
-                return None
-
-        ip_address = socket.gethostbyname(host)
-        return status_code, server_header, port, ip_address, host
-
-    except (requests.RequestException, socket.gaierror, socket.timeout):
-        return None
+    else:
+        from .scanners.direct import HostDirectScanner
+        scanner = HostDirectScanner(
+            method_list=method_list,
+            input_file=filename,
+            port_list=port_list,
+            no302=no302,
+            output_file=output
+        )
+    
+    return scanner, threads
 
 
-def perform_scan(hosts, ports, output_file, threads):
-    clear_screen()
-    print(f"[bold green]Scanning using HEAD method on port(s) "
-          f"{', '.join(ports)}...\n[/bold green]")
-
-    headers = (
-        f"[green]{'Code':<4}[/green] [cyan]{'Server':<15}[/cyan] "
-        f"[yellow]{'Port':<5}[/yellow] [magenta]{'IP Address':<15}[/magenta] "
-        f"[blue]{'Host'}[/blue]"
+def get_input_proxy():
+    filename, cidr = get_host_input()
+    if filename is None and cidr is None:
+        return None, None, None
+        
+    target_url = get_input("Enter target url", default="in1.wstunnel.site")
+    default_payload = (
+        "GET / HTTP/1.1[crlf]"
+        "Host: [host][crlf]"
+        "Connection: Upgrade[crlf]"
+        "Upgrade: websocket[crlf][crlf]"
     )
-    separator = (
-        f"[green]{'----':<4}[/green] [cyan]{'------':<15}[/cyan] "
-        f"[yellow]{'----':<5}[/yellow] [magenta]{'---------':<15}[/magenta] "
-        f"[blue]{'----'}[/blue]"
+    payload = get_input("Enter payload", default=default_payload)
+    port_list = get_input("Enter port(s)", "number", default="80").split(',')
+    output, threads = get_common_inputs(filename or cidr)
+    
+    if cidr:
+        cidr_ranges = get_cidr_ranges_from_input(cidr)
+        from .scanners.proxy_check import CIDRProxyScanner
+        scanner = CIDRProxyScanner(
+            cidr_ranges=cidr_ranges,
+            port_list=port_list,
+            target=target_url,
+            payload=payload,
+            output_file=output
+        )
+    else:
+        from .scanners.proxy_check import HostProxyScanner
+        scanner = HostProxyScanner(
+            input_file=filename,
+            port_list=port_list,
+            target=target_url,
+            payload=payload,
+            output_file=output
+        )
+    
+    return scanner, threads
+
+
+def get_input_proxy2():
+    filename, cidr = get_host_input()
+    if filename is None and cidr is None:
+        return None, None, None
+        
+    port_list = get_input("Enter port(s)", "number", default="80").split(',')
+    output, threads = get_common_inputs(filename or cidr)
+    method_list = get_input(
+        "Select HTTP method(s)",
+        "choice",
+        multiselect=True, 
+        choices=[
+            "GET", "HEAD", "POST", "PUT",
+            "DELETE", "OPTIONS", "TRACE", "PATCH"
+        ],
+        transformer=lambda result: ', '.join(result) if isinstance(result, list) else result
     )
     
-    if output_file:
-        output_path = Path(output_file)
-        if not output_path.exists():
-            with open(output_file, 'a') as file:
-                file.write(
-                    f"{'Code':<4} {'Server':<15} {'Port':<5} "
-                    f"{'IP Address':<15} {'Host'}\n"
-                )
-                file.write(
-                    f"{'----':<4} {'------':<15} {'----':<5} "
-                    f"{'---------':<15} {'----'}\n"
-                )
+    proxy = get_input("Enter proxy", instruction="(proxy:port)")
+    
+    use_auth = get_confirm(" Use proxy authentication?")
+    proxy_username = None
+    proxy_password = None
+    
+    if use_auth:
+        proxy_username = get_input("Enter proxy username")
+        proxy_password = get_input("Enter proxy password")
+    
+    if cidr:
+        cidr_ranges = get_cidr_ranges_from_input(cidr)
+        from .scanners.proxy_request import CIDRProxy2Scanner
+        scanner = CIDRProxy2Scanner(
+            method_list=method_list,
+            cidr_ranges=cidr_ranges,
+            port_list=port_list,
+            output_file=output
+        ).set_proxy(proxy, proxy_username, proxy_password)
+    else:
+        from .scanners.proxy_request import HostProxy2Scanner
+        scanner = HostProxy2Scanner(
+            method_list=method_list,
+            input_file=filename,
+            port_list=port_list,
+            output_file=output
+        ).set_proxy(proxy, proxy_username, proxy_password)
 
-    print(headers)
-    print(separator)
+    return scanner, threads
 
-    total_tasks = len(hosts) * len(ports)
-    scanned, responded = 0, 0
 
-    with tqdm(
-        total=total_tasks, 
-        desc="Progress", 
-        unit="task", 
-        unit_scale=True
-    ) as pbar, ThreadPoolExecutor(max_workers=threads) as executor:
-        futures = {
-            executor.submit(check_http_response, host, port): (host, port)
-            for host in hosts
-            for port in ports
-        }
+def get_input_ssl():
+    filename, cidr = get_host_input()
+    if filename is None and cidr is None:
+        return None, None, None
+        
+    output, threads = get_common_inputs(filename or cidr)
+    
+    if cidr:
+        cidr_ranges = get_cidr_ranges_from_input(cidr)
+        from .scanners.ssl import CIDRSSLScanner
+        scanner = CIDRSSLScanner(
+            cidr_ranges=cidr_ranges,
+            output_file=output
+        )
+    else:
+        from .scanners.ssl import HostSSLScanner
+        scanner = HostSSLScanner(
+            input_file=filename,
+            output_file=output
+        )
+    
+    return scanner, threads
 
-        for future in as_completed(futures):
-            scanned += 1
-            result = future.result()
-            if result:
-                responded += 1
-                code, server, port, ip_address, host = result
-                row = (
-                    f"\033[32m{code:<4}\033[0m \033[36m{server:<15}\033[0m "
-                    f"\033[33m{port:<5}\033[0m \033[35m{ip_address:<15}\033[0m "
-                    f"\033[34m{host}\033[0m"
-                )
-                pbar.write(row)
-                if output_file:
-                    with file_write_lock:
-                        with open(output_file, 'a') as file:
-                            file.write(
-                                f"{code:<4} {server:<15} {port:<5} "
-                                f"{ip_address:<15} {host}\n"
-                            )
-            pbar.update(1)
 
-    print(
-        f"[bold green]\n Scan completed! "
-        f"{responded}/{scanned} hosts responded.[/bold green]"
+def get_input_ping():
+    filename, cidr = get_host_input()
+    if filename is None and cidr is None:
+        return None, None, None
+        
+    port_list = get_input("Enter port(s)", "number", default="443").split(',')
+    output, threads = get_common_inputs(filename or cidr)
+    
+    if cidr:
+        cidr_ranges = get_cidr_ranges_from_input(cidr)
+        from .scanners.ping import CIDRPingScanner
+        scanner = CIDRPingScanner(
+            port_list=port_list,
+            cidr_ranges=cidr_ranges,
+            output_file=output
+        )
+    else:
+        from .scanners.ping import HostPingScanner
+        scanner = HostPingScanner(
+            input_file=filename,
+            port_list=port_list,
+            output_file=output
+        )
+    
+    return scanner, threads
+
+
+def get_user_input():
+    mode = get_input(
+        "Select scanning mode",
+        "choice", 
+        choices=[
+            "Direct", "DirectNon302", "ProxyTest",
+            "ProxyRoute", "Ping", "SSL"
+        ]
     )
-    if output_file:
-        print(f"[bold green] Results saved to {output_file}[/bold green]")
+    
+    input_handlers = {
+        'Direct': lambda: get_input_direct(no302=False),
+        'DirectNon302': lambda: get_input_direct(no302=True),
+        'ProxyTest': get_input_proxy,
+        'ProxyRoute': get_input_proxy2,
+        'Ping': get_input_ping,
+        'SSL': get_input_ssl
+    }
+    
+    scanner, threads = input_handlers[mode]()
+    return scanner, threads
 
 
 def main():
-    selected_file = file_manager(Path('.'))
-    hosts = read_file(selected_file)
-    ports = get_input("Enter port(s)", "number", default="80")
-    port_list = [
-        port.strip() 
-        for port in ports.split(',') 
-        if port.strip().isdigit()
-    ]
-    default_output = f"result_{selected_file.stem}.txt"
-    output_file = get_input(
-        "Enter output filename",
-        default=default_output,
-        validate_input=False
-    )
-
-    perform_scan(hosts, port_list, output_file, 50)
+    scanner, threads = get_user_input()
+    scanner.threads = int(threads)
+    scanner.start()

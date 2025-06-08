@@ -1,13 +1,36 @@
 import ipaddress
+import threading
+from datetime import datetime
 
-from ..concurrency.multithread import MultiThread
+from .concurrency.multithread import MultiThread
 
 
 class BaseScanner(MultiThread):
-    def __init__(self, is_cidr_input=False, cidr_ranges=None, **kwargs):
+    def __init__(self, is_cidr_input=False, cidr_ranges=None, output_file=None, **kwargs):
         super().__init__(**kwargs)
         self.is_cidr_input = is_cidr_input
         self.cidr_ranges = cidr_ranges or []
+        self.output_file = output_file
+        self._metadata_written = False
+        self._file_lock = threading.Lock()
+
+    def write_to_file(self, message):
+        if self.output_file:
+            with self._file_lock:
+                with open(self.output_file, 'a', encoding='utf-8') as f:
+                    f.write(message + '\n')
+
+    def write_scan_metadata(self, filepath=None):
+        if self.output_file and not self._metadata_written:
+            with self._file_lock:
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                with open(self.output_file, 'a', encoding='utf-8') as f:
+                    f.write(f"\nScan Time: {timestamp}\n")
+                    if filepath:
+                        f.write(f"File Scanned: {filepath}\n\n")
+                    elif self.cidr_ranges:
+                        f.write(f"CIDR Ranges: {', '.join(self.cidr_ranges)}\n\n")
+                self._metadata_written = True
 
     def convert_host_port(self, host, port):
         return host + (f':{port}' if port not in ['80', '443'] else '')

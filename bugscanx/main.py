@@ -4,18 +4,16 @@ from bugscanx import banner, text_ascii
 
 
 MENU_OPTIONS = {
-    '1': ("HOST SCANNER PRO", "bold cyan"),
-    '2': ("HOST SCANNER", "bold blue"),
-    '3': ("CIDR SCANNER", "bold yellow"),
-    '4': ("SUBFINDER", "bold magenta"),
-    '5': ("IP LOOKUP", "bold cyan"),
-    '6': ("FILE TOOLKIT", "bold magenta"),
-    '7': ("PORT SCANNER", "bold white"),
-    '8': ("DNS RECORD", "bold green"),
-    '9': ("HOST INFO", "bold blue"),
-    '10': ("HELP", "bold yellow"),
-    '11': ("UPDATE", "bold magenta"),
-    '12': ("EXIT", "bold red"),
+    '1': ("HOST SCANNER", "bold cyan"),
+    '2': ("SUBFINDER", "bold magenta"),
+    '3': ("IP LOOKUP", "bold cyan"),
+    '4': ("FILE TOOLKIT", "bold magenta"),
+    '5': ("PORT SCANNER", "bold white"),
+    '6': ("DNS RECORD", "bold green"),
+    '7': ("HOST INFO", "bold blue"),
+    '8': ("HELP", "bold yellow"),
+    '9': ("UPDATE", "bold magenta"),
+    '0': ("EXIT", "bold red"),
 }
 
 
@@ -33,7 +31,7 @@ def main():
             if choice not in MENU_OPTIONS:
                 continue
 
-            if choice == '12':
+            if choice == '0':
                 return
 
             text_ascii(MENU_OPTIONS[choice][0])

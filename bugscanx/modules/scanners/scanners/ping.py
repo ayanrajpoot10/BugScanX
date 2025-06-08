@@ -53,15 +53,17 @@ class HostPingScanner(PingScannerBase):
         input_file=None,
         port_list=None,
         threads=50,
+        output_file=None,
         **kwargs
     ):
-        super().__init__(port_list=port_list, threads=threads, is_cidr_input=False, **kwargs)
+        super().__init__(port_list=port_list, threads=threads, is_cidr_input=False, output_file=output_file, **kwargs)
         self.input_file = input_file
 
         if self.input_file:
             self.set_host_total(self.input_file)
         
     def init(self):
+        self.write_scan_metadata(self.input_file)
         self.log_info(port='Port', ip='IP', host='Host')
         self.log_info(port='----', ip='--', host='----')
 
@@ -72,7 +74,12 @@ class HostPingScanner(PingScannerBase):
             self.logger.colorize('{host}', 'LGRAY'),
         ]
 
-        self.logger.log('  '.join(log_parts).format(**kwargs))
+        formatted_message = '  '.join(log_parts).format(**kwargs)
+        self.logger.log(formatted_message)
+        
+        if self.output_file and 'port' in kwargs and kwargs['port']:
+            plain_message = f"{kwargs['port']:<6}  {kwargs['ip']:<15}  {kwargs['host']}"
+            self.write_to_file(plain_message)
 
     def _handle_success(self, data):
         ip = self.resolve_ip(data['host'])
@@ -95,9 +102,10 @@ class CIDRPingScanner(PingScannerBase):
         cidr_ranges=None,
         port_list=None,
         threads=50,
+        output_file=None,
         **kwargs
     ):
-        super().__init__(port_list=port_list, threads=threads, is_cidr_input=True, cidr_ranges=cidr_ranges, **kwargs)
+        super().__init__(port_list=port_list, threads=threads, is_cidr_input=True, cidr_ranges=cidr_ranges, output_file=output_file, **kwargs)
         self.cidr_ranges = cidr_ranges or []
         
         if self.cidr_ranges:
@@ -109,7 +117,13 @@ class CIDRPingScanner(PingScannerBase):
             self.logger.colorize('{host}', 'LGRAY'),
         ]
 
-        self.logger.log('  '.join(log_parts).format(**kwargs))
+        formatted_message = '  '.join(log_parts).format(**kwargs)
+        self.logger.log(formatted_message)
+        
+        # Write plain text version to file
+        if self.output_file and 'port' in kwargs and kwargs['port']:
+            plain_message = f"{kwargs['port']:<6}  {kwargs['host']}"
+            self.write_to_file(plain_message)
 
     def _handle_success(self, data):
         self.success(data)
@@ -124,5 +138,6 @@ class CIDRPingScanner(PingScannerBase):
                 }
 
     def init(self):
+        self.write_scan_metadata()
         self.log_info(port='Port', host='Host')
         self.log_info(port='----', host='----')

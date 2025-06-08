@@ -9,22 +9,19 @@ bugscan-x/
 │   │   │   ├── host_info.py                     # Host information retrieval
 │   │   │   ├── script_help.py                   # Help functionality for scripts
 │   │   │   └── script_updater.py                # Script updater functionality
-│   │   ├── scanners/                            # Scanner directory
-│   │   │   ├── cidr_scanner.py                  # CIDR scanning functionality
-│   │   │   ├── host_scanner.py                  # Host scanning functionality
-│   │   │   └── open_port.py                     # Port scanning functionality
-│   │   ├── scanners_pro/                        # Host Scanner Pro directory 
-│   │   │   ├── concurrency/                     # Concurrency handling modules
-│   │   │   │   ├── logger.py                    # Console interface for concurrency
-│   │   │   │   └── multithread.py               # Multithreading implementation
-│   │   │   ├── scanners/                        # Host Scanner Pro modules
+│   │   ├── scanners/                            # Scanners directory 
+│   │   │   ├── scanners/                        # Host Scanner modules
+│   │   │   │   ├── concurrency/                 # Concurrency handling modules
+│   │   │   │   │   ├── logger.py                # Console interface for scanners
+│   │   │   │   │   └── multithread.py           # Multithreading implementation for scanners
 │   │   │   │   ├── base.py                      # Base scanner class
 │   │   │   │   ├── direct.py                    # Direct scanning functionality
 │   │   │   │   ├── ping.py                      # Ping scanning functionality
 │   │   │   │   ├── proxy_check.py               # Proxy checking functionality
 │   │   │   │   ├── proxy_request.py             # Proxy request handling
 │   │   │   │   └── ssl.py                       # SSL scanning functionality
-│   │   │   └── host_scanner_pro.py              # Host Scanner Pro entry point
+│   │   │   ├── host_scanner.py                  # Host Scanner entry point
+│   │   │   └── open_port.py                     # Port scanning functionality
 │   │   └── scrapers/                            # Scraper directory
 │   │       ├── ip_lookup/                       # IP lookup functionality
 │   │       │   ├── iplookup.py                  # IP lookup entry point

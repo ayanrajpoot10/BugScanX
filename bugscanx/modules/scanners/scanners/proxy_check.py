@@ -9,9 +9,10 @@ class ProxyScannerBase(BaseScanner):
         port_list=None,
         target='',
         payload='',
+        output_file=None,
         **kwargs
     ):
-        super().__init__(**kwargs)
+        super().__init__(output_file=output_file, **kwargs)
         self.port_list = port_list or []
         self.target = target
         self.payload = payload
@@ -78,6 +79,12 @@ class ProxyScannerBase(BaseScanner):
         if formatted_response:
             message += f"{self.logger.colorize('    ' + formatted_response, color_name)}\n"
         self.logger.log(message)
+        
+        if self.output_file and status_code:
+            plain_message = f"{proxy_host_port:<32} {status_code}"
+            if formatted_response:
+                plain_message += f"\n    {formatted_response}"
+            self.write_to_file(plain_message)
 
 
 class HostProxyScanner(ProxyScannerBase):
@@ -88,6 +95,7 @@ class HostProxyScanner(ProxyScannerBase):
         target='',
         payload='',
         threads=50,
+        output_file=None,
         **kwargs
     ):
         super().__init__(
@@ -96,6 +104,7 @@ class HostProxyScanner(ProxyScannerBase):
             payload=payload,
             threads=threads,
             is_cidr_input=False,
+            output_file=output_file,
             **kwargs
         )
         self.input_file = input_file
@@ -112,6 +121,7 @@ class HostProxyScanner(ProxyScannerBase):
                 }
 
     def init(self):
+        self.write_scan_metadata(self.input_file)
         self.log_info(proxy_host_port='Proxy:Port', status_code='Code')
         self.log_info(proxy_host_port='----------', status_code='----')
 
@@ -124,6 +134,7 @@ class CIDRProxyScanner(ProxyScannerBase):
         target='',
         payload='',
         threads=50,
+        output_file=None,
         **kwargs
     ):
         super().__init__(
@@ -133,6 +144,7 @@ class CIDRProxyScanner(ProxyScannerBase):
             threads=threads,
             is_cidr_input=True,
             cidr_ranges=cidr_ranges,
+            output_file=output_file,
             **kwargs
         )
         self.cidr_ranges = cidr_ranges or []
@@ -149,5 +161,6 @@ class CIDRProxyScanner(ProxyScannerBase):
                 }
 
     def init(self):
+        self.write_scan_metadata()
         self.log_info(proxy_host_port='Proxy:Port', status_code='Code')
         self.log_info(proxy_host_port='----------', status_code='----')

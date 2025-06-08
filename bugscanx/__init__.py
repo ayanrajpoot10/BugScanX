@@ -7,7 +7,7 @@ from rich import print
 def import_modules():
     def task():
         try:
-            from bugscanx.modules.scanners_pro import host_scanner_pro
+            from bugscanx.modules.scanners import host_scanner
             from bugscanx.modules.scrapers.subfinder import subfinder
         except Exception:
             pass
