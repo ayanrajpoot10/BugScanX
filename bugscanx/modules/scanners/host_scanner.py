@@ -9,11 +9,7 @@ def get_cidr_ranges_from_input(cidr_input):
 
 
 def get_common_inputs(input_source):
-    if isinstance(input_source, str) and '/' in input_source:
-        first_cidr = input_source.split(',')[0].strip()
-        default_filename = f"result_{first_cidr.replace('/', '-')}.txt"
-    else:
-        default_filename = f"result_{os.path.basename(str(input_source))}"
+    default_filename = "results.txt"
     output = get_input(
         "Enter output filename",
         default=default_filename,
