@@ -45,11 +45,17 @@ def is_cidr(text):
     if not text.strip():
         return "CIDR input cannot be empty"
     
-    try:
-        ipaddress.ip_network(text.strip(), strict=False)
-        return True
-    except ValueError:
-        return f"Invalid CIDR notation: {text.strip()}"
+    cidrs = [cidr.strip() for cidr in text.split(',')]
+    
+    for cidr in cidrs:
+        if not cidr:
+            continue
+        try:
+            ipaddress.ip_network(cidr, strict=False)
+        except ValueError:
+            return f"Invalid CIDR notation: {cidr}"
+    
+    return True
 
 
 def is_digit(text, allow_comma=True):

@@ -1,6 +1,7 @@
 import os
 
 from bugscanx.utils.common import get_input, get_confirm, is_cidr
+from bugscanx.utils.cidr import read_cidrs_from_file
 
 
 def get_cidr_ranges_from_input(cidr_input):
@@ -30,7 +31,11 @@ def get_common_inputs(input_source):
 def get_host_input():
     filename = get_input("Enter filename", "file", mandatory=False)
     if not filename:
-        cidr = get_input("Enter CIDR range(s)", validators=[is_cidr])
+        cidr = get_input("Enter CIDR range(s)", validators=[is_cidr], mandatory=False)
+        if not cidr:
+            cidr_file = get_input(
+                "Enter CIDR file", "file")
+            cidr = read_cidrs_from_file(cidr_file) if cidr_file else None
         return None, cidr
     return filename, None
 
@@ -54,7 +59,10 @@ def get_input_direct(no302=False):
     )
     
     if cidr:
-        cidr_ranges = get_cidr_ranges_from_input(cidr)
+        try:
+            cidr_ranges = get_cidr_ranges_from_input(cidr)
+        except AttributeError:
+            cidr_ranges = cidr
         from .scanners.direct import CIDRDirectScanner        
         scanner = CIDRDirectScanner(
             method_list=method_list,
@@ -93,7 +101,10 @@ def get_input_proxy():
     output, threads = get_common_inputs(filename or cidr)
     
     if cidr:
-        cidr_ranges = get_cidr_ranges_from_input(cidr)
+        try:
+            cidr_ranges = get_cidr_ranges_from_input(cidr)
+        except AttributeError:
+            cidr_ranges = cidr
         from .scanners.proxy_check import CIDRProxyScanner
         scanner = CIDRProxyScanner(
             cidr_ranges=cidr_ranges,
@@ -144,7 +155,10 @@ def get_input_proxy2():
         proxy_password = get_input("Enter proxy password")
     
     if cidr:
-        cidr_ranges = get_cidr_ranges_from_input(cidr)
+        try:
+            cidr_ranges = get_cidr_ranges_from_input(cidr)
+        except AttributeError:
+            cidr_ranges = cidr
         from .scanners.proxy_request import CIDRProxy2Scanner
         scanner = CIDRProxy2Scanner(
             method_list=method_list,
@@ -172,7 +186,10 @@ def get_input_ssl():
     output, threads = get_common_inputs(filename or cidr)
     
     if cidr:
-        cidr_ranges = get_cidr_ranges_from_input(cidr)
+        try:
+            cidr_ranges = get_cidr_ranges_from_input(cidr)
+        except AttributeError:
+            cidr_ranges = cidr
         from .scanners.ssl import CIDRSSLScanner
         scanner = CIDRSSLScanner(
             cidr_ranges=cidr_ranges,
@@ -197,7 +214,10 @@ def get_input_ping():
     output, threads = get_common_inputs(filename or cidr)
     
     if cidr:
-        cidr_ranges = get_cidr_ranges_from_input(cidr)
+        try:
+            cidr_ranges = get_cidr_ranges_from_input(cidr)
+        except AttributeError:
+            cidr_ranges = cidr
         from .scanners.ping import CIDRPingScanner
         scanner = CIDRPingScanner(
             port_list=port_list,

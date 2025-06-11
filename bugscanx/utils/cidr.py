@@ -2,19 +2,6 @@ import ipaddress
 from rich import print
 
 
-def get_hosts_from_cidr(cidr_input):
-    hosts = []
-    cidr_ranges = [c.strip() for c in cidr_input.split(',')]
-    
-    for cidr in cidr_ranges:
-        try:
-            network = ipaddress.ip_network(cidr, strict=False)
-            hosts.extend([str(ip) for ip in network.hosts()])
-        except ValueError:
-            continue
-    return hosts
-
-
 def read_cidrs_from_file(filepath):
     valid_cidrs = []
     try:
@@ -28,9 +15,6 @@ def read_cidrs_from_file(filepath):
                     valid_cidrs.append(line)
                 except ValueError:
                     pass
-            
-        if valid_cidrs:
-            print(f"[green] Successfully loaded {len(valid_cidrs)} valid CIDR ranges[/green]")
             
         return valid_cidrs
     except Exception as e:
