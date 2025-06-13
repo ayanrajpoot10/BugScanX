@@ -53,8 +53,8 @@ class MultiThread(ABC):
 
             try:
                 self.task(task)
-            except Exception as e:
-                self.logger.log(f"Error in task: {e}")
+            except Exception:
+                pass
             finally:
                 with self._lock:
                     self._scanned += 1
