@@ -1,5 +1,3 @@
-import os
-
 from bugscanx.utils.common import get_input, get_confirm, is_cidr
 from bugscanx.utils.cidr import read_cidrs_from_file
 
@@ -41,7 +39,7 @@ def get_input_direct(no302=False):
     if filename is None and cidr is None:
         return None, None, None
         
-    port_list = get_input("Enter port(s)", "number", default="443").split(',')
+    port_list = get_input("Enter port(s)", "number", default="80").split(',')
     output, threads = get_common_inputs(filename or cidr)
     method_list = get_input(
         "Select HTTP method(s)",

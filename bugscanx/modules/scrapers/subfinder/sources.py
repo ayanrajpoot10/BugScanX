@@ -1,5 +1,5 @@
-from abc import ABC, abstractmethod
 import datetime
+from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup
 from .utils import RequestHandler
 
