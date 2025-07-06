@@ -34,10 +34,10 @@ def run_7():
 
 
 def run_8():
-    from bugscanx.modules.others import script_help
-    script_help.main()
+    from bugscanx.modules.others import help
+    help.main()
 
 
 def run_9():
-    from bugscanx.modules.others import script_updater
-    script_updater.main()
+    from bugscanx.modules.others import update
+    update.main()
