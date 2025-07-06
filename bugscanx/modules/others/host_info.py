@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
 from rich import print
 
-from bugscanx.utils.common import get_input
+from bugscanx.utils.prompts import get_input
 
 
 class HostScanner:

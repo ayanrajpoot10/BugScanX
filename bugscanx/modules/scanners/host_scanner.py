@@ -1,4 +1,4 @@
-from bugscanx.utils.common import get_input, get_confirm, is_cidr
+from bugscanx.utils.prompts import get_input, get_confirm, is_cidr
 from bugscanx.utils.cidr import read_cidrs_from_file
 
 

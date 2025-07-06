@@ -1,7 +1,7 @@
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from bugscanx.utils.common import get_input, get_confirm
+from bugscanx.utils.prompts import get_input, get_confirm
 from .logger import SubBruteConsole
 from .utils import DomainValidator, SubdomainBruteforcer, CursorManager
 

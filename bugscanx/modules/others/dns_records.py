@@ -1,7 +1,7 @@
 from dns import resolver as dns_resolver
 from rich import print
 
-from bugscanx.utils.common import get_input
+from bugscanx.utils.prompts import get_input
 
 
 def configure_resolver():

@@ -7,7 +7,7 @@ from importlib.metadata import version
 from packaging.version import Version, parse as parse_version
 
 from rich.console import Console
-from bugscanx.utils.common import get_confirm
+from bugscanx.utils.prompts import get_confirm
 
 
 @dataclass

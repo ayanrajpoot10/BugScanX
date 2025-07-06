@@ -9,7 +9,7 @@ from rich.progress import (
     TimeRemainingColumn,
 )
 
-from bugscanx.utils.common import get_input
+from bugscanx.utils.prompts import get_input
 
 console = Console()
 

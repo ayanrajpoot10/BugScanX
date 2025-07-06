@@ -1,7 +1,7 @@
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from bugscanx.utils.common import get_input, is_cidr
+from bugscanx.utils.prompts import get_input, is_cidr
 from .sources import get_scrapers
 from .utils import CursorManager, process_input, process_file
 from .logger import IPLookupConsole
