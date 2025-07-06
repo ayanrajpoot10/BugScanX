@@ -6,7 +6,7 @@ def get_cidr_ranges_from_input(cidr_input):
     return [c.strip() for c in cidr_input.split(',')]
 
 
-def get_common_inputs(input_source):
+def get_common_inputs():
     default_filename = "results.txt"
     output = get_input(
         "Enter output filename",
@@ -40,7 +40,7 @@ def get_input_direct(no302=False):
         return None, None, None
         
     port_list = get_input("Enter port(s)", "number", default="80").split(',')
-    output, threads = get_common_inputs(filename or cidr)
+    output, threads = get_common_inputs()
     method_list = get_input(
         "Select HTTP method(s)",
         "choice",

@@ -1,6 +1,6 @@
 import sys
 from rich import print
-from bugscanx import banner, text_ascii
+from bugscanx import banner, text_ascii, handlers
 
 
 MENU_OPTIONS = {
@@ -36,11 +36,7 @@ def main():
 
             text_ascii(MENU_OPTIONS[choice][0])
             try:
-                module = __import__(
-                    'bugscanx.handler.runner',
-                    fromlist=[f'run_{choice}']
-                )
-                getattr(module, f'run_{choice}')()
+                getattr(handlers, f'run_{choice}')()
                 print("\n[yellow] Press Enter to continue...", end="")
                 input()
             except KeyboardInterrupt:
