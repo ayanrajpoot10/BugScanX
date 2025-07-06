@@ -79,29 +79,21 @@ class SubFinder:
 
 
 def main():
-    scanner_choice = get_input("Select Enumeration Mode", "choice",
-                              choices=["SubFinder (passive)", "SubBrute (active)"])
-    
-    if scanner_choice == "SubBrute (active)":
-        from .subbrute.subbrute import main as subbrute_main
-        subbrute_main()
-    
+    domains = []
+    sources = get_sources()
+    input_type = get_input("Select input mode", "choice",
+                            choices=["Manual", "File"])
+
+    if input_type == "Manual":
+        domain_input = get_input("Enter domain(s)")
+        domains = [d.strip() for d in domain_input.split(',') if DomainValidator.is_valid_domain(d.strip())]
+        default_output = f"{domains[0]}_subdomains.txt" if domains else "subdomains.txt"
     else:
-        domains = []
-        sources = get_sources()
-        input_type = get_input("Select input mode", "choice",
-                               choices=["Manual", "File"])
+        file_path = get_input("Enter filename", "file")
+        with open(file_path, 'r') as f:
+            domains = [d.strip() for d in f if DomainValidator.is_valid_domain(d.strip())]
+        default_output = f"{file_path.rsplit('.', 1)[0]}_subdomains.txt"
 
-        if input_type == "Manual":
-            domain_input = get_input("Enter domain(s)")
-            domains = [d.strip() for d in domain_input.split(',') if DomainValidator.is_valid_domain(d.strip())]
-            default_output = f"{domains[0]}_subdomains.txt" if domains else "subdomains.txt"
-        else:
-            file_path = get_input("Enter filename", "file")
-            with open(file_path, 'r') as f:
-                domains = [d.strip() for d in f if DomainValidator.is_valid_domain(d.strip())]
-            default_output = f"{file_path.rsplit('.', 1)[0]}_subdomains.txt"
-
-        output_file = get_input("Enter output filename", default=default_output)
-        subfinder = SubFinder()
-        subfinder.run(domains, output_file, sources)
+    output_file = get_input("Enter output filename", default=default_output)
+    subfinder = SubFinder()
+    subfinder.run(domains, output_file, sources)
