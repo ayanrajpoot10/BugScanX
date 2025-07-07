@@ -4,12 +4,10 @@ import socket
 import ipaddress
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
 from rich import print
 from rich.panel import Panel
 from rich.padding import Padding
 from rich.progress import Progress, TimeElapsedColumn
-
 from bugscanx.utils.prompts import get_input, get_confirm, clear_screen
 from bugscanx import text_ascii
 

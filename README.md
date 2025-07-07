@@ -38,7 +38,7 @@
 
 ## ✨ Features
 
-### 🎯 Host Scanner Pro
+### 🎯 Host Scanner
 Advanced multi-mode bug host scanning with specialized capabilities:
 - **Direct Scanning**: HTTP/HTTPS bug host discovery with custom methods
 - **DirectNon302**: Specialized scanning that excludes redirect responses (essential for bug hosts)
@@ -51,7 +51,6 @@ Advanced multi-mode bug host scanning with specialized capabilities:
 ### 🔍 Subdomain Enumeration
 Professional subdomain discovery for expanding bug host lists:
 - **Passive Discovery**: Leverages multiple API providers and search engines
-- **Active Enumeration**: DNS brute-force for comprehensive coverage
 - **Batch Processing**: Mass domain enumeration from target lists
 
 ### 🌐 IP Lookup & Reverse DNS
@@ -59,9 +58,6 @@ Comprehensive IP intelligence for bug host clustering:
 - **Reverse IP Lookup**: Discover all domains hosted on target IPs
 - **CIDR Range Processing**: Bulk analysis of IP ranges
 - **Multi-Source Aggregation**: Combines data from multiple sources
-
-### 📡 CIDR Scanner
-Efficient IP range analysis for bug host discovery with port enumeration and custom HTTP methods.
 
 ### 🚪 Port Scanner
 Advanced port scanning for service discovery with common tunneling ports (80, 443, 8080, 8443).
@@ -100,18 +96,16 @@ bx
     ╠╩╗║ ║║ ╦╚═╗║  ╠═╣║║║╔╩╦╝
     ╚═╝╚═╝╚═╝╚═╝╚═╝╩ ╩╝╚╝╩ ╚═
 
-[1]  HOST SCANNER PRO     # Advanced bug host scanner with multiple modes
-[2]  HOST SCANNER         # Simplified bug host scanner 
-[3]  CIDR SCANNER         # CIDR/IP scanner for bug host
-[4]  SUBFINDER            # Subdomain enumeration with active and passive modes
-[5]  IP LOOKUP            # Reverse IP lookup
-[6]  FILE TOOLKIT         # Bug host list management
-[7]  PORT SCANNER         # Port scanner to discover open ports
-[8]  DNS RECORD           # DNS record gathering
-[9]  HOST INFO            # Detailed bug host analysis
-[10] HELP                 # Documentation and usage examples
-[11] UPDATE               # Self-update tool
-[12] EXIT                 # Quit application
+[1] HOST SCANNER          # Advanced bug host scanner with multiple modes
+[2] SUBFINDER             # Subdomain enumeration with passive discovery modes
+[3] IP LOOKUP             # Reverse IP lookup
+[4] FILE TOOLKIT          # Bug host list management
+[5] PORT SCANNER          # Port scanner to discover open ports
+[6] DNS RECORD            # DNS record gathering
+[7] HOST INFO             # Detailed bug host analysis
+[8] HELP                  # Documentation and usage examples
+[9] UPDATE                # Self-update tool
+[0] EXIT                  # Quit application
 ```
 
 ### 📱 Using Discovered Bug Hosts
@@ -167,7 +161,7 @@ tqdm             # Progress bars
 
 ## 🛠️ Tools Documentation
 
-### 1️⃣ Host Scanner Pro
+### 1️⃣ Host Scanner
 
 Advanced bug host discovery with multiple scanning modes:
 
@@ -218,6 +212,14 @@ Comprehensive DNS intelligence:
 - A, AAAA, CNAME, MX, NS, TXT records
 - IPv4/IPv6 address resolution
 - Name server analysis
+
+### 7️⃣ Host Info
+
+Detailed host analysis and intelligence gathering:
+- Network information and geolocation
+- Web server analysis and fingerprinting
+- SSL/TLS certificate analysis
+- Security assessment and vulnerability detection
 
 
 ## ⚙️ Configuration

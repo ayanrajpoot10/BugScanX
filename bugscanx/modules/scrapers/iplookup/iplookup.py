@@ -81,7 +81,7 @@ def main():
         ips.extend(process_input(ip_input))
         default_output = f"{ip_input}_domains.txt".replace("/", "-")
     else:
-        file_path = get_input("Enter filename", "file")
+        file_path = get_input("Enter filename", input_type="file", validators="file")
         ips.extend(process_file(file_path))
         default_output = f"{file_path.rsplit('.', 1)[0]}_domains.txt"
 
