@@ -39,10 +39,6 @@ class HostScanner:
             "headers": ["cdn-pullzone", "cdn-uid", "cdn-requestid", "cdn-cache", "cdn-zone", "bunnycdn-cache-tag"],
             "cname": ["b-cdn.net"]
         },
-        "KeyCDN": {
-            "headers": ["x-edge-location", "server-keycdn"],
-            "cname": ["kxcdn.com"]
-        },
         "Sucuri": {
             "headers": ["x-sucuri-id", "x-sucuri-cache", "x-sucuri-block", "server-sucuri"],
             "cname": ["sucuri.net"]
@@ -54,10 +50,6 @@ class HostScanner:
         "Cachefly": {
             "headers": ["x-cf-", "server-cachefly"],
             "cname": ["cachefly.net"]
-        },
-        "CDN77": {
-            "headers": ["x-77-", "server-cdn77"],
-            "cname": ["cdn77.net", "cdn77.org"]
         },
         "Alibaba": {
             "headers": ["ali-cdn-", "x-oss-", "server-tengine"],
@@ -74,6 +66,7 @@ class HostScanner:
         self.protocol = protocol
         self.url = f"{protocol}://{host}"
         self.method_list = method_list
+        self.http_headers = {}
 
     def get_ips(self):
         try:
@@ -105,8 +98,11 @@ class HostScanner:
         try:
             detected_cdns = set()
             
-            response = requests.get(self.url, timeout=5)
-            headers = {k.lower(): v.lower() for k, v in response.headers.items()}
+            if self.http_headers:
+                headers = {k.lower(): v.lower() for k, v in self.http_headers.items()}
+            else:
+                response = requests.get(self.url, timeout=5)
+                headers = {k.lower(): v.lower() for k, v in response.headers.items()}
             
             cnames = self.get_cname_records()
             
@@ -145,6 +141,9 @@ class HostScanner:
             
             for future in as_completed(futures):
                 method, status_code, headers = future.result()
+
+                if method == "GET" and status_code > 0 and 'error' not in headers:
+                    self.http_headers = headers
                 
                 status_desc = http.client.responses.get(status_code, 'Unknown Status Code')
                 print(f"\n[bold yellow]Method: {method}[/bold yellow] | [bold magenta]Status: {status_code} {status_desc}[/bold magenta]")
@@ -188,12 +187,11 @@ class HostScanner:
             print(f"[bold red] Error getting SSL info: {e}[/bold red]")
 
     def scan(self):
-
         if not self.get_ips():
             return
             
-        self.get_cdn()
         self.get_http_info()
+        self.get_cdn()
         self.get_sni_info()
 
 
