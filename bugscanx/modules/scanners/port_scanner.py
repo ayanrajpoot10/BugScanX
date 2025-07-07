@@ -1,6 +1,5 @@
 import socket
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
 from rich.console import Console
 from rich.progress import (
     BarColumn,
@@ -8,7 +7,6 @@ from rich.progress import (
     TextColumn,
     TimeRemainingColumn,
 )
-
 from bugscanx.utils.prompts import get_input
 
 console = Console()

@@ -11,7 +11,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 class DirectScannerBase(BaseScanner):
     requests = requests
     DEFAULT_TIMEOUT = 3
-    DEFAULT_RETRY = 1
 
     def __init__(
         self,
@@ -30,25 +29,16 @@ class DirectScannerBase(BaseScanner):
     def request(self, method, url, **kwargs):
         method = method.upper()
         kwargs['timeout'] = self.timeout
-        max_attempts = self.DEFAULT_RETRY
-
-        for attempt in range(max_attempts):
-            self.progress(method, url)
-            try:
-                return self.requests.request(method, url, **kwargs)
-            except (
-                requests.exceptions.ConnectionError,
-                requests.exceptions.ReadTimeout,
-                requests.exceptions.Timeout,
-                requests.exceptions.RequestException
-            ) as e:
-                wait_time = (1 if isinstance(e, requests.exceptions.ConnectionError)
-                           else 3)
-                for _ in self.sleep(wait_time):
-                    self.progress(method, url)
-                if attempt == max_attempts - 1:
-                    return None
-        return None
+        self.progress(method, url)
+        try:
+            return self.requests.request(method, url, **kwargs)
+        except (
+            requests.exceptions.ConnectionError,
+            requests.exceptions.ReadTimeout,
+            requests.exceptions.Timeout,
+            requests.exceptions.RequestException
+        ):
+            return None
 
     def task(self, payload):
         method = payload['method']

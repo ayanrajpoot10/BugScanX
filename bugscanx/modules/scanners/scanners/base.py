@@ -2,7 +2,7 @@ import ipaddress
 import threading
 from datetime import datetime
 
-from .concurrency.multithread import MultiThread
+from .multithread import MultiThread
 
 
 class BaseScanner(MultiThread):
