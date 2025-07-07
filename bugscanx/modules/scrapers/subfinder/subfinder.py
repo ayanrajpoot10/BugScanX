@@ -1,6 +1,5 @@
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
 from bugscanx.utils.prompts import get_input
 from .logger import SubFinderConsole
 from .sources import get_sources
@@ -81,15 +80,13 @@ class SubFinder:
 def main():
     domains = []
     sources = get_sources()
-    input_type = get_input("Select input mode", "choice",
-                            choices=["Manual", "File"])
-
+    input_type = get_input("Select input mode", input_type="choice", choices=["Manual", "File"])
     if input_type == "Manual":
-        domain_input = get_input("Enter domain(s)")
+        domain_input = get_input("Enter domain(s)", validators="required")
         domains = [d.strip() for d in domain_input.split(',') if DomainValidator.is_valid_domain(d.strip())]
         default_output = f"{domains[0]}_subdomains.txt" if domains else "subdomains.txt"
     else:
-        file_path = get_input("Enter filename", "file")
+        file_path = get_input("Enter filename", input_type="file", validators="file")
         with open(file_path, 'r') as f:
             domains = [d.strip() for d in f if DomainValidator.is_valid_domain(d.strip())]
         default_output = f"{file_path.rsplit('.', 1)[0]}_subdomains.txt"

@@ -1,4 +1,4 @@
-from bugscanx.utils.prompts import get_input, get_confirm, is_cidr
+from bugscanx.utils.prompts import get_input, get_confirm
 from bugscanx.utils.cidr import read_cidrs_from_file
 
 
@@ -10,25 +10,23 @@ def get_common_inputs():
     default_filename = "results.txt"
     output = get_input(
         "Enter output filename",
-        default=default_filename,
-        validate_input=False
+        default=default_filename
     )
     threads = get_input(
         "Enter threads",
-        "number",
-        default="50",
-        allow_comma_separated=False
+        validators="number",
+        default="50"
     )
     return output, threads
 
 
 def get_host_input():
-    filename = get_input("Enter filename", "file", mandatory=False)
+    filename = get_input("Enter filename", input_type="file", validators="file", mandatory=False)
     if not filename:
-        cidr = get_input("Enter CIDR range(s)", validators=[is_cidr], mandatory=False)
+        cidr = get_input("Enter CIDR range(s)", validators="cidr", mandatory=False)
         if not cidr:
             cidr_file = get_input(
-                "Enter CIDR file", "file")
+                "Enter CIDR file", input_type="file")
             cidr = read_cidrs_from_file(cidr_file) if cidr_file else None
         return None, cidr
     return filename, None
@@ -39,12 +37,12 @@ def get_input_direct(no302=False):
     if filename is None and cidr is None:
         return None, None, None
         
-    port_list = get_input("Enter port(s)", "number", default="80").split(',')
-    timeout = get_input("Enter timeout (seconds)", "number", default="3")
+    port_list = get_input("Enter port(s)", validators="number", default="80").split(',')
+    timeout = get_input("Enter timeout (seconds)", validators="number", default="3")
     output, threads = get_common_inputs()
     method_list = get_input(
         "Select HTTP method(s)",
-        "choice",
+        input_type="choice",
         multiselect=True, 
         choices=[
             "GET", "HEAD", "POST", "PUT",
@@ -94,8 +92,8 @@ def get_input_proxy():
         "Upgrade: websocket[crlf][crlf]"
     )
     payload = get_input("Enter payload", default=default_payload)
-    port_list = get_input("Enter port(s)", "number", default="80").split(',')
-    output, threads = get_common_inputs(filename or cidr)
+    port_list = get_input("Enter port(s)", validators="number", default="80").split(',')
+    output, threads = get_common_inputs()
     
     if cidr:
         try:
@@ -128,11 +126,11 @@ def get_input_proxy2():
     if filename is None and cidr is None:
         return None, None, None
         
-    port_list = get_input("Enter port(s)", "number", default="80").split(',')
-    output, threads = get_common_inputs(filename or cidr)
+    port_list = get_input("Enter port(s)", validators="number", default="80").split(',')
+    output, threads = get_common_inputs()
     method_list = get_input(
         "Select HTTP method(s)",
-        "choice",
+        input_type="choice",
         multiselect=True, 
         choices=[
             "GET", "HEAD", "POST", "PUT",
@@ -180,7 +178,7 @@ def get_input_ssl():
     if filename is None and cidr is None:
         return None, None, None
         
-    output, threads = get_common_inputs(filename or cidr)
+    output, threads = get_common_inputs()
     
     if cidr:
         try:
@@ -207,8 +205,8 @@ def get_input_ping():
     if filename is None and cidr is None:
         return None, None, None
         
-    port_list = get_input("Enter port(s)", "number", default="443").split(',')
-    output, threads = get_common_inputs(filename or cidr)
+    port_list = get_input("Enter port(s)", validators="number", default="443").split(',')
+    output, threads = get_common_inputs()
     
     if cidr:
         try:

@@ -3,31 +3,17 @@ import ipaddress
 from prompt_toolkit.validation import Validator, ValidationError
 
 
-def create_validator(validators):
+def create_validator(*validators):
     class CustomValidator(Validator):
         def validate(self, document):
             text = document.text.strip()
             for validator in validators:
                 if callable(validator):
                     result = validator(text)
-                    if isinstance(result, str):
+                    if result is not True:
+                        error_message = result if isinstance(result, str) else "Invalid input"
                         raise ValidationError(
-                            message=result,
-                            cursor_position=len(text)
-                        )
-                    elif result is False:
-                        raise ValidationError(
-                            message="Invalid input",
-                            cursor_position=len(text)
-                        )
-                elif isinstance(validator, dict) and 'fn' in validator:
-                    result = validator['fn'](text)
-                    if isinstance(result, str) or result is False:
-                        message = validator.get('message', "Invalid input")
-                        if isinstance(result, str):
-                            message = result
-                        raise ValidationError(
-                            message=message,
+                            message=error_message,
                             cursor_position=len(text)
                         )
     return CustomValidator()
@@ -53,7 +39,7 @@ def is_cidr(text):
         try:
             ipaddress.ip_network(cidr, strict=False)
         except ValueError:
-            return f"Invalid CIDR notation: {cidr}"
+            return f"Invalid CIDR: {cidr}"
     
     return True
 
@@ -62,6 +48,15 @@ def is_digit(text, allow_comma=True):
     if not allow_comma and ',' in text:
         return "Only a single value allowed"
     
-    if not text.strip().replace(',', '').replace(' ', '').isdigit():
+    clean_text = text.strip().replace(',', '').replace(' ', '')
+    if not clean_text or not clean_text.isdigit():
         return f"Invalid number: {text}"
     return True
+
+
+VALIDATORS = {
+    'required': [required],
+    'file': [required, is_file],
+    'number': [required, is_digit],
+    'cidr': [required, is_cidr],
+}

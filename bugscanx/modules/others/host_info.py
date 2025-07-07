@@ -196,12 +196,12 @@ class HostScanner:
 
 
 def main():
-    host = get_input("Enter host")
-    protocol = get_input("Select protocol", "choice", choices=["http", "https"])
+    host = get_input("Enter host", validators="required")
+    protocol = get_input("Select protocol", input_type="choice", choices=["http", "https"])
     available_methods = ["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH"]
     method_list = get_input(
         "Select HTTP method(s)",
-        "choice",
+        input_type="choice",
         multiselect=True, 
         choices=available_methods,
         transformer=lambda result: ', '.join(result) if isinstance(result, list) else result

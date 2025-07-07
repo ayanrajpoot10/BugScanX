@@ -34,8 +34,8 @@ def write_lines(file_path, lines):
 
 
 def split_file():
-    file_path = get_input("Enter filename", "file")
-    parts = int(get_input("Number of parts", "number"))
+    file_path = get_input("Enter filename", input_type="file", validators="file")
+    parts = int(get_input("Number of parts", validators="number"))
     lines = read_lines(file_path)
     if not lines:
         return
@@ -89,7 +89,7 @@ def merge_files():
 
 
 def clean_file():
-    input_file = get_input("Enter filename", "file")
+    input_file = get_input("Enter filename", input_type="file", validators="file")
     domain_output_file = get_input("Enter domains output filename")
     ip_output_file = get_input("Enter IP output filename")
     
@@ -117,7 +117,7 @@ def clean_file():
 
 
 def remove_duplicates():
-    file_path = get_input("Enter filename", "file")
+    file_path = get_input("Enter filename", input_type="file", validators="file")
     lines = read_lines(file_path)
     if not lines:
         return
@@ -135,7 +135,7 @@ def remove_duplicates():
 
 
 def filter_by_tlds():
-    file_path = get_input("Enter filename", "file")
+    file_path = get_input("Enter filename", input_type="file", validators="file")
     tlds_input = get_input("Enter TLDs ", instruction="(e.g. com, org)")
     
     domains = read_lines(file_path)
@@ -172,7 +172,7 @@ def filter_by_tlds():
 
 
 def filter_by_keywords():
-    file_path = get_input("Enter filename", "file")
+    file_path = get_input("Enter filename", input_type="file", validators="file")
     keywords = [k.strip().lower() for k in get_input("Enter keyword(s)").split(',')]
     output_file = get_input("Enter output filename")
     
@@ -195,7 +195,7 @@ def filter_by_keywords():
 
 
 def cidr_to_ip():
-    cidr_input = get_input("Enter CIDR range")
+    cidr_input = get_input("Enter CIDR range", validators="cidr")
     output_file = get_input("Enter output filename")
     
     try:
@@ -215,7 +215,7 @@ def cidr_to_ip():
 
 
 def domains_to_ip():
-    file_path = get_input("Enter filename", "file")
+    file_path = get_input("Enter filename", input_type="file", validators="cidr")
     output_file = get_input("Enter output filename")
     
     domains = read_lines(file_path)

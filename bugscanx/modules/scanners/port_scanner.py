@@ -30,7 +30,7 @@ def scan_port(ip, port):
 
 
 def main():    
-    target = get_input("Enter target")
+    target = get_input("Enter target", validators="required")
     try:
         ip = socket.gethostbyname(target)
     except socket.gaierror:
@@ -42,7 +42,7 @@ def main():
 
     scan_type = get_input(
         "Select scan type",
-        "choice",
+        input_type="choice",
         choices=["Common ports", "All ports (1-65535)"]
     )
     ports = COMMON_PORTS if scan_type == "Common ports" else range(1, 65535)
@@ -73,16 +73,5 @@ def main():
                     progress.console.print(f" [green]✓[/] Port {result} is open")
                 progress.advance(task)
 
-    open_ports = sorted(open_ports)
-    
-    console.print("\n[bold green] Scan Results:[/]\n")
-    if open_ports:
-        console.print("[cyan] Open Ports:[/]\n")
-        for port in open_ports:
-            console.print(f" • Port {port}")
-        
-        with open(f"{target}_open_ports.txt", "w") as f:
-            f.write("\n".join(f"Port {port} is open" for port in open_ports))
-        console.print(f"\n[dim] Results saved to {target}_open_ports.txt[/]\n")
-    else:
+    if not open_ports:
         console.print("\n[yellow] No open ports found.[/]\n")

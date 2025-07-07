@@ -1,7 +1,7 @@
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from bugscanx.utils.prompts import get_input, is_cidr
+from bugscanx.utils.prompts import get_input
 from .sources import get_scrapers
 from .utils import CursorManager, process_input, process_file
 from .logger import IPLookupConsole
@@ -75,11 +75,9 @@ class IPLookup:
 
 def main():
     ips = []
-    input_type = get_input("Select input mode", "choice",
-                          choices=["Manual", "File"])
-
+    input_type = get_input("Select input mode", input_type="choice", choices=["Manual", "File"])
     if input_type == "Manual":
-        ip_input = get_input("Enter IP or CIDR", validators=[is_cidr])
+        ip_input = get_input("Enter IP or CIDR", validators="cidr")
         ips.extend(process_input(ip_input))
         default_output = f"{ip_input}_domains.txt".replace("/", "-")
     else:

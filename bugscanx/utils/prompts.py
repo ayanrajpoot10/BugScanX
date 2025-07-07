@@ -1,5 +1,4 @@
 import os
-
 from InquirerPy import get_style
 from InquirerPy.prompts import (
     ListPrompt as select,
@@ -7,7 +6,7 @@ from InquirerPy.prompts import (
     InputPrompt as text,
     ConfirmPrompt as confirm,
 )
-from .validators import create_validator, required, is_file, is_digit, is_cidr
+from .validators import create_validator, VALIDATORS
 
 
 DEFAULT_STYLE = get_style(
@@ -20,30 +19,6 @@ DEFAULT_STYLE = get_style(
 )
 
 
-INPUT_VALIDATORS = {
-    "file": [required, is_file],
-    "number": [required, is_digit],
-    "text": [required],
-}
-
-
-def strip_handler(handler, strip_input):
-    def wrapped(params):
-        result = handler(params)
-        if strip_input and isinstance(result, str):
-            return result.strip()
-        return result
-    return wrapped
-
-
-INPUT_HANDLERS = {
-    "choice": lambda params: select(**params).execute(),
-    "file": lambda params: filepath(**params).execute(),
-    "number": lambda params: text(**params).execute(),
-    "text": lambda params: text(**params).execute(),
-}
-
-
 def get_input(
     message,
     input_type="text",
@@ -53,58 +28,47 @@ def get_input(
     multiselect=False,
     transformer=None,
     style=DEFAULT_STYLE,
-    validate_input=True,
     instruction="",
     mandatory=True,
-    allow_comma_separated=True,
-    strip_input=True,
     **kwargs
 ):
-    common_params = {
-        "message": f" {message.strip()}" + ("" if instruction else ":"),
+    def auto_strip(result):
+        return result.strip() if isinstance(result, str) else result
+    
+    params = {
+        "message": f" {message.strip()}" + (":" if not instruction else ""),
         "default": "" if default is None else str(default),
-        "qmark": kwargs.pop("qmark", ""),
-        "amark": kwargs.pop("amark", ""),
+        "qmark": "",
+        "amark": "",
         "style": style,
         "instruction": instruction + (":" if instruction else ""),
         "mandatory": mandatory,
         "transformer": transformer,
     }
     
-    if validators is None and validate_input:
-        validators = INPUT_VALIDATORS.get(input_type, [])
-        
-    if validate_input and validators:
-        if input_type == "number":
-            validators = [required, lambda x: is_digit(x, allow_comma_separated)]
-        common_params["validate"] = create_validator(validators)
+    if validators:
+        if isinstance(validators, str) and validators in VALIDATORS:
+            params["validate"] = create_validator(*VALIDATORS[validators])
+        elif isinstance(validators, (list, tuple)):
+            params["validate"] = create_validator(*validators)
     
-    input_type_params = {
-        "choice": {
+    if input_type == "choice":
+        params.update({
             "choices": choices,
             "multiselect": multiselect,
-            "transformer": transformer,
-            "show_cursor": kwargs.pop("show_cursor", False),
-        },
-        "file": {
-            "only_files": kwargs.pop("only_files", True),
-        },
-    }
+            "show_cursor": kwargs.get("show_cursor", False),
+        })
+        return select(**params).execute()
     
-    common_params.update(input_type_params.get(input_type, {}))
-    common_params.update(kwargs)
+    elif input_type == "file":
+        params["only_files"] = kwargs.get("only_files", True)
+        return auto_strip(filepath(**params).execute())
     
-    handler = INPUT_HANDLERS.get(input_type)
-    
-    return strip_handler(handler, strip_input)(common_params)
+    else:
+        return auto_strip(text(**params).execute())
 
 
-def get_confirm(
-    message,
-    default=True,
-    style=DEFAULT_STYLE,
-    **kwargs
-):
+def get_confirm(message, default=True, style=DEFAULT_STYLE, **kwargs):
     return confirm(
         message=message,
         default=default,
