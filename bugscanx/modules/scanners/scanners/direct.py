@@ -18,16 +18,18 @@ class DirectScannerBase(BaseScanner):
         method_list=None,
         port_list=None,
         no302=False,
+        timeout=None,
         **kwargs
     ):
         super().__init__(**kwargs)
         self.method_list = method_list or []
         self.port_list = port_list or []
         self.no302 = no302
+        self.timeout = timeout or self.DEFAULT_TIMEOUT
 
     def request(self, method, url, **kwargs):
         method = method.upper()
-        kwargs['timeout'] = self.DEFAULT_TIMEOUT
+        kwargs['timeout'] = self.timeout
         max_attempts = self.DEFAULT_RETRY
 
         for attempt in range(max_attempts):
@@ -98,6 +100,7 @@ class HostDirectScanner(DirectScannerBase):
         no302=False,
         threads=50,
         output_file=None,
+        timeout=None,
         **kwargs
     ):
         super().__init__(
@@ -107,6 +110,7 @@ class HostDirectScanner(DirectScannerBase):
             threads=threads,
             is_cidr_input=False,
             output_file=output_file,
+            timeout=timeout,
             **kwargs
         )
         self.input_file = input_file
@@ -164,6 +168,7 @@ class CIDRDirectScanner(DirectScannerBase):
         no302=False,
         threads=50,
         output_file=None,
+        timeout=None,
         **kwargs
     ):
         super().__init__(
@@ -174,6 +179,7 @@ class CIDRDirectScanner(DirectScannerBase):
             is_cidr_input=True,
             cidr_ranges=cidr_ranges,
             output_file=output_file,
+            timeout=timeout,
             **kwargs
         )
         self.cidr_ranges = cidr_ranges or []

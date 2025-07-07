@@ -40,6 +40,7 @@ def get_input_direct(no302=False):
         return None, None, None
         
     port_list = get_input("Enter port(s)", "number", default="80").split(',')
+    timeout = get_input("Enter timeout (seconds)", "number", default="3")
     output, threads = get_common_inputs()
     method_list = get_input(
         "Select HTTP method(s)",
@@ -63,6 +64,7 @@ def get_input_direct(no302=False):
             cidr_ranges=cidr_ranges,
             port_list=port_list,
             no302=no302,
+            timeout=int(timeout),
             output_file=output
         )
     else:
@@ -72,6 +74,7 @@ def get_input_direct(no302=False):
             input_file=filename,
             port_list=port_list,
             no302=no302,
+            timeout=int(timeout),
             output_file=output
         )
     
