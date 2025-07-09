@@ -1,19 +1,15 @@
 bugscan-x/
 ├── bugscanx/                                    # Main bugscan-x package directory
-│   ├── handler/                                 # imports and handles modules
-│   │   └── runner.py                            # Run required module
 │   ├── modules/                                 # Modules directory
 │   │   ├── others/                              # Other utility modules
 │   │   │   ├── dns_records.py                   # DNS record handling
 │   │   │   ├── file_toolkit.py                  # File handling utilities
 │   │   │   ├── host_info.py                     # Host information retrieval
-│   │   │   ├── script_help.py                   # Help functionality for scripts
-│   │   │   └── script_updater.py                # Script updater functionality
+│   │   │   ├── help.py                          # Help functionality for scripts
+│   │   │   └── update.py                        # Script updater functionality
 │   │   ├── scanners/                            # Scanners directory 
 │   │   │   ├── scanners/                        # Host Scanner modules
-│   │   │   │   ├── concurrency/                 # Concurrency handling modules
-│   │   │   │   │   ├── logger.py                # Console interface for scanners
-│   │   │   │   │   └── multithread.py           # Multithreading implementation for scanners
+│   │   │   │   ├── multithread.py               # Multithreading implementation for scanners
 │   │   │   │   ├── base.py                      # Base scanner class
 │   │   │   │   ├── direct.py                    # Direct scanning functionality
 │   │   │   │   ├── ping.py                      # Ping scanning functionality
@@ -34,13 +30,12 @@ bugscan-x/
 │   │           ├── sources.py                   # Subdomain finder sources implementation
 │   │           └── utils.py                     # Utility functions
 │   ├── utils/                                   # Utility functions directory
-│   │   ├── cidr.py                              # CIDR utilities
 │   │   ├── common.py                            # Common utilities
 │   │   ├── config.py                            # Configuration handling
 │   │   ├── http.py                              # HTTP utilities
-│   │   ├── file_selector.py                     # File selection utilities
 │   │   └── validators.py                        # Input validators
 │   ├── __init__.py                              # Package initialization
+│   ├── handlers.py                              # All modules handlers
 │   └── main.py                                  # Main entry point for bugscan-x
 ├── test/                                        # Test suite directory
 │   └── scrapers/                                # Tests for scraper modules

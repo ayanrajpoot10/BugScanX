@@ -91,6 +91,7 @@ def main():
             domains = [d.strip() for d in f if DomainValidator.is_valid_domain(d.strip())]
         default_output = f"{file_path.rsplit('.', 1)[0]}_subdomains.txt"
 
-    output_file = get_input("Enter output filename", default=default_output)
+    output_file = get_input("Enter output filename", default=default_output, validators="required")
+    print()
     subfinder = SubFinder()
     subfinder.run(domains, output_file, sources)

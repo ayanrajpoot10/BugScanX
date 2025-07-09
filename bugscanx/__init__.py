@@ -33,7 +33,7 @@ def banner():
     """)
 
 
-def text_ascii(text, color="bold magenta", indentation=2):
+def ascii(text, color="bold magenta", indentation=2):
     clear_screen()
     ascii_banner = figlet.renderText(text)
     shifted_banner = "\n".join((" " * indentation) + line 

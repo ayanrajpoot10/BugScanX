@@ -1,5 +1,26 @@
+import ipaddress
+from rich import print
 from bugscanx.utils.prompts import get_input, get_confirm
-from bugscanx.utils.cidr import read_cidrs_from_file
+
+
+def read_cidrs_from_file(filepath):
+    valid_cidrs = []
+    try:
+        with open(filepath, 'r') as file:
+            for line in file:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    ipaddress.ip_network(line, strict=False)
+                    valid_cidrs.append(line)
+                except ValueError:
+                    pass
+            
+        return valid_cidrs
+    except Exception as e:
+        print(f"[bold red]Error reading file: {e}[/bold red]")
+        return []
 
 
 def get_cidr_ranges_from_input(cidr_input):
@@ -26,7 +47,7 @@ def get_host_input():
         cidr = get_input("Enter CIDR range(s)", validators="cidr", mandatory=False)
         if not cidr:
             cidr_file = get_input(
-                "Enter CIDR file", input_type="file")
+                "Enter CIDR file", input_type="file", validators="file")
             cidr = read_cidrs_from_file(cidr_file) if cidr_file else None
         return None, cidr
     return filename, None
@@ -84,14 +105,14 @@ def get_input_proxy():
     if filename is None and cidr is None:
         return None, None, None
         
-    target_url = get_input("Enter target url", default="in1.wstunnel.site")
+    target_url = get_input("Enter target url", default="in1.wstunnel.site", validators="required")
     default_payload = (
         "GET / HTTP/1.1[crlf]"
         "Host: [host][crlf]"
         "Connection: Upgrade[crlf]"
         "Upgrade: websocket[crlf][crlf]"
     )
-    payload = get_input("Enter payload", default=default_payload)
+    payload = get_input("Enter payload", default=default_payload, validators="required")
     port_list = get_input("Enter port(s)", validators="number", default="80").split(',')
     output, threads = get_common_inputs()
     
@@ -139,15 +160,15 @@ def get_input_proxy2():
         transformer=lambda result: ', '.join(result) if isinstance(result, list) else result
     )
     
-    proxy = get_input("Enter proxy", instruction="(proxy:port)")
+    proxy = get_input("Enter proxy", instruction="(proxy:port)", validators="required")
     
     use_auth = get_confirm(" Use proxy authentication?")
     proxy_username = None
     proxy_password = None
     
     if use_auth:
-        proxy_username = get_input("Enter proxy username")
-        proxy_password = get_input("Enter proxy password")
+        proxy_username = get_input("Enter proxy username", validators="required")
+        proxy_password = get_input("Enter proxy password", validators="required")
     
     if cidr:
         try:

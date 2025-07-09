@@ -1,6 +1,6 @@
 import sys
 from rich import print
-from bugscanx import banner, text_ascii, handlers
+from . import banner, ascii, handler
 
 
 MENU_OPTIONS = {
@@ -34,9 +34,9 @@ def main():
             if choice == '0':
                 return
 
-            text_ascii(MENU_OPTIONS[choice][0])
+            ascii(MENU_OPTIONS[choice][0])
             try:
-                getattr(handlers, f'run_{choice}')()
+                getattr(handler, f'run_{choice}')()
                 print("\n[yellow] Press Enter to continue...", end="")
                 input()
             except KeyboardInterrupt:

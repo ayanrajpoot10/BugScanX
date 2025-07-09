@@ -9,7 +9,7 @@ from rich.panel import Panel
 from rich.padding import Padding
 from rich.progress import Progress, TimeElapsedColumn
 from bugscanx.utils.prompts import get_input, get_confirm, clear_screen
-from bugscanx import text_ascii
+from bugscanx import ascii
 
 
 def read_lines(file_path):
@@ -287,7 +287,7 @@ def main():
 
         action = options.get(choice)
         if not action:
-            text_ascii("FILE TOOLKIT")
+            ascii("FILE TOOLKIT")
             continue
 
         desc, func, color = action
@@ -304,4 +304,4 @@ def main():
         except KeyboardInterrupt:
             pass
         finally:
-            text_ascii("FILE TOOLKIT")
+            ascii("FILE TOOLKIT")

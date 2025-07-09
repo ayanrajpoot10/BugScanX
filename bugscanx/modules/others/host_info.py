@@ -2,10 +2,8 @@ import ssl
 import socket
 import http.client
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
 import requests
 from rich import print
-
 from bugscanx.utils.prompts import get_input
 
 

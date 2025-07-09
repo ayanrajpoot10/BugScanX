@@ -172,7 +172,7 @@ def main():
                     manager.restart_application()
         else:
             manager.console.print(
-                f"[yellow] Stable update available: {version_info.current_version} → {version_info.latest_stable}"
+                f"[yellow] Update available: {version_info.current_version} → {version_info.latest_stable}"
             )
             if not get_confirm(" Update now"):
                 return
