@@ -59,7 +59,7 @@ def get_input_direct(no302=False):
         return None, None, None
         
     port_list = get_input("Enter port(s)", validators="number", default="80").split(',')
-    timeout = get_input("Enter timeout (seconds)", validators="number", default="3")
+    timeout = get_input("Enter timeout", validators="number", default="3", instruction="(seconds)")
     output, threads = get_common_inputs()
     method_list = get_input(
         "Select HTTP method(s)",

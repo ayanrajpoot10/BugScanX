@@ -1,7 +1,6 @@
 import socket
 import requests
 import urllib3
-
 from .base import BaseScanner
 from bugscanx.utils.config import EXCLUDE_LOCATIONS
 
@@ -76,9 +75,6 @@ class DirectScannerBase(BaseScanner):
             data['location'] = response.headers.get('location', '')
 
         self._handle_success(data)
-
-    def complete(self):
-        self.progress(self.logger.colorize("Scan completed", "GREEN"))
 
 
 class HostDirectScanner(DirectScannerBase):

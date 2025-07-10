@@ -124,6 +124,9 @@ class MultiThread(ABC):
         ] + [str(x) for x in extra if x]
         self.logger.replace(" - ".join(parts))
 
+    def complete(self):
+        self.progress(self.logger.colorize("Scan completed", "GREEN"))
+
     @abstractmethod
     def generate_tasks(self): pass
 
@@ -132,6 +135,3 @@ class MultiThread(ABC):
 
     @abstractmethod
     def task(self, task): pass
-
-    @abstractmethod
-    def complete(self): pass

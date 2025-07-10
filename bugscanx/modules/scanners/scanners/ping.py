@@ -43,9 +43,6 @@ class PingScannerBase(BaseScanner):
 
         self.progress(f"{host}:{port}")
 
-    def complete(self):
-        self.progress(self.logger.colorize("Scan completed", "GREEN"))
-
 
 class HostPingScanner(PingScannerBase):    
     def __init__(

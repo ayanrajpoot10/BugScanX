@@ -61,8 +61,6 @@ class ProxyScannerBase(BaseScanner):
 
         self.progress(f"{proxy_host}")
 
-    def complete(self):
-        self.progress(self.logger.colorize("Scan completed", "GREEN"))
 
     def log_info(self, proxy_host_port, status_code, response_lines=None):
         if response_lines is None:

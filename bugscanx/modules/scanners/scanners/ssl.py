@@ -46,9 +46,6 @@ class SSLScannerBase(BaseScanner):
 
         self.progress(sni)
 
-    def complete(self):
-        self.progress(self.logger.colorize("Scan completed", "GREEN"))
-
 
 class HostSSLScanner(SSLScannerBase):
     def __init__(
