@@ -52,7 +52,7 @@ class CursorManager:
 class MultiThread(ABC):
     def __init__(self, threads=50):
         self._lock = RLock()
-        self._queue = Queue()
+        self._queue = Queue(maxsize=5000)
 
         self._total = 0
         self._scanned = 0
@@ -78,8 +78,13 @@ class MultiThread(ABC):
                 for t in workers:
                     t.start()
                 
-                for task in self.generate_tasks():
-                    self._queue.put(task)
+                task_gen = self.generate_tasks()
+                try:
+                    while True:
+                        task = next(task_gen)
+                        self._queue.put(task)
+                except StopIteration:
+                    pass
                 
                 self._queue.join()
                 self.complete()
